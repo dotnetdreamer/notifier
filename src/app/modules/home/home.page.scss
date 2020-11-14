@@ -1,0 +1,151 @@
+
+ion-tabs {
+    ion-tab-bar {
+        justify-content: space-around;
+        --ion-tab-bar-background: none;
+        --ion-background-color: transparent;
+        --border: none;
+        --background: transparent !important;
+        contain: none;
+        width: 100%;
+        bottom: 0;
+        position: fixed;
+  
+        &:before, &:after {
+            content: '';
+            position: absolute;
+        }
+  
+        // &:before {
+        //     bottom: -18px;
+        //     background: rgb(244, 246, 247);
+        //     height: 50px;
+        //     z-index: -1;
+        //     width: 100%;
+        // }
+  
+        &:after {
+            background-image: url('/assets/images/bottom-bar.svg'); 
+            background-repeat: no-repeat;
+            background-position: center 0px;
+            // background-color: var(--ion-color-primary);
+            height: 56px;
+            width: 100%;
+            background-size: cover;
+            z-index: -1;
+            border-top-right-radius: 15px;
+            border-top-left-radius: 15px;
+            overflow: hidden;
+        }
+  
+        ion-tab-button {
+            --color: #b0b0b0;
+            --color-selected: #b0b0b0;
+  
+            &.tab-selected {
+                color: var(--fi-color-1) !important;
+                --color: var(--fi-color-1) !important;
+                --color-selected: var(--fi-color-1) !important;        
+            }
+  
+            ion-icon {
+              font-size: 34px;
+              color: var(--ion-color-secondary);
+            }
+            
+            ion-label {
+              text-transform: uppercase;
+            }
+            
+            &.home {
+                height: 65px;
+                max-width: 65px;
+                border-radius: 50%;
+                position: relative;
+                --color: #fff;
+                --color-selected: #fff;
+                bottom: 8px;
+                background: var(--ion-color-primary);
+  
+                ion-icon, ion-label {
+                  color: #fff;
+                }
+  
+                ion-icon {
+                  font-size: 36px;
+                }
+            }
+        }
+    }
+  
+    //only where tab is showing...
+    page-home-dashboard {
+        ion-content {
+          //60px = tab height
+          --padding-bottom: 100px !important;
+        }
+    }
+  }
+  
+  
+  @media (min-width: 768px) {
+    ion-tabs{
+        ion-tab-bar{
+            ion-tab-button {
+                &.home {
+                    margin-bottom: 0;
+                    bottom: 12px;
+  
+                    ion-icon {
+                      font-size: 36px;
+                    }
+                }
+  
+                ion-icon{
+                  font-size: 36px;
+                }
+            }
+        }
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    ion-tabs{
+        ion-tab-bar{
+            ion-tab-button {
+              display: flex;
+              align-items: center;
+  
+              &:not(.home) {
+                flex-direction: row;
+  
+                ion-icon {
+                  font-size: 40px;
+                }
+  
+                ion-label {
+                  margin-bottom: 0;
+                  margin-left: 10px;
+                  top: 2px;
+                  display: flex;
+                  align-items: center;
+                  font-size: 16px;
+                  position: relative;
+                }
+              }
+  
+                
+                &.home {
+                  max-width: 85px;
+                  height: 85px;
+                  bottom: 16px;
+                  display: initial;
+  
+                  ion-icon{
+                    font-size: 40px;
+                  }
+                }
+            }
+        }
+    }
+  }

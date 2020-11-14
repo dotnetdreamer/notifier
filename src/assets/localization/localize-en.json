@@ -1,0 +1,73 @@
+{
+    "common": {
+        "success": "Success",
+        "failed": "Failed",
+        "dismiss": "Dismiss",
+        "ok": "OK",
+        "edit": "Edit",
+        "delete": "Delete",
+        "delete_force": "Force Delete",
+        "cancel": "Cancel",
+        "yes": "Yes",
+        "no": "No",
+        "update": "Update",
+        "clear": "Clear",
+        "reset": "Reset",
+        "select": "[ Select ]",
+        "areyousure": "Are you sure ?",
+        "version": "Version",
+        "nodata": "No data found",
+        "viewall": "View all",
+        "you": "You",
+        "on": "on"
+    },
+    "home": {
+        "title": "Home",
+        "dashboard": {
+        }
+    },
+    "setting": {
+        "title": "Setting",
+        "database": "Database",
+        "delete_db": "Delete Database",
+        "table": "Table"
+    },
+    "search": {
+        "title": "Search"    
+    },
+    "user": {
+        "logout": "Logout",
+        "profile": "Profile",
+        "email": "Email",
+        "password": "Password",
+        "confirm_password": "Confirm password",
+        "change_password": "Change password",
+        "mobile": "Mobile",
+        "name": "Name",
+        "forgot_password": "Forgot Password?",
+        "already_exist": "User already exist",
+        "already_registered_normal_auth": "You are alredy registered using normal authentication",
+        "cannot_register": "We cannot register your account. Your account status is \"{0}\"",
+        "users": "Users",
+        "external_auth": "External Authentication",
+        "login": {
+            "title": "Login",
+            "continue_with": "Or continue with"
+        },
+        "register": {
+            "title": "Register"
+        },
+        "status": {
+            "title": "Status",
+            "approved": "Approved",
+            "pending": "Pending",
+            "rejected": "Rejected",
+            "blocked": "Blocked"
+        },
+        "role": {
+            "title": "Role",
+            "admin": "Admin",
+            "user": "User"
+        }
+    }
+}

@@ -39,7 +39,9 @@
                 "input": "src/global.scss"
               }
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/ydn.db/jsc/ydn.db-dev.js"
+            ]
           },
           "configurations": {
             "production": {

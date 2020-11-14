@@ -7,6 +7,7 @@ import { Plugins } from '@capacitor/core';
 const { SplashScreen, StatusBar, Device } = Plugins;
 import { Observable } from 'rxjs';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import * as moment from 'moment';
 
 import { AppSettingService } from './modules/shared/app-setting.service';
 import { SyncHelperService } from './modules/shared/sync/sync-helper.service';
@@ -19,6 +20,9 @@ import { UserConstant } from './modules/authentication/user-constant';
 import { IUserProfile } from './modules/authentication/user.model';
 import { debounceTime } from 'rxjs/operators';
 import { LocalizationService } from './modules/shared/localization.service';
+import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
+import { INotification } from './modules/notification/notification.model';
+import { NotificationService } from './modules/notification/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +41,7 @@ export class AppComponent {
       , private appSettingSvc: AppSettingService, private syncHelperSvc: SyncHelperService
       , private helperSvc: HelperService
       , private authSvc: UserService, private userSettingSvc: UserSettingService
-      , private localizationSvc: LocalizationService
+      , private localizationSvc: LocalizationService, private notificationSvc: NotificationService
   ) {
     this.initializeApp();
   }
@@ -45,7 +49,8 @@ export class AppComponent {
   initializeApp() {
     this._subscribeToEvents();
 
-    this.platform.ready().then(() => {
+    this.platform.ready().then(async () => {
+      await this._startListening();
 
     });
   }
@@ -84,14 +89,14 @@ export class AppComponent {
     
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH, async (table?) => {
       if(AppConstant.DEBUG) {
-        console.log('HomePage: EVENT_SYNC_DATA_PUSH: table:', table);
+        console.log('AppComponent: EVENT_SYNC_DATA_PUSH: table:', table);
       }
       await this.syncHelperSvc.push(table);
     });
 
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL, async (table?) => {
       if(AppConstant.DEBUG) {
-        console.log('HomePage: EVENT_SYNC_DATA_PULL: table:', table);
+        console.log('AppComponent: EVENT_SYNC_DATA_PULL: table:', table);
       }
       try {
         await this.syncHelperSvc.pull(table);
@@ -198,6 +203,58 @@ export class AppComponent {
     // await this._navigateTo('/expense/expense-listing');
     // await this._navigateTo('/category');
     // await this._navigateTo('/home');
+  }
+
+  private async _startListening() {
+    /* 
+    apptitle: "⁨Me 2⁩"
+package: "com.samsung.android.messaging"
+text: "Hshahaha"
+textlines: "[]"
+time: 1605336742573
+title: "Me 2 : Hshahaha"
+*/
+    const sn = new SystemNotificationListener();
+    const isListening = await sn.isListening();
+    console.log('isListening', isListening)
+
+    if(!isListening) {
+      try {
+        await sn.requestPermission();
+      } catch (e) {
+
+      }     
+    }
+
+    
+    await sn.startListening();
+
+    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
+      // console.log('notificationReceivedEvent', info);
+      const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
+
+      const notification: INotification = {
+        title: info.title,
+        text: info.text,
+        package: info.package,
+        receivedOn: utcTime
+      };
+
+      if(AppConstant.DEBUG) {
+        console.log('AppComponent: notificationReceivedEvent: notification', notification)
+      }
+
+      await this.notificationSvc.putLocal(notification);
+      // await this.helperSvc.presentToastGenericSuccess();
+  
+      //fire after the page navigates away...
+      // setTimeout(() => {
+      //   this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.Expense);
+      // }, 300);
+    });
+    sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
+      console.log('notificationRemovedEvent', info);
+    });
   }
 
   private async _navigateTo(path, args?, replaceUrl = false) {

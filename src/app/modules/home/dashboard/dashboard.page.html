@@ -12,4 +12,9 @@
       <ion-title size="large">Tab 1</ion-title>
     </ion-toolbar>
   </ion-header>
+  <ion-list>
+    <ion-item *ngFor="let notificaiton of notifications">
+      <ion-label>{{notificaiton.title || notificaiton.text}}</ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

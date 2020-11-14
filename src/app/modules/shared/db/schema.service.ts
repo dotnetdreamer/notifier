@@ -28,6 +28,9 @@ export class SchemaService {
                 }, { 
                     name: 'package', 
                     type: 'TEXT' 
+                }, {
+                    name: 'receivedOn', 
+                    type: 'TEXT' 
                 }, { 
                     name: 'updatedOn', 
                     type: 'TEXT' 

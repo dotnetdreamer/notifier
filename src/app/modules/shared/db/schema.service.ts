@@ -5,25 +5,28 @@ import { Injectable } from '@angular/core';
 })
 export class SchemaService {
     private _setting = "setting";
-    private _message = "message";
+    private _notification = "notification";
     private _user = "user";
 
     schema = {
         stores: [
             {
-                name: this._message,
+                name: this._notification,
                 columns: [{ 
                     name: 'id', 
                     isPrimaryKey: true, 
                     type: 'INTEGER' 
                 }, { 
-                    name: 'name', 
+                    name: 'guid', 
                     type: 'TEXT' 
                 }, { 
-                    name: 'groupName', 
+                    name: 'title', 
                     type: 'TEXT' 
                 }, { 
-                    name: 'icon', 
+                    name: 'text', 
+                    type: 'TEXT' 
+                }, { 
+                    name: 'package', 
                     type: 'TEXT' 
                 }, { 
                     name: 'updatedOn', 
@@ -56,7 +59,7 @@ export class SchemaService {
     };
     tables = {
         setting: this._setting,
-        message: this._message,
+        notification: this._notification,
         user: this._user
     };
 

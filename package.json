@@ -27,6 +27,7 @@
     "@ionic/angular": "^5.0.0",
     "@pscoped/ngx-pub-sub": "^3.0.2",
     "capacitor-notificationlistener": "^0.1.2",
+    "capacitor-persistent-notification": "^0.9.5",
     "moment": "^2.29.1",
     "rxjs": "~6.5.5",
     "tslib": "^2.0.0",

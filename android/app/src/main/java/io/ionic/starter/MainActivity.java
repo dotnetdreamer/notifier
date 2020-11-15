@@ -7,6 +7,7 @@ import com.getcapacitor.Plugin;
 
 import java.util.ArrayList;
 import ch.asinz.capacitornotificationlistener.NotificationListenerPlugin;
+import com.flytesoft.persistent.notification.PersistentNotification;
 
 public class MainActivity extends BridgeActivity {
   @Override
@@ -18,6 +19,7 @@ public class MainActivity extends BridgeActivity {
       // Additional plugins you've installed go here
       // Ex: add(TotallyAwesomePlugin.class);
             add(NotificationListenerPlugin.class);
+          add(PersistentNotification.class);
 
     }});
   }

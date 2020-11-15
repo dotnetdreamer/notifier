@@ -231,6 +231,10 @@ title: "Me 2 : Hshahaha"
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       // console.log('notificationReceivedEvent', info);
+      if(AppConstant.IGNORED_PACKAGES.includes(info.package)) {
+        return;
+      }
+
       const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
 
       const notification: INotification = {

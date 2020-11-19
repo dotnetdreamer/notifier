@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { INotification } from '../../notification/notification.model';
 
 import { NotificationService } from '../../notification/notification.service';
+import { AppConstant } from '../../shared/app-constant';
 
 // import { SystemNotification, SystemNotificationListener } from 'capacitor-notificationlistener';
 
@@ -11,7 +12,7 @@ import { NotificationService } from '../../notification/notification.service';
   styleUrls: ['dashboard.page.scss']
 })
 export class DashboardPage implements OnInit {
-
+  AppConstant = AppConstant;
   notifications: INotification[];
   constructor(private notificationSvc: NotificationService) {
 
@@ -32,6 +33,16 @@ export class DashboardPage implements OnInit {
     // // sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
     // //   console.log('notificationRemovedEvent', info);
     // // });
+  }
+
+  async onIonRefreshed(ev) {
+    const { detail } = ev;
+
+    await this._getAllNotifications();
+
+    setTimeout(() => {
+      detail.complete();
+    }, 300);
   }
 
   private async _getAllNotifications() {

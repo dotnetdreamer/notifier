@@ -17,9 +17,6 @@ export class SchemaService {
                     isPrimaryKey: true, 
                     type: 'INTEGER' 
                 }, { 
-                    name: 'guid', 
-                    type: 'TEXT' 
-                }, { 
                     name: 'title', 
                     type: 'TEXT' 
                 }, { 

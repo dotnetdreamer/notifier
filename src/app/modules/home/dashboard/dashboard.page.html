@@ -7,14 +7,48 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Tab 1</ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-list>
+  <!-- <ion-list>
     <ion-item *ngFor="let notificaiton of notifications">
       <ion-label>{{notificaiton.title || notificaiton.text}}</ion-label>
     </ion-item>
-  </ion-list>
+  </ion-list> -->
+  <!-- <no-data *ngIf="!expenses.length && dataLoaded"></no-data> -->
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
+    <ion-item class="no-padding" lines="none" *virtualItem="let item;let index=index;" 
+      (click)="onExpenseItemClicked($event, item, 'detail')">
+      <div class="notification-item" [class.notification-item-even]="index % 2">
+        <div class="icon-container">
+          <ion-icon [attr.name]="'notifications'" 
+            *ngIf="!item.markedForAdd && !item.markedForUpdate && !item.markedForDelete"></ion-icon>
+          <ion-icon name="refresh" class="animated infinite spin" 
+            *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+        </div>
+        <div class="category-description-amount">
+          <div class="category-description">
+            <div class="description" [innerHTML]="(item.text | slice:0:40)"></div>
+            <div class="category-notes-attachment">
+              <ion-icon slot="icon-only" ios="cube" md="cube"></ion-icon>        
+              <div class="category">{{item.package}}</div>
+            </div>
+          </div>
+          <div class="date-time">
+            <div class="time">
+              {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT | async}}
+            </div>
+            <div class="date">
+              {{item.createdOn | formateDate | async}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ion-item>
+  </ion-virtual-scroll>
 </ion-content>

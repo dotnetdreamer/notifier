@@ -1,0 +1,82 @@
+.notification-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: var(--ion-padding, 16px);
+    padding-right: var(--ion-padding, 16px);
+    min-height: 80px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+
+    .icon-container {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        ion-icon {
+            font-size: 28px;
+        }
+    }
+
+    .category-description-amount {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .category-description {
+            width: 100%;
+
+            .description {
+                font-size: 1em;
+                margin-bottom: 5px;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            .category-notes-attachment {
+                display: flex;
+                align-items: center;
+
+                .category {
+                    font-size: 0.8em;
+                }
+
+                ion-icon {
+                    font-size: 14px;
+                    margin-left: 5px;
+                    margin-right: 5px;
+
+                    &:first-child {
+                        margin-left: 0;
+                    }
+                }
+            }
+        }
+
+        .date-time {
+            text-align: right;
+            margin-left: 5px;
+            min-width: 100px;
+            
+            .date {
+                font-size: 0.8em;
+            }
+            .time {
+                font-size: 1em;
+                margin-bottom: 5px;
+
+                > span {
+                    font-size: 0.6em;
+                }
+            }
+        }
+    }
+
+    &.notification-item-even {
+        background-color: #f7f7f7;
+    }
+}

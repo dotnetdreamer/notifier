@@ -22,6 +22,7 @@ export class AppConstant {
 
     public static readonly IGNORED_PACKAGES = [
         'io.ionic.starter',
+        'com.android.vending',  //google play
         'android',
         'com.android.systemui',
         'com.microsoft.skydrive',
@@ -29,6 +30,9 @@ export class AppConstant {
         'com.samsung.android.app.routines',
         'com.samsung.android.incallui',
         'com.samsung.android.geargplugin',
+        'com.samsung.android.themestore',
+        'com.sec.android.desktopmode.uiservice',
+        'com.sec.android.app.samsungapps',
         'com.sec.android.app.sbrowser',
         'com.google.android.apps.maps'
     ];

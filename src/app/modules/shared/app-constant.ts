@@ -27,7 +27,10 @@ export class AppConstant {
         'com.microsoft.skydrive',
         'com.samsung.accessory',
         'com.samsung.android.app.routines',
-        'com.sec.android.app.sbrowser'
+        'com.samsung.android.incallui',
+        'com.samsung.android.geargplugin',
+        'com.sec.android.app.sbrowser',
+        'com.google.android.apps.maps'
     ];
 
 }

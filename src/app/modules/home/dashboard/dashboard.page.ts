@@ -1,11 +1,16 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Plugins } from '@capacitor/core';
+import { IonItemSliding } from '@ionic/angular';
+
+const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { NotificationConstant } from '../../notification/notification.constant';
 
 import { INotification } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
+import { HelperService } from '../../shared/helper.service';
 
 
 @Component({
@@ -19,7 +24,7 @@ export class DashboardPage implements OnInit {
   notifications: INotification[];
 
   constructor(private pubSubSvc: NgxPubSubService
-    , private notificationSvc: NotificationService) {
+    , private notificationSvc: NotificationService, private helperSvc: HelperService) {
 
     this.pubSubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_CREATED_OR_UPDATED, 
       async (notification: INotification) => {
@@ -56,6 +61,23 @@ export class DashboardPage implements OnInit {
     setTimeout(() => {
       detail.complete();
     }, 300);
+  }
+
+  async onNotificationItemClicked(notification: INotification) {
+    const txt = notification.text || notification.title;
+    await this.helperSvc.presentInfoDialog(txt, notification.title);
+  }
+
+  async onLaunchAppClicked(slideItem: IonItemSliding, notification: INotification) {
+    try {
+      const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).launchApp({
+        packageName: notification.package
+      });
+    } catch(e) {
+      await this.helperSvc.presentToast(e);
+    } finally {
+      await slideItem.close();
+    }
   }
 
   private async _getAllNotifications() {

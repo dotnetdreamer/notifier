@@ -22,31 +22,37 @@
   </ion-list> -->
   <!-- <no-data *ngIf="!expenses.length && dataLoaded"></no-data> -->
   <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
-    <ion-item class="no-padding" lines="none" *virtualItem="let item;let index=index;" 
-      (click)="onExpenseItemClicked($event, item, 'detail')">
-      <div class="notification-item" [class.notification-item-even]="index % 2">
-        <div class="icon-container">
-          <img [src]="item.image | safe: 'url'" />
-        </div>
-        <div class="app-description-date-time">
-          <div class="app-description">
-            <div class="description" [innerHTML]="(item.text | slice:0:40)"></div>
-            <div class="app-info-icon">
-              <ion-icon name="refresh" class="animated infinite spin" 
-                *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
-              <div class="info">{{item.appName || item.package}}</div>
+    <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
+      <ion-item class="no-padding" lines="none" (click)="onNotificationItemClicked(item)">
+        <div class="notification-item" [class.notification-item-even]="index % 2">
+          <div class="icon-container">
+            <img [src]="item.image | safe: 'url'" />
+          </div>
+          <div class="app-description-date-time">
+            <div class="app-description">
+              <div class="description" [innerHTML]="(item.text | slice:0:40)"></div>
+              <div class="app-info-icon">
+                <ion-icon name="refresh" class="animated infinite spin" 
+                  *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+                <div class="info">{{item.appName || item.package}}</div>
+              </div>
+            </div>
+            <div class="date-time">
+              <div class="time">
+                {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT | async}}
+              </div>
+              <div class="date">
+                {{item.createdOn | formateDate | async}}
+              </div>
             </div>
           </div>
-          <div class="date-time">
-            <div class="time">
-              {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT | async}}
-            </div>
-            <div class="date">
-              {{item.createdOn | formateDate | async}}
-            </div>
-          </div>
         </div>
-      </div>
-    </ion-item>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option (click)="onLaunchAppClicked(slideItem, item)">Open</ion-item-option>
+        <ion-item-option color="danger">Ignore</ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>  
+
   </ion-virtual-scroll>
 </ion-content>

@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
+import { Plugins } from '@capacitor/core';
 
+const { GetAppInfo } = Plugins;
 import * as moment from 'moment';
-import { AppConstant } from '../shared/app-constant';
+import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
+import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
 import { NotificationConstant } from './notification.constant';
 import { INotification } from './notification.model';
@@ -230,6 +233,32 @@ export class NotificationService extends BaseService {
                 e.updatedOn = moment(e.updatedOn).local().format(AppConstant.DEFAULT_DATETIME_FORMAT);
             }
         // }
+
+        //icon
+        try {
+            const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
+                packageName: e.package
+            });
+            if(imgRslt.value) {
+                // e.image = `url('${imgRslt.value}')`;
+                e.image = imgRslt.value;
+            }
+        } catch(e) {
+            //ignore...
+        }
+
+        //app name
+        try {
+            const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
+                packageName: e.package
+            });
+            if(appName.value) {
+                // e.image = `url('${imgRslt.value}')`;
+                e.appName = appName.value;
+            }
+        } catch(e) {
+            //ignore...
+        }
         return e;
     }
 

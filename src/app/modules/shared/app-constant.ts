@@ -22,10 +22,12 @@ export class AppConstant {
 
     public static readonly IGNORED_PACKAGES = [
         'io.ionic.starter',
+        'android',
         'com.android.systemui',
         'com.microsoft.skydrive',
         'com.samsung.accessory',
         'com.samsung.android.app.routines',
+        'com.sec.android.app.sbrowser'
     ];
 
 }

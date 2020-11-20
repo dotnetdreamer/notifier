@@ -20,7 +20,7 @@ public class MainActivity extends BridgeActivity {
       // Ex: add(TotallyAwesomePlugin.class);
             add(NotificationListenerPlugin.class);
           add(PersistentNotification.class);
-
+            add(capacitor.plugin.get.app.info.GetAppInfo.class);
     }});
   }
 }

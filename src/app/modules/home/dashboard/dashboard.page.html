@@ -26,17 +26,15 @@
       (click)="onExpenseItemClicked($event, item, 'detail')">
       <div class="notification-item" [class.notification-item-even]="index % 2">
         <div class="icon-container">
-          <ion-icon [attr.name]="'notifications'" 
-            *ngIf="!item.markedForAdd && !item.markedForUpdate && !item.markedForDelete"></ion-icon>
-          <ion-icon name="refresh" class="animated infinite spin" 
-            *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+          <img [src]="item.image | safe: 'url'" />
         </div>
-        <div class="category-description-amount">
-          <div class="category-description">
+        <div class="app-description-date-time">
+          <div class="app-description">
             <div class="description" [innerHTML]="(item.text | slice:0:40)"></div>
-            <div class="category-notes-attachment">
-              <ion-icon slot="icon-only" ios="cube" md="cube"></ion-icon>        
-              <div class="category">{{item.package}}</div>
+            <div class="app-info-icon">
+              <ion-icon name="refresh" class="animated infinite spin" 
+                *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+              <div class="info">{{item.appName || item.package}}</div>
             </div>
           </div>
           <div class="date-time">

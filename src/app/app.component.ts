@@ -231,7 +231,8 @@ title: "Me 2 : Hshahaha"
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       // console.log('notificationReceivedEvent', info);
-      if(AppConstant.IGNORED_PACKAGES.includes(info.package)) {
+      if(AppConstant.IGNORED_PACKAGES.includes(info.package)
+        || (!info.text && !info.title)) {
         return;
       }
 
@@ -252,9 +253,7 @@ title: "Me 2 : Hshahaha"
       // await this.helperSvc.presentToastGenericSuccess();
   
       //fire after the page navigates away...
-      // setTimeout(() => {
-      //   this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.Expense);
-      // }, 300);
+      // this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.Expense);
     });
     sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
       console.log('notificationRemovedEvent', info);

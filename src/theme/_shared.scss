@@ -2,8 +2,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-left: var(--ion-padding, 16px);
-    padding-right: var(--ion-padding, 16px);
+    // padding-left: var(--ion-padding, 16px);
+    // padding-right: var(--ion-padding, 16px);
     min-height: 80px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -15,19 +15,20 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-
+        margin-right: 5px;
+        
         ion-icon {
             font-size: 28px;
         }
     }
 
-    .category-description-amount {
+    .app-description-date-time {
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
 
-        .category-description {
+        .app-description {
             width: 100%;
 
             .description {
@@ -37,13 +38,19 @@
                 word-break: break-word;
             }
 
-            .category-notes-attachment {
+            .app-info-icon {
                 display: flex;
                 align-items: center;
 
-                .category {
+                .info {
                     font-size: 0.8em;
                 }
+
+                // img {
+                //     width: 20px;
+                //     height: 20px;
+                //     margin-right: 5px;
+                // }
 
                 ion-icon {
                     font-size: 14px;

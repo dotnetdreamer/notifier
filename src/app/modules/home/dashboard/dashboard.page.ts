@@ -1,21 +1,34 @@
-import { Component, OnInit } from '@angular/core';
-import { INotification } from '../../notification/notification.model';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Plugins } from '@capacitor/core';
+import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import { NotificationConstant } from '../../notification/notification.constant';
 
+import { INotification } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 
-// import { SystemNotification, SystemNotificationListener } from 'capacitor-notificationlistener';
 
 @Component({
   selector: 'page-home-dashboard',
   templateUrl: 'dashboard.page.html',
-  styleUrls: ['dashboard.page.scss']
+  styleUrls: ['dashboard.page.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class DashboardPage implements OnInit {
   AppConstant = AppConstant;
   notifications: INotification[];
-  constructor(private notificationSvc: NotificationService) {
 
+  constructor(private pubSubSvc: NgxPubSubService
+    , private notificationSvc: NotificationService) {
+
+    this.pubSubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_CREATED_OR_UPDATED, 
+      async (notification: INotification) => {
+      if(AppConstant.DEBUG) {
+        console.log('DashboardPage: EVENT_NOTIFICATION_CREATED_OR_UPDATED: notification', notification);
+      }
+
+      await this._getAllNotifications();
+    });
   }
 
   

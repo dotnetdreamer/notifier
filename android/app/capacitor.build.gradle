@@ -11,6 +11,7 @@ apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':capacitor-notificationlistener')
     implementation project(':capacitor-persistent-notification')
+    implementation project(':capacitor-plugin-get-app-info')
 
 }
 

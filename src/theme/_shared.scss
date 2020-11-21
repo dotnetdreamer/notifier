@@ -87,3 +87,25 @@
         background-color: #f7f7f7;
     }
 }
+
+
+.alert-radio-group {
+    &.sc-ion-alert-md {
+        display: flex;
+        flex-direction: column;
+    }
+}
+.alert-tappable {
+    &.sc-ion-alert-md {
+        overflow: visible;
+        min-height: 48px;
+        height: auto;
+    }
+}
+
+.alert-radio-label {
+    &.sc-ion-alert-md {
+        text-overflow: initial;
+        white-space: normal;
+    }
+}

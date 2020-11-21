@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Plugins } from '@capacitor/core';
-import { IonItemSliding } from '@ionic/angular';
+import { AlertController, IonItemSliding } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
@@ -23,7 +23,8 @@ export class DashboardPage implements OnInit {
   AppConstant = AppConstant;
   notifications: INotification[];
 
-  constructor(private pubSubSvc: NgxPubSubService
+  constructor(private alertCtrl: AlertController
+    , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private helperSvc: HelperService) {
 
     this.pubSubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_CREATED_OR_UPDATED, 
@@ -78,6 +79,48 @@ export class DashboardPage implements OnInit {
     } finally {
       await slideItem.close();
     }
+  }
+
+  async onIgnoreClicked(slideItem: IonItemSliding, notification: INotification) {
+    const alert = await this.alertCtrl.create({
+      header: notification.title || notification.text,
+      inputs: [
+        {
+          name: 'message',
+          type: 'radio',
+          label: 'Similar Message',
+          value: 'message',
+          checked: true
+        },
+        {
+          name: 'app',
+          type: 'radio',
+          label: `This App (${notification.package})`,
+          value: 'app'
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+          handler: () => {
+            // console.log('Confirm Cancel');
+          }
+        }, {
+          text: 'Ok',
+          handler: (val: 'app' | 'message') => {
+            // console.log('Confirm Ok', val);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+
+    setTimeout(async () => {
+      await slideItem.close();
+    });
   }
 
   private async _getAllNotifications() {

@@ -48,9 +48,12 @@
           </div>
         </div>
       </ion-item>
+      <ion-item-options side="start">
+        <ion-item-option color="danger">Delete</ion-item-option>
+      </ion-item-options>
       <ion-item-options side="end">
         <ion-item-option (click)="onLaunchAppClicked(slideItem, item)">Open</ion-item-option>
-        <ion-item-option color="danger">Ignore</ion-item-option>
+        <ion-item-option color="danger" (click)="onIgnoreClicked(slideItem, item)">Ignore</ion-item-option>
       </ion-item-options>
     </ion-item-sliding>  
 

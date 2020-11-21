@@ -31,9 +31,10 @@ export class AppConstant {
         'com.samsung.android.incallui',
         'com.samsung.android.geargplugin',
         'com.samsung.android.themestore',
-        'com.sec.android.desktopmode.uiservice',
+        'com.sec.android.desktopmode.uiservice',    //DeX
         'com.sec.android.app.samsungapps',
-        'com.sec.android.app.sbrowser',
+        'com.sec.android.app.sbrowser', //browser
+        'com.sec.android.app.clockpackage', //alarm
         'com.google.android.apps.maps'
     ];
 

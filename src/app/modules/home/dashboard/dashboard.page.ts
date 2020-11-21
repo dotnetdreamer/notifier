@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Plugins } from '@capacitor/core';
-import { AlertController, IonItemSliding } from '@ionic/angular';
+import { AlertController, IonItemSliding, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
@@ -22,8 +22,9 @@ import { HelperService } from '../../shared/helper.service';
 export class DashboardPage implements OnInit {
   AppConstant = AppConstant;
   notifications: INotification[];
+  isAndroid = false;
 
-  constructor(private alertCtrl: AlertController
+  constructor(private alertCtrl: AlertController, private platform: Platform
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private helperSvc: HelperService) {
 
@@ -39,6 +40,8 @@ export class DashboardPage implements OnInit {
 
   
   async ngOnInit() {
+    this.isAndroid = this.platform.is('android');
+
     await this._getAllNotifications();
     // console.log('starting...');
     // const sn = new SystemNotificationListener();
@@ -70,6 +73,10 @@ export class DashboardPage implements OnInit {
   }
 
   async onLaunchAppClicked(slideItem: IonItemSliding, notification: INotification) {
+    if(!this.isAndroid) {
+      return;
+    }
+
     try {
       const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).launchApp({
         packageName: notification.package

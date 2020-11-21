@@ -5,13 +5,15 @@ import { FormateDatePipe } from './formateDate.pipe';
 import { HighlightSearchPipe } from './highlightsearch.pipe';
 import { SafePipe } from './safe.pipe';
 import { CommonModule } from '@angular/common';
+import { TrimTextPipe } from './trimText.pipe';
 
 @NgModule({
     declarations: [
         LocalizedResourcePipe,
         FormateDatePipe,
         HighlightSearchPipe,
-        SafePipe
+        SafePipe,
+        TrimTextPipe
     ],
     imports: [
         CommonModule
@@ -21,7 +23,8 @@ import { CommonModule } from '@angular/common';
         LocalizedResourcePipe,
         FormateDatePipe,
         HighlightSearchPipe,
-        SafePipe
+        SafePipe,
+        TrimTextPipe
     ]
 })
 export class PipesModule { }

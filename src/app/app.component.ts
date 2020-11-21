@@ -50,15 +50,16 @@ export class AppComponent {
     this._subscribeToEvents();
 
     this.platform.ready().then(async () => {
-      await this._startListening();
-
+      if(this.platform.is('android')) {
+        await this._startListening();
+      }
     });
   }
 
   private async _subscribeToEvents() {
     this.pubsubSvc.subscribe(AppConstant.EVENT_DB_INITIALIZED, async () => {
       if(AppConstant.DEBUG) {
-          console.log('Event received: EVENT_DB_INITIALIZED');
+        console.log('Event received: EVENT_DB_INITIALIZED');
       }
 
       await this._setDefaults();
@@ -206,17 +207,8 @@ export class AppComponent {
   }
 
   private async _startListening() {
-    /* 
-    apptitle: "⁨Me 2⁩"
-package: "com.samsung.android.messaging"
-text: "Hshahaha"
-textlines: "[]"
-time: 1605336742573
-title: "Me 2 : Hshahaha"
-*/
     const sn = new SystemNotificationListener();
     const isListening = await sn.isListening();
-    console.log('isListening', isListening)
 
     if(!isListening) {
       try {
@@ -225,7 +217,6 @@ title: "Me 2 : Hshahaha"
 
       }     
     }
-
     
     await sn.startListening();
 

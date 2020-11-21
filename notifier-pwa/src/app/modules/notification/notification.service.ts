@@ -16,8 +16,184 @@ declare const ydn: any;
     providedIn: 'root'
 })
 export class NotificationService extends BaseService {
+    private readonly BASE_URL = "notification";
+
     constructor() {
         super();
+    }
+
+    pull() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                //by default fetch 90 days records only
+                const fromDate = moment().add(-90, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
+                const items = await this.getNotifications({ fromDate: fromDate, sync: true });
+                let allItems;
+
+                if(!items.length) {
+                    //no items found or don't have access on server, get local items and delete it!
+                    allItems = await this.getAllLocal();
+                } else {
+                    allItems = items;
+                }
+
+                //local item marked for local changes i.e (delete, update or add) should be ignored...
+                for(let i of allItems) {
+                    const localItem = await this.getByIdLocal(i.id);
+                    if(localItem 
+                        && !(localItem && (localItem.markedForAdd || localItem.markedForUpdate || localItem.markedForDelete))) {
+                        await this.remove(localItem.id);
+                    }
+                }
+
+                //no items found ons server? don't proceed!
+                if(!items.length) {
+                    resolve();
+                    return;
+                }
+
+                //now add
+                await this.putAllLocal(items, true, true);
+
+                resolve();
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    push() {
+        return new Promise(async (resolve, reject) => {
+            let unSycedLocal = await this.getUnSyncedLocal();
+            if(AppConstant.DEBUG) {
+                console.log('NotificationService: sync: unSycedLocal items length', unSycedLocal.length);
+            }
+
+            //do not push same records again...
+            unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
+
+            if(!unSycedLocal.length) {
+                resolve();
+                return;
+            }
+            
+            //add to push queue
+            this._addQueuePattern(unSycedLocal);
+
+            let items: Array<any>;
+            //server returns array of dictionary objects, each key in dict is the localdb id
+            //we map the localids and update its serverid locally
+            try {
+                items = await this.postData<any[]>({
+                    url: `${this.BASE_URL}/sync`,
+                    body: unSycedLocal
+                });
+            } catch(e) {
+                //try syncing 1 item at a time...
+                for(let i=0; i < unSycedLocal.length; i++) {
+                    const usItem = unSycedLocal[i];
+                    try {
+                        const returnedItems = await this.postData<any[]>({
+                            url: `${this.BASE_URL}/sync`,
+                            body: [usItem]  //server expects an array...
+                        });
+                        if(!items) {
+                            items = [];
+                        }
+                        items.push(returnedItems[0]);
+                    } catch(e) {
+                        //remove it from queue
+                        const index = unSycedLocal.indexOf(usItem);
+                        unSycedLocal.splice(index, 1);
+                        //reset i, as it didn't succeed
+                        i--;
+                        continue;
+                    }
+                }
+            }
+
+            //something bad happend or in case of update, we don't need to update server ids
+            if(items == null) {
+                resolve();
+                return;
+            }
+            
+            try {
+                const promises = [];
+                //mark it
+                for (let item of unSycedLocal) {
+                    if (item.markedForAdd || item.markedForUpdate) {
+                        //update server id as well...
+                        const cp = items.filter(p => p[item.id])[0];
+                        if(!cp) {
+                            throw `Local item mapping not found for: ${item.id}`;
+                        }
+
+                        //removed old items whose ids are changed e.g in adding senario
+                        //we remove the item immedialty as it causes issue when we run update promise down
+                        await this.remove(item.id);
+
+                        const pItem: INotification = cp[item.id];
+                        promises.push(this.putLocal(pItem, true, true));
+                    } else if (item.markedForDelete) {
+                        const promise = this.remove(item.id);
+                        promises.push(promise);
+                    }
+                }
+
+                //now make updates
+                await Promise.all(promises);
+                if(AppConstant.DEBUG) {
+                    console.log('NotificationService: sync: complete');
+                }
+                // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    getUnSyncedLocal(): Promise<Array<INotification>> {
+        return new Promise(async (resolve, reject) => {
+            const db = this.dbService.Db;
+            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification);
+
+            const unSynced = [];
+            let req = db.open(x => {
+                let v: INotification = x.getValue();
+                if (v.markedForAdd || v.markedForUpdate || v.markedForDelete) {
+                    unSynced.push(v);
+                }
+            }, iter);
+            req.always(() => {
+                resolve(unSynced);
+            });
+        });
+    }
+
+    getNotifications(args?: { fromDate?, toDate?, sync? }) {
+        let body;
+
+        if(args && (args.fromDate || args.toDate )) {
+            //change date to utc first
+            if(args.fromDate) {
+                const fromDate = moment(args.fromDate).endOf('D').utc()
+                    .format(AppConstant.DEFAULT_DATETIME_FORMAT);
+                args.fromDate = fromDate;
+            }
+            if(args.toDate) {
+                //if there is no time, add it...
+                const toDate = moment(args.toDate).endOf('D').utc().format(AppConstant.DEFAULT_DATETIME_FORMAT);
+                args.toDate = toDate;
+            }
+            
+            body = { ...args };
+        }
+        return this.getData<INotification[]>({
+            url: `${this.BASE_URL}/getAll`,
+            body: body
+        });
     }
 
     getAllLocal(args?: { term?, fromDate?, toDate?, fromTime?, toTime?, pageIndex?, pageSize? })
@@ -217,6 +393,17 @@ export class NotificationService extends BaseService {
         return this.dbService.removeAll(this.schemaSvc.tables.notification);
     }
 
+    private _addQueuePattern(items: INotification[]) {
+        items.map(item => {
+            item['queuePattern'] = `${this.schemaSvc.tables.notification}_${item.id}_${item.createdOn}`;
+            return item;
+        });
+    }
+
+    private _findInQueue(item: INotification) {
+        return this.findInQueue(`${this.schemaSvc.tables.notification}_${item.id}_${item.createdOn}`);
+    }
+
     private _mapAll(expenses: Array<INotification>) {
         const result = expenses.map(async (e) => {
             const exp = await this._map(e);
@@ -263,7 +450,7 @@ export class NotificationService extends BaseService {
     }
 
     private _sort(items: Array<INotification>) {
-        // expenses.sort((aDate: IExpense, bDate: IExpense) => {
+        // expenses.sort((aDate: INotification, bDate: INotification) => {
         //     // Turn your strings into dates, and then subtract them
         //     // to get a value that is either negative, positive, or zero.
         //     const a = moment(`${aDate.createdOn} ${aDate.createdOn}`, AppConstant.DEFAULT_DATETIME_FORMAT);

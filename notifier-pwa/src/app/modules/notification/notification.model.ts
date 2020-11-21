@@ -3,7 +3,7 @@ export interface INotification {
     title: string;
     text: string;
     package: string;
-    receivedOn: string;
+    receivedOnUtc: string;
     image?: string;
     appName?: string;
 

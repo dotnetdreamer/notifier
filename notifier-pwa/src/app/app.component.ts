@@ -23,6 +23,7 @@ import { LocalizationService } from './modules/shared/localization.service';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
 import { INotification } from './modules/notification/notification.model';
 import { NotificationService } from './modules/notification/notification.service';
+import { SyncEntity } from './modules/shared/sync/sync.model';
 
 @Component({
   selector: 'app-root',
@@ -183,7 +184,14 @@ export class AppComponent {
     this.pubsubSvc.publishEvent(AppConstant.EVENT_LANGUAGE_CHANGED, { wkLangauge: wkl, reload: false });
     this.workingLanguage = wkl;
 
+    
+    if(AppConstant.DEBUG) {
+      console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');
+    }
+    this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL);
+    
     //user
+    /*
     const cUser = res[0];
     if(cUser) {
       this.pubsubSvc.publishEvent(UserConstant.EVENT_USER_LOGGEDIN, { user: cUser });
@@ -199,7 +207,7 @@ export class AppComponent {
     } else {
       // await this._navigateTo('/user/login');
       await this._navigateTo('/home');
-    }
+    }*/
     // await this._navigateTo('/expense/expense-create-or-update');
     // await this._navigateTo('/expense/expense-listing');
     // await this._navigateTo('/category');
@@ -233,7 +241,7 @@ export class AppComponent {
         title: info.title,
         text: info.text,
         package: info.package,
-        receivedOn: utcTime
+        receivedOnUtc: utcTime
       };
 
       if(AppConstant.DEBUG) {
@@ -244,7 +252,7 @@ export class AppComponent {
       // await this.helperSvc.presentToastGenericSuccess();
   
       //fire after the page navigates away...
-      // this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.Expense);
+      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
     });
     sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
       console.log('notificationRemovedEvent', info);

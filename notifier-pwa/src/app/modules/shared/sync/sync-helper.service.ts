@@ -5,13 +5,15 @@ import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
 import { AppConstant } from '../app-constant';
+import { NotificationService } from '../../notification/notification.service';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class SyncHelperService {
-    constructor(private pubsubSvc: NgxPubSubService) {
+    constructor(private pubsubSvc: NgxPubSubService
+        , private notificationSvc: NotificationService) {
     }
 
     pull(table?: SyncEntity) {
@@ -20,30 +22,15 @@ export class SyncHelperService {
 
             if(table) {
                 switch(table) {
-                    case SyncEntity.Category:
-                        // promises.push(this.categorySvc.pull());
-                    break;
-                    case SyncEntity.Attachment:
-                        // promises.push(this.attachmentSvc.pull());
-                    break;
-                    case SyncEntity.Group:
-                        // promises.push(this.groupSvc.pull());
-                    break;
-                    case SyncEntity.Expense:
-                        // promises.push(this.expenseSvc.pull());
+                    case SyncEntity.NOTIFICATION:
+                        promises.push(this.notificationSvc.pull());
                     break;
                     default:
                     break;
                 }
             } else {   //sync all
-                //category
-                // promises.push(this.categorySvc.pull());
-                //group
-                // promises.push(this.groupSvc.pull());
-                //attachment
-                // promises.push(this.attachmentSvc.pull());
-                //expense
-                // promises.push(this.expenseSvc.pull());
+                //notification
+                promises.push(this.notificationSvc.pull());
             }
             
             try {
@@ -65,30 +52,15 @@ export class SyncHelperService {
             let promises: Array<Promise<any>> = [];
             if(table) {
                 switch(table) {
-                    case SyncEntity.Category:
-                        // promises.push(this.categorySvc.push());
-                    break;
-                    case SyncEntity.Attachment:
-                        // promises.push(this.attachmentSvc.push());
-                    break;
-                    case SyncEntity.Group:
-                        // promises.push(this.groupSvc.push());
-                    break;
-                    case SyncEntity.Expense:
-                        // promises.push(this.expenseSvc.push());
+                    case SyncEntity.NOTIFICATION:
+                        promises.push(this.notificationSvc.push());
                     break;
                     default:
                     break;
                 }
             } else {   //sync all
-                //category
-                // promises.push(this.categorySvc.push());
-                //attachment
-                // promises.push(this.attachmentSvc.push());
-                //group
-                // promises.push(this.groupSvc.push());
-                //expense
-                // promises.push(this.expenseSvc.push());
+                //notification
+                promises.push(this.notificationSvc.push());
             }
             
             if(!promises.length) {

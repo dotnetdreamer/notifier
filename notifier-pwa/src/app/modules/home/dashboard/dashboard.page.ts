@@ -5,12 +5,15 @@ import { AlertController, IonItemSliding, Platform } from '@ionic/angular';
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
+import { Observable, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { NotificationConstant } from '../../notification/notification.constant';
 
 import { INotification } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 import { HelperService } from '../../shared/helper.service';
+import { SyncConstant } from '../../shared/sync/sync-constant';
 
 
 @Component({
@@ -24,18 +27,13 @@ export class DashboardPage implements OnInit {
   notifications: INotification[];
   isAndroid = false;
 
+  private _syncDataPushCompleteSub: Subscription;
+
   constructor(private alertCtrl: AlertController, private platform: Platform
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private helperSvc: HelperService) {
 
-    this.pubSubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_CREATED_OR_UPDATED, 
-      async (notification: INotification) => {
-      if(AppConstant.DEBUG) {
-        console.log('DashboardPage: EVENT_NOTIFICATION_CREATED_OR_UPDATED: notification', notification);
-      }
-
-      await this._getAllNotifications();
-    });
+    this._subscribeToEvents();
   }
 
   
@@ -55,6 +53,12 @@ export class DashboardPage implements OnInit {
     // // sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
     // //   console.log('notificationRemovedEvent', info);
     // // });
+  }
+
+  ngOnDestroy() {
+    if(this._syncDataPushCompleteSub) {
+      this._syncDataPushCompleteSub.unsubscribe();
+    }
   }
 
   async onIonRefreshed(ev) {
@@ -133,5 +137,36 @@ export class DashboardPage implements OnInit {
   private async _getAllNotifications() {
     const notifications = await this.notificationSvc.getAllLocal();
     this.notifications = notifications;
+  }
+
+  private _subscribeToEvents() {
+    //EVENT_SYNC_DATA_PUSH_COMPLETE is fired by multiple sources, we debounce subscription to execute this once
+    const obv = new Observable(observer => {
+      //next will call the observable and pass parameter to subscription
+      const callback = (params) => observer.next(params);
+      const subc = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH_COMPLETE, callback);
+      //will be called when unsubscribe calls
+      return () => subc.unsubscribe()
+    });
+    this._syncDataPushCompleteSub = obv.pipe(debounceTime(500))
+    .subscribe(() => {
+        if(AppConstant.DEBUG) {
+          console.log('ExpenseListingPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
+        }
+        //force refresh...
+        // this.expenses = [];
+        setTimeout(async () => {
+          await this._getAllNotifications();
+        });
+    });
+
+    //important to add here since the application loads and the view will show but there will be no data...
+    //this is needed only when the application runs first time (i.e startup)
+    // this._syncInitSub = this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
+    //   if(AppConstant.DEBUG) {
+    //     console.log('ExpenseListingPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
+    //   }
+    //   await this._getExpenses();
+    // });
   }
 }

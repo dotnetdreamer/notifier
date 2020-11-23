@@ -189,7 +189,7 @@ export class AppComponent {
       console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');
     }
     this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL);
-    
+    await this._navigateTo('/home');
     //user
     /*
     const cUser = res[0];

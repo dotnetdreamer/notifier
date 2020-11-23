@@ -5,7 +5,7 @@ export class AppConstant {
     public static readonly DEBUG = !environment.production;
 
     public static readonly BASE_URL = !environment.production 
-        ? "http://localhost:3000/" : "https://www.example.net/";
+        ? "http://192.168.1.24:3000/" : "https://www.example.net/";
     public static readonly BASE_API_URL = `${AppConstant.BASE_URL}`;
     public static readonly DB_NAME = "notifier";
 
@@ -35,7 +35,8 @@ export class AppConstant {
         'com.sec.android.app.samsungapps',
         'com.sec.android.app.sbrowser', //browser
         'com.sec.android.app.clockpackage', //alarm
-        'com.google.android.apps.maps'
+        'com.google.android.apps.maps',
+        'org.torproject.torbrowser'
     ];
 
 }

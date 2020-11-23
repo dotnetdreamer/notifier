@@ -14,14 +14,6 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item (click)="onItemClicked('/category')" detail="true">
-      <ion-label>{{'category.title' | localizedresource | async}}</ion-label>
-    </ion-item>
-    <ion-item (click)="onItemClicked('/user/user-listing')" detail="true">
-      <ion-label>{{'user.users' | localizedresource | async}}</ion-label>
-    </ion-item>
-  </ion-list>
   <ion-list-header>
     <ion-label>{{'setting.database' | localizedresource | async}}</ion-label>
   </ion-list-header>

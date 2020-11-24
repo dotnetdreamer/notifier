@@ -2,14 +2,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    // padding-left: var(--ion-padding, 16px);
-    // padding-right: var(--ion-padding, 16px);
+    padding-left: var(--ion-padding, 16px);
+    padding-right: var(--ion-padding, 16px);
     min-height: 80px;
     padding-top: 10px;
     padding-bottom: 10px;
     width: 100%;
 
     .icon-container {
+        min-width: 50px;
         width: 50px;
         height: 50px;
         display: flex;
@@ -44,6 +45,7 @@
 
                 .info {
                     font-size: 0.8em;
+                    word-break: break-all;
                 }
 
                 // img {
@@ -84,7 +86,7 @@
     }
 
     &.notification-item-even {
-        background-color: #f7f7f7;
+        background-color: var(--color-notification-item-alt);
     }
 }
 

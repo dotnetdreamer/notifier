@@ -3,7 +3,9 @@ page-home-dashboard {
         --padding-bottom: 80px;
 
         ion-item {
-            --padding-start: 10px;
+            --padding-start: 0;
+            --padding-inline-end: 0;
+            --inner-padding-end: 0;
         }
     }
 }

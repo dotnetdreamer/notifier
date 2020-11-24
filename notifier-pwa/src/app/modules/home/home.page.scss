@@ -25,7 +25,7 @@ ion-tabs {
         // }
   
         &:after {
-            background-image: url('/assets/images/bottom-bar.svg'); 
+            background-image: var(--bottom-tab-image); 
             background-repeat: no-repeat;
             background-position: center 0px;
             // background-color: var(--ion-color-primary);

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { Plugins } from '@capacitor/core';
+import { App, Plugins } from '@capacitor/core';
 import { AlertController, IonItemSliding, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
@@ -39,7 +39,7 @@ export class DashboardPage implements OnInit {
 
   
   async ngOnInit() {
-    this.isAndroid = this.platform.is('android');
+    this.isAndroid = this.platform.is('android') && this.platform.is('capacitor');
 
     await this._getAllNotifications();
     // console.log('starting...');
@@ -65,6 +65,12 @@ export class DashboardPage implements OnInit {
   async onIonRefreshed(ev) {
     const { detail } = ev;
 
+    // //pull latest. Important as other members need to have lastest information
+    // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL, SyncEntity.NOTIFICATION);
+
+    // //now push
+    // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+
     await this._getAllNotifications();
 
     setTimeout(() => {
@@ -75,7 +81,7 @@ export class DashboardPage implements OnInit {
   async onNotificationItemClicked(ev: CustomEvent, notification: INotification
     , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {
     ev.stopImmediatePropagation();
-    
+
     if(slideItem) {
       await slideItem.close();
     }
@@ -166,11 +172,25 @@ export class DashboardPage implements OnInit {
   }
 
   private async _getAllNotifications() {
-    const notifications = await this.notificationSvc.getAllLocal();
+    const notifications = await this.notificationSvc.getAllLocal({
+      pageIndex: 1,
+      pageSize: 20
+    })
     this.notifications = notifications;
+ 
+    // console.log(this.notifications);
   }
 
   private _subscribeToEvents() {
+    App.addListener('appStateChange', async (state: { isActive: boolean }) => {
+      if(AppConstant.DEBUG) {
+        console.log('DashboardPage: appStateChange', state);
+      }
+      //app came to foregroud...
+      if(state.isActive) {
+        await this._getAllNotifications();
+      }
+    });
     //EVENT_SYNC_DATA_PUSH_COMPLETE is fired by multiple sources, we debounce subscription to execute this once
     const obv = new Observable(observer => {
       //next will call the observable and pass parameter to subscription
@@ -182,7 +202,7 @@ export class DashboardPage implements OnInit {
     this._syncDataPushCompleteSub = obv.pipe(debounceTime(500))
     .subscribe(() => {
         if(AppConstant.DEBUG) {
-          console.log('ExpenseListingPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
+          console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
         }
         //force refresh...
         // this.expenses = [];
@@ -195,7 +215,7 @@ export class DashboardPage implements OnInit {
     //this is needed only when the application runs first time (i.e startup)
     // this._syncInitSub = this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
     //   if(AppConstant.DEBUG) {
-    //     console.log('ExpenseListingPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
+    //     console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
     //   }
     //   await this._getExpenses();
     // });

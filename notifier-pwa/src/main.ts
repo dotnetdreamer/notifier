@@ -68,8 +68,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
    
                   console.log("Is open: ", isOpen);
               }
-              catch(e)
-              {
+              catch(e) {
                   console.log("Unable to start background service: ", e);
               }
    
@@ -106,8 +105,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
               });
    
           // remove the listener.
-          if(listener != null)
-          {
+          if(listener != null) {
               listener.remove();
               listener = null;
           }

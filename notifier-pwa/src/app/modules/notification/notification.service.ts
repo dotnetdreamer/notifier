@@ -212,6 +212,10 @@ export class NotificationService extends BaseService {
                 
                 let item: INotification;
                 if(args) {
+                    if(args.pageIndex || args.pageSize) {
+                        item = v;
+                    }
+
                     if(args.fromDate || args.toDate) {
                         const createdOnUtcStr = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATE_FORMAT);
 
@@ -311,13 +315,15 @@ export class NotificationService extends BaseService {
                 // console.log(idx);
             }, iter);
             req.always(async () => {
-                results = await this._mapAll(results);
                 results = this._sort(results);                    
                 
                 //check for pagesize
                 if(args && args.pageSize && results.length > args.pageSize) {
-                    results = results.slice(0, args.pageSize);
+                    const pageIndex = (args.pageIndex ? args.pageIndex - 1 : 0) * args.pageSize;
+                    results = results.slice(pageIndex, args.pageSize);
                 }
+
+                results = await this._mapAll(results);
                 resolve(results);
             });
         });
@@ -415,9 +421,9 @@ export class NotificationService extends BaseService {
     private async _map(e: INotification) {
         //only convert dates for data that came from server
         // if(!e.markedForAdd && !e.markedForUpdate && !e.markedForDelete) {
-            e.createdOn = moment(e.createdOn).local().format(AppConstant.DEFAULT_DATETIME_FORMAT);
+            e.createdOn = moment(e.createdOn).local(false).format(AppConstant.DEFAULT_DATETIME_FORMAT);
             if(e.updatedOn) {
-                e.updatedOn = moment(e.updatedOn).local().format(AppConstant.DEFAULT_DATETIME_FORMAT);
+                e.updatedOn = moment(e.updatedOn).local(false).format(AppConstant.DEFAULT_DATETIME_FORMAT);
             }
         // }
 
@@ -455,16 +461,6 @@ export class NotificationService extends BaseService {
     }
 
     private _sort(items: Array<INotification>) {
-        // expenses.sort((aDate: INotification, bDate: INotification) => {
-        //     // Turn your strings into dates, and then subtract them
-        //     // to get a value that is either negative, positive, or zero.
-        //     const a = moment(`${aDate.createdOn} ${aDate.createdOn}`, AppConstant.DEFAULT_DATETIME_FORMAT);
-        //     const b = moment(`${bDate.createdOn} ${bDate.createdOn}`, AppConstant.DEFAULT_DATETIME_FORMAT);
-
-        //     //The following also takes seconds and milliseconds into account and is a bit shorter.
-        //     return b.valueOf() - a.valueOf();
-        // });
-        
         //by id first
         items.sort((a, b) => b.id - a.id);
         //then by date

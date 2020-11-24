@@ -53,7 +53,7 @@ export class AppComponent {
     this._subscribeToEvents();
 
     this.platform.ready().then(async () => {
-      if(this.platform.is('android')) {
+      if(this.platform.is('capacitor')) {
         await this._startListening();
       }
     });

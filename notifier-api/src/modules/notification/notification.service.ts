@@ -9,11 +9,13 @@ import * as moment from 'moment';
 import { NotificationRecord } from './notification.entity';
 import { INotification } from './notification.model';
 import { HelperService } from '../shared/helper.service';
+import { NotificationIgnoredItem } from './notification-ignored.entity';
 
 @Injectable()
 export class NotificationService {
   constructor(
     @InjectRepository(NotificationRecord) private notificationRecordRepo: Repository<NotificationRecord>
+    , @InjectRepository(NotificationIgnoredItem) private notificationIgnoredItemRepo: Repository<NotificationIgnoredItem>
     , @Inject(REQUEST) private readonly request: Request
     , private helperSvc: HelperService
   ) {}

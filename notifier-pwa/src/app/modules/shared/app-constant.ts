@@ -34,6 +34,7 @@ export class AppConstant {
         'com.sec.android.desktopmode.uiservice',    //DeX
         'com.sec.android.app.samsungapps',
         'com.sec.android.app.sbrowser', //browser
+        'com.samsung.android.app.smartcapture', //gallery screenshot
         'com.sec.android.app.clockpackage', //alarm
         'com.google.android.apps.maps',
         'org.torproject.torbrowser'

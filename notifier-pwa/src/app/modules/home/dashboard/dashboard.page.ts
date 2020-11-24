@@ -14,6 +14,7 @@ import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
+import { SyncEntity } from '../../shared/sync/sync.model';
 
 
 @Component({
@@ -71,9 +72,39 @@ export class DashboardPage implements OnInit {
     }, 300);
   }
 
-  async onNotificationItemClicked(notification: INotification) {
-    const txt = notification.text || notification.title;
-    await this.helperSvc.presentInfoDialog(txt, notification.title);
+  async onNotificationItemClicked(ev: CustomEvent, notification: INotification
+    , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {
+    ev.stopImmediatePropagation();
+    
+    if(slideItem) {
+      await slideItem.close();
+    }
+
+    try {
+      if(action == 'detail') {
+        const txt = notification.text || notification.title;
+        await this.helperSvc.presentInfoDialog(txt, notification.title);
+      } else if(action == 'delete') {
+        const confirm = await this.helperSvc.presentConfirmDialog();
+        if(!confirm) {
+          return;
+        }
+
+        if(notification.markedForAdd) {
+          this.notificationSvc.remove(notification.id);
+        } else {
+          notification.markedForDelete = true;
+          notification.updatedOn = null;
+
+          await this.notificationSvc.putLocal(notification);
+        }
+
+        this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+        await this.helperSvc.presentToastGenericSuccess();
+      }
+    } catch(e) {
+      await this.helperSvc.presentToastGenericError();
+    }
   }
 
   async onLaunchAppClicked(slideItem: IonItemSliding, notification: INotification) {

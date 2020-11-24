@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { NotificationIgnoredItem } from './modules/notification/notification-ignored.entity';
 import { NotificationRecord } from './modules/notification/notification.entity';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SharedModule } from './modules/shared/shared.module';
@@ -17,7 +18,7 @@ const CONNECTION_NAME = "default";
       type: 'sqlite',
       database: './_db/notifier.db',
       entities: [
-        NotificationRecord
+        NotificationRecord, NotificationIgnoredItem
       ],
       synchronize: true,
     }),

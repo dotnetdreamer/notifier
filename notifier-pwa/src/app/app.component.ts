@@ -4,6 +4,7 @@ import { DOCUMENT } from '@angular/common';
 import { Platform } from '@ionic/angular';
 import { Plugins } from '@capacitor/core';
 
+const { GetAppInfo } = Plugins;
 const { SplashScreen, StatusBar, Device } = Plugins;
 import { Observable } from 'rxjs';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
@@ -24,6 +25,7 @@ import { SystemNotificationListener, SystemNotification } from 'capacitor-notifi
 import { INotification } from './modules/notification/notification.model';
 import { NotificationService } from './modules/notification/notification.service';
 import { SyncEntity } from './modules/shared/sync/sync.model';
+import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 @Component({
   selector: 'app-root',
@@ -243,6 +245,32 @@ export class AppComponent {
         package: info.package,
         receivedOnUtc: utcTime
       };
+
+       //icon
+        try {
+            const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
+              packageName: notification.package
+            });
+            if(imgRslt.value) {
+                // e.image = `url('${imgRslt.value}')`;
+                notification.image = imgRslt.value;
+            }
+        } catch(e) {
+            //ignore...
+        }
+
+      //app name
+        try {
+            const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
+                packageName: notification.package
+            });
+            if(appName.value) {
+                // e.image = `url('${imgRslt.value}')`;
+                notification.appName = appName.value;
+            }
+        } catch(e) {
+            //ignore...
+        }
 
       if(AppConstant.DEBUG) {
         console.log('AppComponent: notificationReceivedEvent: notification', notification)

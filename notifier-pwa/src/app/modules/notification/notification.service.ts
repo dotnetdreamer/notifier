@@ -422,30 +422,35 @@ export class NotificationService extends BaseService {
         // }
 
         //icon
-        try {
-            const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
-                packageName: e.package
-            });
-            if(imgRslt.value) {
-                // e.image = `url('${imgRslt.value}')`;
-                e.image = imgRslt.value;
+        if(!e.image) {
+            try {
+                const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
+                    packageName: e.package
+                });
+                if(imgRslt.value) {
+                    // e.image = `url('${imgRslt.value}')`;
+                    e.image = imgRslt.value;
+                }
+            } catch(e) {
+                //ignore...
             }
-        } catch(e) {
-            //ignore...
         }
 
         //app name
-        try {
-            const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
-                packageName: e.package
-            });
-            if(appName.value) {
-                // e.image = `url('${imgRslt.value}')`;
-                e.appName = appName.value;
+        if(!e.appName) {
+            try {
+                const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
+                    packageName: e.package
+                });
+                if(appName.value) {
+                    // e.image = `url('${imgRslt.value}')`;
+                    e.appName = appName.value;
+                }
+            } catch(e) {
+                //ignore...
             }
-        } catch(e) {
-            //ignore...
         }
+
         return e;
     }
 

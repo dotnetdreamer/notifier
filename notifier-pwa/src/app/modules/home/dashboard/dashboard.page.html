@@ -23,7 +23,8 @@
   <!-- <no-data *ngIf="!expenses.length && dataLoaded"></no-data> -->
   <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
-      <ion-item class="no-padding" lines="none" (click)="onNotificationItemClicked(item)">
+      <ion-item class="no-padding" lines="none" 
+        (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
         <div class="notification-item" [class.notification-item-even]="index % 2">
           <div class="icon-container">
             <img [src]="item.image | safe: 'url'" />
@@ -48,7 +49,7 @@
           </div>
         </div>
       </ion-item>
-      <ion-item-options side="start">
+      <ion-item-options side="start" (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">
         <ion-item-option color="danger">Delete</ion-item-option>
       </ion-item-options>
       <ion-item-options side="end">

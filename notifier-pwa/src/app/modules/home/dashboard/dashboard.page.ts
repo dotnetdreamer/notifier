@@ -1,13 +1,13 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { App, Plugins } from '@capacitor/core';
-import { AlertController, IonItemSliding, Platform } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { NotificationConstant } from '../../notification/notification.constant';
+import * as moment from 'moment';
 
 import { INotification } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
@@ -23,14 +23,20 @@ import { SyncEntity } from '../../shared/sync/sync.model';
   styleUrls: ['dashboard.page.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('listingContent') listingContent: IonContent;
+
   AppConstant = AppConstant;
-  notifications: INotification[];
+  notifications: INotification[] = [];
   isAndroid = false;
+  dates: { selectedDate?: { from, to, fromTime?, toTime? }, todayDate? } = {};
+  dataLoaded = false;
+  displayHeaderbar = true;
 
   private _syncDataPushCompleteSub: Subscription;
 
-  constructor(private alertCtrl: AlertController, private platform: Platform
+  constructor(private ngZone: NgZone
+    , private alertCtrl: AlertController, private platform: Platform
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private helperSvc: HelperService) {
 
@@ -41,7 +47,15 @@ export class DashboardPage implements OnInit {
   async ngOnInit() {
     this.isAndroid = this.platform.is('android') && this.platform.is('capacitor');
 
-    await this._getAllNotifications();
+    this.dates.todayDate = moment().format(AppConstant.DEFAULT_DATE_FORMAT);
+    this.dates.selectedDate = <any>{};
+    
+    //show all current month expenses
+    const fromDate = moment().startOf('M').format(AppConstant.DEFAULT_DATE_FORMAT);
+    const toDate = moment().endOf('M').format(AppConstant.DEFAULT_DATE_FORMAT);
+    this.dates.selectedDate.from = fromDate;
+    this.dates.selectedDate.to = toDate;
+    
     // console.log('starting...');
     // const sn = new SystemNotificationListener();
     // sn.isListening();
@@ -56,6 +70,13 @@ export class DashboardPage implements OnInit {
     // // });
   }
 
+  ngAfterViewInit() {
+    //fix: navigation lag
+    setTimeout(async () => {
+      await this._getAllNotifications();
+    }, 300);
+  }
+
   ngOnDestroy() {
     if(this._syncDataPushCompleteSub) {
       this._syncDataPushCompleteSub.unsubscribe();
@@ -64,6 +85,7 @@ export class DashboardPage implements OnInit {
 
   async onIonRefreshed(ev) {
     const { detail } = ev;
+    this.notifications = [];
 
     // //pull latest. Important as other members need to have lastest information
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL, SyncEntity.NOTIFICATION);
@@ -75,8 +97,46 @@ export class DashboardPage implements OnInit {
 
     setTimeout(() => {
       detail.complete();
-    }, 300);
+    }, 1000);
   }
+
+  
+  async onMonthChanged(args: { start, end, month }) {
+    if(!args) {
+      return;
+    }
+
+    this.notifications = [];
+    //reset scroll
+    await this.listingContent.scrollToTop(0);
+
+    const loader = await this.helperSvc.loader;
+    await loader.present();
+
+    try {
+      this.dates.selectedDate =  {
+        from: args.start,
+        to: args.end
+      };
+      await this._getAllNotifications();
+    } catch (e) {
+      await this.helperSvc.presentToast(e, false);
+    } finally {
+      setTimeout(async () => {
+        await loader.dismiss();
+      }, 1000);
+    }
+  }
+
+  onIonScrolling(ev: CustomEvent) {
+    const { scrollTop } = ev.detail;
+    const top = 180;
+    if(scrollTop > top) {
+      this.displayHeaderbar = false;
+    } else if(scrollTop <= 0) {
+      this.displayHeaderbar = true;
+    }
+  } 
 
   async onNotificationItemClicked(ev: CustomEvent, notification: INotification
     , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {
@@ -172,13 +232,41 @@ export class DashboardPage implements OnInit {
   }
 
   private async _getAllNotifications() {
-    const notifications = await this.notificationSvc.getAllLocal({
-      pageIndex: 1,
-      pageSize: 20
-    })
-    this.notifications = notifications;
- 
-    // console.log(this.notifications);
+    //reset
+    await this.listingContent.scrollToTop();
+    this.dataLoaded = false;
+
+    const filters = {
+      fromDate: this.dates.selectedDate.from,
+      toDate: this.dates.selectedDate.to,
+      // fromTime: this.dates.selectedDate.fromTime,
+      // toTime: this.dates.selectedDate.toTime
+    };
+
+    // const notifications = await this.notificationSvc.getAllLocal(filters)
+    // this.notifications = notifications;
+
+    this.ngZone.run(async () => {
+      const currentMonth = moment().format('M');
+      const fromDateMonth = moment(filters.fromDate).format('M');
+      const toDateMonth = moment(filters.toDate).format('M');
+
+      try {
+        //if changed month is not same as current month, then we don't have entries local..
+        if(currentMonth != fromDateMonth || currentMonth != toDateMonth) {
+          this.notifications = await this.notificationSvc.getNotifications(filters);
+        } else {
+          this.notifications = await this.notificationSvc.getAllLocal(filters);
+        }
+      } catch(e) {
+        this.notifications = [];
+      } finally {
+        if(AppConstant.DEBUG) {
+          console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
+        }
+        this.dataLoaded = true;
+      }
+    });
   }
 
   private _subscribeToEvents() {

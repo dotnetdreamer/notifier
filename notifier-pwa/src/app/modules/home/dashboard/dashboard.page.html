@@ -1,20 +1,26 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" [class.hidden]="!displayHeaderbar">
   <ion-toolbar>
     <ion-title>
       Tab 1
     </ion-title>
   </ion-toolbar>
+  <ion-toolbar class="toolbar-calendar">
+    <!-- <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label> -->
+    <calendar-swiper (monthChanged)="onMonthChanged($event)"></calendar-swiper>
+  </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content #listingContent [scrollEvents]="true" (ionScroll)="onIonScrolling($event)">
   <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <ion-header collapse="condense">
+  <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
+
+  <!-- <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Tab 1</ion-title>
     </ion-toolbar>
-  </ion-header>
+  </ion-header> -->
   <!-- <ion-list>
     <ion-item *ngFor="let notificaiton of notifications">
       <ion-label>{{notificaiton.title || notificaiton.text}}</ion-label>

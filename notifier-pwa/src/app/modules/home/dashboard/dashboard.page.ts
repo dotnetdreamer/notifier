@@ -55,19 +55,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     const toDate = moment().endOf('M').format(AppConstant.DEFAULT_DATE_FORMAT);
     this.dates.selectedDate.from = fromDate;
     this.dates.selectedDate.to = toDate;
-    
-    // console.log('starting...');
-    // const sn = new SystemNotificationListener();
-    // sn.isListening();
-    // // sn.requestPermission();
-    // // sn.startListening();
-
-    // // sn.addListener('notificationReceivedEvent', (info: SystemNotification) => {
-    // //   console.log('notificationReceivedEvent', info);
-    // // });
-    // // sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
-    // //   console.log('notificationRemovedEvent', info);
-    // // });
   }
 
   ngAfterViewInit() {
@@ -106,6 +93,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.dataLoaded = false;
     this.notifications = [];
     //reset scroll
     await this.listingContent.scrollToTop(0);

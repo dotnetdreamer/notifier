@@ -48,7 +48,7 @@ platformBrowserDynamic().bootstrapModule(AppModule)
               {
                   await PersistentNotification.open({
                       title: "App is running in background",
-                      icon: "assets/icon/favicon.png",  
+                      icon: "assets/icons/favicon.png",  
                       // Icon asset exist in www/icons/icon.png
                       // Icon asset always based upon TLD and 
                       // NOT the location of your code.

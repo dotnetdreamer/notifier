@@ -1,9 +1,9 @@
 <ion-header [translucent]="true" [class.hidden]="!displayHeaderbar">
-  <ion-toolbar>
+  <!-- <ion-toolbar>
     <ion-title>
       Tab 1
     </ion-title>
-  </ion-toolbar>
+  </ion-toolbar> -->
   <ion-toolbar class="toolbar-calendar">
     <!-- <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label> -->
     <calendar-swiper (monthChanged)="onMonthChanged($event)"></calendar-swiper>

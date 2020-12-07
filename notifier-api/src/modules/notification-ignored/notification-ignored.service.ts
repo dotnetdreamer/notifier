@@ -6,14 +6,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository, SelectQueryBuilder } from 'typeorm';
 import * as moment from 'moment';
 
-import { NotificationRecord } from './notification.entity';
-import { INotification } from './notification.model';
+import { NotificationIgnoredItem } from './notification-ignored.entity';
+import { INotificationIgnored } from './notification-ignored.model';
 import { HelperService } from '../shared/helper.service';
 
 @Injectable()
-export class NotificationService {
+export class NotificationIgnoredService {
   constructor(
-    @InjectRepository(NotificationRecord) private notificationRecordRepo: Repository<NotificationRecord>
+    @InjectRepository(NotificationIgnoredItem) private notificationRecordRepo: Repository<NotificationIgnoredItem>
     , @Inject(REQUEST) private readonly request: Request
     , private helperSvc: HelperService
   ) {}
@@ -22,7 +22,7 @@ export class NotificationService {
     fromDate?: string, toDate?: string
     , showHidden?: boolean, sync?: boolean
   }): Promise<any[]> {
-    let qb = await getRepository(NotificationRecord)
+    let qb = await getRepository(NotificationIgnoredItem)
       .createQueryBuilder('not'); 
       
     if(args && (args.fromDate || args.toDate)) {
@@ -50,18 +50,18 @@ export class NotificationService {
     return Promise.all(data);
   }
 
-  findOne(id): Promise<NotificationRecord> {
+  findOne(id): Promise<NotificationIgnoredItem> {
     return this.notificationRecordRepo.findOne(id);
   }
 
-  async save(notificationRecord: INotification) {
+  async save(notificationRecord: INotificationIgnored) {
     let newOrUpdated: any = Object.assign({}, notificationRecord);
     if(typeof newOrUpdated.isDeleted === 'undefined') {
       newOrUpdated.isDeleted = false;
     }
 
     //now save
-    let newNotRrd = new NotificationRecord();
+    let newNotRrd = new NotificationIgnoredItem();
     newNotRrd = Object.assign({}, newOrUpdated);
 
     const saved = await this.notificationRecordRepo.save(newNotRrd);
@@ -74,8 +74,8 @@ export class NotificationService {
     return this.notificationRecordRepo.delete(id);
   }
 
-  private async _map(not: NotificationRecord) {
-    let mNotRrd: INotification;
+  private async _map(not: NotificationIgnoredItem) {
+    let mNotRrd: INotificationIgnored;
     mNotRrd = <any>Object.assign({}, not);
 
     //remove 

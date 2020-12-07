@@ -1,6 +1,6 @@
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { Plugins } from '@capacitor/core';
+import { Plugins, Capacitor } from '@capacitor/core';
 
 const { PersistentNotification, App, BackgroundTask } = Plugins;
 import { SystemNotification, SystemNotificationListener } from 'capacitor-notificationlistener';
@@ -16,9 +16,8 @@ if (environment.production) {
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.log(err));
 
-
+if(Capacitor.getPlatform() === 'android') {
   let listener = null, intv = null;
- 
   App.addListener('appStateChange', (state) => {
       // Listen for user clicks on the notification.  
       // OK to listen before opening.
@@ -115,3 +114,4 @@ platformBrowserDynamic().bootstrapModule(AppModule)
           }
       }
   });
+}

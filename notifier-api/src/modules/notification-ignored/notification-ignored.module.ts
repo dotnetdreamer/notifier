@@ -13,4 +13,4 @@ import { NotificationIgnoredService } from './notification-ignored.service';
   controllers: [NotificationIgnoredController],
   exports: [ NotificationIgnoredService ]
 })
-export class NotificationModule {}
+export class NotificationIgnoredModule {}

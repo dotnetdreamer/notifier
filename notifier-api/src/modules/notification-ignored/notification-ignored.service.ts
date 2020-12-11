@@ -18,27 +18,11 @@ export class NotificationIgnoredService {
     , private helperSvc: HelperService
   ) {}
 
-  async findAll(args?: { 
-    fromDate?: string, toDate?: string
-    , showHidden?: boolean, sync?: boolean
-  }): Promise<any[]> {
+  async findAll(args?: { sync?: boolean }): Promise<any[]> {
     let qb = await getRepository(NotificationIgnoredItem)
       .createQueryBuilder('not'); 
       
-    if(args && (args.fromDate || args.toDate)) {
-      if(args.fromDate) {
-        // const fromDate =  moment(args.fromDate, AppConstant.DEFAULT_DATE_FORMAT).toDate();
-        const fromDate = args.fromDate;
-        qb = qb.andWhere('not.receivedOnUtc >= :createdOnFrom', { createdOnFrom: fromDate });
-      }
-      if(args.toDate) {
-        const toDate =  args.toDate; 
-        qb = qb.andWhere('not.receivedOnUtc <= :createdOnToDate', { createdOnToDate: toDate });
-      }
-    }
-
-    qb = qb.andWhere('not.isDeleted <= :isDeleted', { isDeleted: args && args.showHidden ? true : false });
-    qb = qb.orderBy("not.receivedOnUtc", 'DESC')
+    qb = qb.orderBy("not.createdOn", 'DESC')
       .addOrderBy('not.id', 'DESC');
 
     const notificationRecords = await qb.getMany();

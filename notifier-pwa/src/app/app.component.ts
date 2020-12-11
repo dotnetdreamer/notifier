@@ -182,10 +182,12 @@ export class AppComponent {
     if(!wkl) {
       wkl = 'en';
       await this.appSettingSvc.putWorkingLanguage(wkl);
+
+      //put sample data
+      this.syncHelperSvc.syncSampleData();
     }
     this.pubsubSvc.publishEvent(AppConstant.EVENT_LANGUAGE_CHANGED, { wkLangauge: wkl, reload: false });
     this.workingLanguage = wkl;
-
     
     if(AppConstant.DEBUG) {
       console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');

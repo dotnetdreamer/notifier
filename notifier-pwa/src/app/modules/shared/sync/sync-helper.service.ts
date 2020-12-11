@@ -6,6 +6,7 @@ import { SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
 import { AppConstant } from '../app-constant';
 import { NotificationService } from '../../notification/notification.service';
+import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 
 
 @Injectable({
@@ -13,7 +14,8 @@ import { NotificationService } from '../../notification/notification.service';
 })
 export class SyncHelperService {
     constructor(private pubsubSvc: NgxPubSubService
-        , private notificationSvc: NotificationService) {
+        , private notificationSvc: NotificationService
+        , private notificationIgnoredSvc: NotificationIgnoredService) {
     }
 
     pull(table?: SyncEntity) {
@@ -25,12 +27,17 @@ export class SyncHelperService {
                     case SyncEntity.NOTIFICATION:
                         promises.push(this.notificationSvc.pull());
                     break;
+                    case SyncEntity.NOTIFICATION_IGNORED:
+                        promises.push(this.notificationIgnoredSvc.pull());
+                    break;
                     default:
                     break;
                 }
             } else {   //sync all
                 //notification
                 promises.push(this.notificationSvc.pull());
+                //notification ignored
+                promises.push(this.notificationIgnoredSvc.pull());
             }
             
             try {
@@ -55,12 +62,18 @@ export class SyncHelperService {
                     case SyncEntity.NOTIFICATION:
                         promises.push(this.notificationSvc.push());
                     break;
+                    case SyncEntity.NOTIFICATION_IGNORED:
+                        promises.push(this.notificationIgnoredSvc.push());
+                    break;
                     default:
                     break;
                 }
             } else {   //sync all
                 //notification
                 promises.push(this.notificationSvc.push());
+
+                //notification ignored
+                promises.push(this.notificationIgnoredSvc.push());
             }
             
             if(!promises.length) {
@@ -79,4 +92,8 @@ export class SyncHelperService {
         });
     }
 
+
+    syncSampleData() {
+
+    }
 }

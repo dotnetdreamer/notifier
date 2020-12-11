@@ -30,7 +30,7 @@ export class BaseService {
     protected localizationSvc: LocalizationService;
     protected pubsubSvc: NgxPubSubService;
 
-    //hold anytime that is currently in progress to avoid pushing same record more than once
+    //hold anything that is currently in progress to avoid pushing same record more than once
     protected static pushQueue = [];
 
     constructor() {
@@ -53,6 +53,10 @@ export class BaseService {
                 this.dbService = injector.get(DbWebService);
             // }
         }, 0);
+    }
+
+    get tables() {
+        return this.schemaSvc.tables;
     }
 
     protected getData<T>(args: HttpParams): Promise<T> {

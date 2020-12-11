@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { NotificationIgnoredItem } from './modules/notification-ignored/notification-ignored.entity';
+import { NotificationIgnoredModule } from './modules/notification-ignored/notification-ignored.module';
 import { NotificationRecord } from './modules/notification/notification.entity';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SharedModule } from './modules/shared/shared.module';
@@ -23,7 +24,8 @@ const CONNECTION_NAME = "default";
       synchronize: true,
     }),
     SharedModule,
-    NotificationModule
+    NotificationModule,
+    NotificationIgnoredModule
   ],
   controllers: [AppController],
   providers: [AppService],

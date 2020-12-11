@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
 export class SchemaService {
     private _setting = "setting";
     private _notification = "notification";
+    private _notificationIgnored = "notificationIgnored";
     private _user = "user";
 
     schema = {
@@ -51,6 +52,31 @@ export class SchemaService {
                     type: 'TEXT'  
                 }]
             }, {
+                name: this._notificationIgnored,
+                columns: [{ 
+                    name: 'id', 
+                    isPrimaryKey: true, 
+                    type: 'INTEGER' 
+                }, { 
+                    name: 'text', 
+                    type: 'TEXT' 
+                }, { 
+                    name: 'updatedOn', 
+                    type: 'TEXT' 
+                }, {
+                    name: 'createdOn', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForAdd', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForUpdate', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForDelete', 
+                    type: 'TEXT'  
+                }]
+            }, {
                 name: this._setting,
                 columns: [{ 
                     name: 'key', 
@@ -66,6 +92,7 @@ export class SchemaService {
     tables = {
         setting: this._setting,
         notification: this._notification,
+        notificationIgnored: this._notificationIgnored,
         user: this._user
     };
 

@@ -6,14 +6,14 @@ import { NotificationIgnoredItem } from "./notification-ignored.entity";
 import { INotificationIgnored } from "./notification-ignored.model";
 import { NotificationIgnoredService } from "./notification-ignored.service";
 
-@Controller('notification')
+@Controller('notification-ignored')
 export class NotificationIgnoredController {
   constructor(private readonly notificationIgnoredSvc: NotificationIgnoredService) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('getAll')
   async getAll(@Req() req: Request,
-   @Query() filters?: { fromDate?: string, toDate?: string, sync?: boolean }) {
+   @Query() filters?: { sync?: boolean }) {
     const data = await this.notificationIgnoredSvc.findAll({
       ...filters
     });

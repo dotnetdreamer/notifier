@@ -50,6 +50,13 @@ export class SchemaService {
                 }, {
                     name: 'markedForDelete', 
                     type: 'TEXT'  
+                }],
+                indexes: [{
+                    name: 'package',
+                    keyPath: 'package',
+                }, {
+                    name: 'text',
+                    keyPath: 'text'
                 }]
             }, {
                 name: this._notificationIgnored,
@@ -59,7 +66,7 @@ export class SchemaService {
                     type: 'INTEGER' 
                 }, { 
                     name: 'text', 
-                    type: 'TEXT' 
+                    type: 'TEXT'
                 }, { 
                     name: 'updatedOn', 
                     type: 'TEXT' 
@@ -75,6 +82,10 @@ export class SchemaService {
                 }, {
                     name: 'markedForDelete', 
                     type: 'TEXT'  
+                }],
+                indexes: [{
+                    name: 'text',
+                    keyPath: 'text'
                 }]
             }, {
                 name: this._setting,

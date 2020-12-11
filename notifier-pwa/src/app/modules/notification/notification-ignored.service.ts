@@ -217,7 +217,7 @@ export class NotificationIgnoredService extends BaseService {
                         const term = args.term.toLowerCase();
                         const text = item ? item.text.toLowerCase() : v.text.toLowerCase();
                         
-                        if(!(text.includes(term))) {
+                        if(!text.includes(term)) {
                             item = null;
                         }
                     }
@@ -253,6 +253,12 @@ export class NotificationIgnoredService extends BaseService {
 
     getByIdLocal(id) {
         return this.dbService.get<INotificationIgnored>(this.schemaSvc.tables.notificationIgnored, id);
+    }
+
+    async getByTextLocal(term) {
+        const result = await this.dbService.getByFieldName<INotificationIgnored[]>(
+            this.schemaSvc.tables.notificationIgnored, 'text', term);
+        return result[0];
     }
 
     async putLocal(item: INotificationIgnored, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {

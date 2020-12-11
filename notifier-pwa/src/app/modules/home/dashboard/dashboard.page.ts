@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { App, Plugins } from '@capacitor/core';
+import { App, Capacitor, Plugins } from '@capacitor/core';
 import { AlertController, IonContent, IonItemSliding, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
@@ -9,12 +9,13 @@ import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import * as moment from 'moment';
 
-import { INotification } from '../../notification/notification.model';
+import { INotification, INotificationIgnored } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
+import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 
 
 @Component({
@@ -38,7 +39,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   constructor(private ngZone: NgZone
     , private alertCtrl: AlertController, private platform: Platform
     , private pubSubSvc: NgxPubSubService
-    , private notificationSvc: NotificationService, private helperSvc: HelperService) {
+    , private notificationSvc: NotificationService, private notificationIgnoredSvc: NotificationIgnoredService
+    , private helperSvc: HelperService) {
 
     this._subscribeToEvents();
   }
@@ -205,9 +207,26 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           }
         }, {
           text: 'Ok',
-          handler: (val: 'app' | 'message') => {
-            // console.log('Confirm Ok', val);
-          }
+          handler: async (val: 'app' | 'message') => {
+            const item: INotificationIgnored = {
+              text: val == 'app' ? notification.package : notification.text,
+              markedForAdd: true
+            };
+            await this.notificationIgnoredSvc.putLocal(item, true);
+
+            //delete from notifications
+            let toDeleteAll: INotification[] = [];
+            if(val == 'app') {
+              toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(notification.package);
+            } else if(val == 'message') {
+              toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
+            }
+            toDeleteAll.forEach(p => p.markedForDelete = true);
+            await this.notificationSvc.putAllLocal(toDeleteAll, true); 
+
+            //sync
+            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
+          } 
         }
       ]
     });
@@ -258,15 +277,19 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private _subscribeToEvents() {
-    App.addListener('appStateChange', async (state: { isActive: boolean }) => {
-      if(AppConstant.DEBUG) {
-        console.log('DashboardPage: appStateChange', state);
-      }
-      //app came to foregroud...
-      if(state.isActive) {
-        await this._getAllNotifications();
-      }
-    });
+    if(this.platform.is('android')) {
+      App.addListener('appStateChange', async (state: { isActive: boolean }) => {
+        if(AppConstant.DEBUG) {
+          console.log('DashboardPage: appStateChange', state);
+        }
+        //app came to foregroud...
+        if(state.isActive) {
+          await this._getAllNotifications();
+        }
+      });
+    }
+
+
     //EVENT_SYNC_DATA_PUSH_COMPLETE is fired by multiple sources, we debounce subscription to execute this once
     const obv = new Observable(observer => {
       //next will call the observable and pass parameter to subscription

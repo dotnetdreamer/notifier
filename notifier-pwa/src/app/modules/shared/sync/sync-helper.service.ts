@@ -7,6 +7,7 @@ import { SyncConstant } from './sync-constant';
 import { AppConstant } from '../app-constant';
 import { NotificationService } from '../../notification/notification.service';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
+import { INotification, INotificationIgnored } from '../../notification/notification.model';
 
 
 @Injectable({
@@ -94,6 +95,19 @@ export class SyncHelperService {
 
 
     syncSampleData() {
+        return new Promise(async (resolve, reject) => {
+            const packages = AppConstant.IGNORED_PACKAGES;
+            const newItems: INotificationIgnored[] = [];
 
+            for(let p of packages) {
+                const item: INotificationIgnored = {
+                    text: p,
+                    markedForAdd: true
+                };
+                newItems.push(item);
+            }
+            await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);
+            resolve();
+        });
     }
 }

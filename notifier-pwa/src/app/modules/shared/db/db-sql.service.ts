@@ -165,6 +165,10 @@ export class DbSqlService implements DbService {
         });
     }
 
+    getByFieldName<T>(storeName, fieldName, value): Promise<Array<T> | T> {
+        throw 'no implementation yet';
+    }
+
     remove(store, key): Promise<any> {
         return new Promise((resolve, reject) => {
             throw 'remove not impleted in db-sql yet';

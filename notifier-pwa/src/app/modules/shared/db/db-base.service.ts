@@ -3,7 +3,10 @@ export class DbService {
     putLocal(store, data): Promise<{ rowsAffected, insertId }>{ return; }
     
     get<T>(store: string, key: any): Promise<T> { return; }
+
     getAll<T>(store: string): Promise<T> { return; }
+
+    getByFieldName<T>(store: string, fieldName: string, value: string): Promise<Array<T> | T> { return; }
 
     remove(store, id): Promise<any>{ return; }
 

@@ -22,10 +22,11 @@ import { IUserProfile } from './modules/authentication/user.model';
 import { debounceTime } from 'rxjs/operators';
 import { LocalizationService } from './modules/shared/localization.service';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
-import { INotification } from './modules/notification/notification.model';
+import { INotification, INotificationIgnored } from './modules/notification/notification.model';
 import { NotificationService } from './modules/notification/notification.service';
 import { SyncEntity } from './modules/shared/sync/sync.model';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
+import { NotificationIgnoredService } from './modules/notification/notification-ignored.service';
 
 @Component({
   selector: 'app-root',
@@ -45,6 +46,7 @@ export class AppComponent {
       , private helperSvc: HelperService
       , private authSvc: UserService, private userSettingSvc: UserSettingService
       , private localizationSvc: LocalizationService, private notificationSvc: NotificationService
+      , private notificationIgnoredSvc: NotificationIgnoredService
   ) {
     this.initializeApp();
   }
@@ -113,6 +115,7 @@ export class AppComponent {
       if(AppConstant.DEBUG) {
         console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
       }
+      await this._navigateTo('/home');
 
       const { appVersion } = await (await Device.getInfo());
       this.appVersion = appVersion;
@@ -191,9 +194,8 @@ export class AppComponent {
     
     if(AppConstant.DEBUG) {
       console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');
-    }
+    }    
     this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL);
-    await this._navigateTo('/home');
     //user
     /*
     const cUser = res[0];
@@ -234,8 +236,13 @@ export class AppComponent {
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       // console.log('notificationReceivedEvent', info);
-      if(AppConstant.IGNORED_PACKAGES.includes(info.package)
-        || (!info.text && !info.title)) {
+      const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
+      if(packageIgnored) {
+        return;
+      }
+
+      const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
+      if(textIgnored) {
         return;
       }
 
@@ -296,5 +303,4 @@ export class AppComponent {
       await this.router.navigate([path, args], { replaceUrl: replaceUrl });
     }
   }
-
 }

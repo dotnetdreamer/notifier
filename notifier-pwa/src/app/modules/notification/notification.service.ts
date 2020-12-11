@@ -333,6 +333,16 @@ export class NotificationService extends BaseService {
         return this.dbService.get<INotification>(this.schemaSvc.tables.notification, id);
     }
 
+    async getByTextLocal(term) {
+        return this.dbService.getByFieldName<INotification>(
+            this.schemaSvc.tables.notification, 'text', term);
+    }
+
+    async getByPackageLocal(pckage) {
+        return this.dbService.getByFieldName<INotification>(
+            this.schemaSvc.tables.notification, 'package', pckage);
+    }
+
     async putLocal(item: INotification, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
         //defaults
          if(!ignoreDefaults) {

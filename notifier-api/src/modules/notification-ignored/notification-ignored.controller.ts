@@ -27,8 +27,7 @@ export class NotificationIgnoredController {
     //local id and mapping server record
     let items: Array<Map<number, any>> = [];
 
-    for (let model of models)
-    {
+    for (let model of models) {
       const itemMap: Map<number, INotificationIgnored> = new Map();
       let returnedExpense: any;
 
@@ -37,8 +36,14 @@ export class NotificationIgnoredController {
         let toAdd = Object.assign({}, model);
         delete toAdd.id;
 
-        const item = await this.notificationIgnoredSvc.save(toAdd);
-        returnedExpense = item;        
+        //check for duplicate
+        const existingRcrd = await this.notificationIgnoredSvc.findOneByText(toAdd.text);
+        if(existingRcrd) {
+          returnedExpense = existingRcrd; 
+        } else {
+          const item = await this.notificationIgnoredSvc.save(toAdd);
+          returnedExpense = item; 
+        }
       } else if(model.markedForUpdate) {
         const toUpdate = await this.notificationIgnoredSvc.findOne(model.id);
         if(!toUpdate) {

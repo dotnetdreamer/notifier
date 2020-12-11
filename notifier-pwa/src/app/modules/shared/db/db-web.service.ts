@@ -23,7 +23,8 @@ export class DbWebService implements DbService {
             schema.stores.push({
                 name: s.name,
                 keyPath: pkCol.name,
-                autoIncrement: pkCol.isPrimaryKey && pkCol.type == 'INTEGER'
+                autoIncrement: pkCol.isPrimaryKey && pkCol.type == 'INTEGER',
+                indexes: s.indexes
             });
         });
         this.db = new ydn.db.Storage(this.dbName, schema);
@@ -107,11 +108,11 @@ export class DbWebService implements DbService {
         });
     }
 
-    getByFieldName(storeName, fieldName, key): Promise<Array<any>> {
+    getByFieldName<T>(storeName, fieldName, value): Promise<Array<T> | T> {
         return this.getDynamic(storeName, {
             field: fieldName,
             operator: '=',
-            value: key
+            value: value
         });
     }
 
@@ -146,8 +147,8 @@ export class DbWebService implements DbService {
         });
     }
     
-    getDynamic(storeName, opts): Promise<Array<any>> {
-        return new Promise((resolve, reject) => {
+    getDynamic<T>(storeName, opts): Promise<Array<T> | T> {
+        return new Promise<T>((resolve, reject) => {
             let q;
             if (opts['field']) {
                 q = this.db.from(storeName).where(opts['field'], opts['operator'], opts['value']);

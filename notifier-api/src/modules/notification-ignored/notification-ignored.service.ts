@@ -38,6 +38,16 @@ export class NotificationIgnoredService {
     return this.notificationRecordRepo.findOne(id);
   }
 
+  async findOneByText(text): Promise<INotificationIgnored> {
+    const item = await this.notificationRecordRepo.findOne({ where: { text: text } });
+    if(!item) {
+      return null;
+    }
+    
+    const maped = await this._map(item);
+    return maped;
+  }
+
   async save(notificationRecord: INotificationIgnored) {
     let newOrUpdated: any = Object.assign({}, notificationRecord);
     if(typeof newOrUpdated.isDeleted === 'undefined') {

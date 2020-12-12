@@ -277,7 +277,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private _subscribeToEvents() {
-    if(this.platform.is('android')) {
+    if(this.platform.is('capacitor')) {
       App.addListener('appStateChange', async (state: { isActive: boolean }) => {
         if(AppConstant.DEBUG) {
           console.log('DashboardPage: appStateChange', state);

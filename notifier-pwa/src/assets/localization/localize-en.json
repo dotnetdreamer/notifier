@@ -19,7 +19,8 @@
         "nodata": "No data found",
         "viewall": "View all",
         "you": "You",
-        "on": "on"
+        "on": "on",
+        "total": "Total"
     },
     "home": {
         "title": "Home",

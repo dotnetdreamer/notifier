@@ -91,22 +91,12 @@
 }
 
 
-.alert-radio-group {
-    &.sc-ion-alert-md {
-        display: flex;
-        flex-direction: column;
-    }
-}
-.alert-tappable {
-    &.sc-ion-alert-md {
-        overflow: visible;
-        min-height: 48px;
-        height: auto;
-    }
+.alert-wrapper {
+    --min-width: calc(100% - 62px);
 }
 
 .alert-radio-label {
-    &.sc-ion-alert-md {
+    &.sc-ion-alert-md, &.sc-ion-alert-ios {
         text-overflow: initial;
         white-space: normal;
     }

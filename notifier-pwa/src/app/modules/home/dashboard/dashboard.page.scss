@@ -1,9 +1,9 @@
 page-home-dashboard {
     ion-header {
         ion-toolbar {
-            &.toolbar-calendar {
-                text-align: center;
-                
+            text-align: center;
+
+            &.toolbar-calendar {                
                 ion-label {
                     padding: 10px 0;
                     font-size: 0.8em;

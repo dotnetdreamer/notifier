@@ -1,11 +1,18 @@
 <ion-header [translucent]="true" [class.hidden]="!displayHeaderbar">
-  <!-- <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
-  </ion-toolbar> -->
+  <ion-toolbar>
+    <!-- <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons> -->
+    <!-- <ion-buttons slot="end">
+      <ion-button (click)="onSearchToggleClicked()">
+        <ion-icon name="search" *ngIf="!displaySearch"></ion-icon>
+        <ion-icon name="close" *ngIf="displaySearch"></ion-icon>
+      </ion-button>
+    </ion-buttons> -->
+    <ion-title>{{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}</ion-title>
+  </ion-toolbar>
   <ion-toolbar class="toolbar-calendar">
-    <!-- <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label> -->
+    <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label>
     <calendar-swiper (monthChanged)="onMonthChanged($event)"></calendar-swiper>
   </ion-toolbar>
 </ion-header>
@@ -14,19 +21,9 @@
   <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
 
-  <!-- <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header> -->
-  <!-- <ion-list>
-    <ion-item *ngFor="let notificaiton of notifications">
-      <ion-label>{{notificaiton.title || notificaiton.text}}</ion-label>
-    </ion-item>
-  </ion-list> -->
-  <!-- <no-data *ngIf="!expenses.length && dataLoaded"></no-data> -->
   <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
       <ion-item class="no-padding" lines="none" 
@@ -46,7 +43,7 @@
             </div>
             <div class="date-time">
               <div class="time">
-                {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT | async}}
+                {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
               </div>
               <div class="date">
                 {{item.createdOn | formateDate | async}}
@@ -55,8 +52,9 @@
           </div>
         </div>
       </ion-item>
-      <ion-item-options side="start" (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">
-        <ion-item-option color="danger">Delete</ion-item-option>
+      <ion-item-options side="start">
+        <ion-item-option color="danger" 
+          (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">Delete</ion-item-option>
       </ion-item-options>
       <ion-item-options side="end">
         <ion-item-option (click)="onLaunchAppClicked(slideItem, item)" *ngIf="isAndroid">Launch</ion-item-option>

@@ -27,6 +27,10 @@
         "dashboard": {
         }
     },
+    "notification": {
+        "title": "Notifications",
+        "ignored": "Ignored"
+    },
     "setting": {
         "title": "Setting",
         "database": "Database",

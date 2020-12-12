@@ -1,8 +1,8 @@
 <ion-tabs #homeTabs>
   <ion-tab-bar>
-    <ion-tab-button (click)="onTabClicked('help')" [class.tab-selected]="selectedTab === 'help'">
-      <ion-icon name="help" ios="help" md="help"></ion-icon>
-      <ion-label>{{'help.title' | localizedresource | async}}</ion-label>
+    <ion-tab-button (click)="onTabClicked('ignored')" [class.tab-selected]="selectedTab === 'ignored'">
+      <ion-icon name="notifications-off" ios="notifications-off" md="notifications-off"></ion-icon>
+      <ion-label>{{'notification.ignored' | localizedresource | async}}</ion-label>
     </ion-tab-button>
     <!-- <ion-tab-button (click)="onTabClicked('profile')" [class.tab-selected]="selectedTab === 'profile'">
       <ion-icon name="person-outline"></ion-icon>
@@ -16,9 +16,9 @@
       <ion-icon ios="notifications-outline" md="notifications-outline"></ion-icon>
       <ion-label>{{'alert.title' | localizedresource | async}}</ion-label>
     </ion-tab-button> -->
-    <ion-tab-button (click)="onTabClicked('settings')" [class.tab-selected]="selectedTab === 'settings'">
+    <ion-tab-button (click)="onTabClicked('setting')" [class.tab-selected]="selectedTab === 'setting'">
       <ion-icon name="settings"></ion-icon>
-      <ion-label>{{'settings.title' | localizedresource | async}}</ion-label>
+      <ion-label>{{'setting.title' | localizedresource | async}}</ion-label>
     </ion-tab-button>
 </ion-tab-bar>
 </ion-tabs>

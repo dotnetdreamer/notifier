@@ -12,8 +12,13 @@ const routes: Routes = [
         loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardPageModule)
       },
       {
-        path: 'settings',
+        path: 'setting',
         loadChildren: () => import('../general/setting/setting.module').then(m => m.SettingPageModule)
+      },
+      {
+        path: 'ignored',
+        loadChildren: () => import('../notification/notification-ignored/notification-ignored.module')
+          .then(m => m.NotificationIgnoredPageModule)
       },
       {
         path: '',

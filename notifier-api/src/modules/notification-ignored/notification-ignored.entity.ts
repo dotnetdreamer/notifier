@@ -6,4 +6,10 @@ import { BaseEntity } from '../shared/entity/base.entity';
 export class NotificationIgnoredItem extends BaseEntity {
   @Column()
   text: string;
+
+  @Column({ nullable: true })
+  image?: string;
+
+  @Column({ nullable: true })
+  appName?: string;
 }

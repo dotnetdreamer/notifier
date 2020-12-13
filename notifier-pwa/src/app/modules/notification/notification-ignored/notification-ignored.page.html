@@ -4,6 +4,42 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content #listingNotificationIgnoredContent>
+  <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
 
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
+    <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
+      <ion-item class="no-padding" lines="none" 
+        (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
+        <div class="notification-item" [class.notification-item-even]="index % 2">
+          <div class="icon-container">
+            <img [src]="item.image | safe: 'url'" />
+          </div>
+          <div class="app-description-date-time">
+            <div class="app-description">
+              <div class="description" [innerHTML]="(item.title || item.text) | trimText:60"></div>
+              <div class="app-info-icon">
+                <ion-icon name="refresh" class="animated infinite spin" 
+                  *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+                <div class="info">{{item.appName || item.package}}</div>
+              </div>
+            </div>
+            <div class="date-time">
+              <div class="time">
+                {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
+              </div>
+              <div class="date">
+                {{item.createdOn | formateDate | async}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-item>
+      <ion-item-options side="start">
+        <ion-item-option color="danger" 
+          (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">{{'common.delete' | localizedresource | async}}</ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>  
+
+  </ion-virtual-scroll>
 </ion-content>

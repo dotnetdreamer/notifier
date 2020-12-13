@@ -147,7 +147,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         }
 
         if(notification.markedForAdd) {
-          this.notificationSvc.remove(notification.id);
+          await this.notificationSvc.remove(notification.id);
         } else {
           notification.markedForDelete = true;
           notification.updatedOn = null;
@@ -180,23 +180,26 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onIgnoreClicked(slideItem: IonItemSliding, notification: INotification) {
+    const options = [{
+      name: 'app',
+      type: 'radio',
+      label: `This App (${notification.package})`,
+      value: 'app',
+      checked: true
+    }];
+    
+    if(notification.text) {
+      options.push({
+        name: 'message',
+        type: 'radio',
+        label: 'Similar Message',
+        value: 'message',
+        checked: false
+      });
+    }
     const alert = await this.alertCtrl.create({
       header: notification.title || notification.text,
-      inputs: [
-        {
-          name: 'message',
-          type: 'radio',
-          label: 'Similar Message',
-          value: 'message',
-          checked: true
-        },
-        {
-          name: 'app',
-          type: 'radio',
-          label: `This App (${notification.package})`,
-          value: 'app'
-        }
-      ],
+      inputs: <any>options,
       buttons: [
         {
           text: 'Cancel',
@@ -210,6 +213,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           handler: async (val: 'app' | 'message') => {
             const item: INotificationIgnored = {
               text: val == 'app' ? notification.package : notification.text,
+              image: notification.image,
+              appName: notification.appName,
               markedForAdd: true
             };
             await this.notificationIgnoredSvc.putLocal(item, true);

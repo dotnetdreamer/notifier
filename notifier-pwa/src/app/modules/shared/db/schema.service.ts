@@ -67,6 +67,12 @@ export class SchemaService {
                 }, { 
                     name: 'text', 
                     type: 'TEXT'
+                }, {
+                    name: 'image', 
+                    type: 'TEXT' 
+                }, {
+                    name: 'appName', 
+                    type: 'TEXT'
                 }, { 
                     name: 'updatedOn', 
                     type: 'TEXT' 

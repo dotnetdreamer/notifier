@@ -18,7 +18,9 @@ export interface INotification {
 export interface INotificationIgnored {
     id?: number;
     text: string;
-  
+    image?: string;
+    appName?: string;
+    
     updatedOn?: string;
     createdOn?: string;
 

@@ -50,7 +50,7 @@ export class NotificationIgnoredController {
           continue;
         }
     
-        let updated = await this._updateOrDelete(toUpdate, model, false);
+        let updated = await this._updateOrDelete(toUpdate, model);
         returnedExpense = updated;
       } else if(model.markedForDelete) {
         const toDelete = await this.notificationIgnoredSvc.findOne(model.id);
@@ -58,8 +58,8 @@ export class NotificationIgnoredController {
           continue;
         }
 
-        let deleted = await this._updateOrDelete(toDelete, model, true);
-        returnedExpense = deleted;
+        const deleteResult = await this.notificationIgnoredSvc.remove(toDelete.id);
+        returnedExpense = toDelete;
       }
 
       itemMap.set(model.id, returnedExpense);
@@ -72,11 +72,10 @@ export class NotificationIgnoredController {
   }
 
   private async _updateOrDelete(toUpdateOrDelete: NotificationIgnoredItem
-    , model, shouldDelete?: boolean) {
+    , model) {
     //no need to update
     // delete model.createdOn;
     // delete model.attachment;
-    model.isDeleted = shouldDelete;
 
     let updated = Object.assign(toUpdateOrDelete, model);
     await this.notificationIgnoredSvc.save(updated);

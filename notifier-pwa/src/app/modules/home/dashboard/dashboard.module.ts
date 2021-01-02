@@ -8,6 +8,7 @@ import { DashboardPageRoutingModule } from './dashboard-routing.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { ComponentsWithOutFormsModule } from 'src/app/components/components-without-forms.module';
 import { CalendarSwiperModule } from 'src/app/components/calendar-swiper/calendar-swiper.module';
+import { IgnoreOptionsComponent } from './ignore-options/ignore-options.component';
 
 @NgModule({
   imports: [
@@ -16,6 +17,6 @@ import { CalendarSwiperModule } from 'src/app/components/calendar-swiper/calenda
     PipesModule,
     DashboardPageRoutingModule
   ],
-  declarations: [DashboardPage]
+  declarations: [DashboardPage, IgnoreOptionsComponent]
 })
 export class DashboardPageModule {}

@@ -8,6 +8,9 @@ export class NotificationIgnoredItem extends BaseEntity {
   text: string;
 
   @Column({ nullable: true })
+  rule?: 'exact' | 'startsWith' | 'contains';
+
+  @Column({ nullable: true })
   image?: string;
 
   @Column({ nullable: true })

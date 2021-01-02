@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { App, Capacitor, Plugins } from '@capacitor/core';
-import { AlertController, IonContent, IonItemSliding, Platform } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, ModalController, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
@@ -16,6 +16,7 @@ import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
+import { IgnoreOptionsComponent } from './ignore-options/ignore-options.component';
 
 
 @Component({
@@ -38,6 +39,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private ngZone: NgZone
     , private alertCtrl: AlertController, private platform: Platform
+    , private modalCtrl: ModalController
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private notificationIgnoredSvc: NotificationIgnoredService
     , private helperSvc: HelperService) {
@@ -180,67 +182,49 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onIgnoreClicked(slideItem: IonItemSliding, notification: INotification) {
-    const options = [{
-      name: 'app',
-      type: 'radio',
-      label: `This App (${notification.package})`,
-      value: 'app',
-      checked: true
-    }];
-    
-    if(notification.text) {
-      options.push({
-        name: 'message',
-        type: 'radio',
-        label: 'Similar Message',
-        value: 'message',
-        checked: false
-      });
-    }
-    const alert = await this.alertCtrl.create({
-      header: notification.title || notification.text,
-      inputs: <any>options,
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-            // console.log('Confirm Cancel');
-          }
-        }, {
-          text: 'Ok',
-          handler: async (val: 'app' | 'message') => {
-            const item: INotificationIgnored = {
-              text: val == 'app' ? notification.package : notification.text,
-              image: notification.image,
-              appName: notification.appName,
-              markedForAdd: true
-            };
-            await this.notificationIgnoredSvc.putLocal(item, true);
-
-            //delete from notifications
-            let toDeleteAll: INotification[] = [];
-            if(val == 'app') {
-              toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(notification.package);
-            } else if(val == 'message') {
-              toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
-            }
-            toDeleteAll.forEach(p => p.markedForDelete = true);
-            await this.notificationSvc.putAllLocal(toDeleteAll, true); 
-
-            //sync
-            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
-          } 
-        }
-      ]
-    });
-
-    await alert.present();
-
     setTimeout(async () => {
       await slideItem.close();
     });
+
+    const modal = await this.modalCtrl.create({
+      component: IgnoreOptionsComponent,
+      componentProps: {
+        notification: notification
+      },
+      cssClass: 'ignore-options-modal',
+      backdropDismiss: false
+    });
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if(!data) {
+      return;
+    }
+    
+    const value: 'app' | 'message' = data.value;
+    const rule: 'exact' | 'startsWith' | 'contains' = data.rule;
+
+    const item: INotificationIgnored = {
+      text: value == 'app' ? notification.package : notification.text,
+      rule: value == 'app' ? null : rule,
+      image: notification.image,
+      appName: notification.appName,
+      markedForAdd: true
+    };
+    await this.notificationIgnoredSvc.putLocal(item, true);
+
+    //delete from notifications
+    let toDeleteAll: INotification[] = [];
+    if(value == 'app') {
+      toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(notification.package);
+    } else if(value == 'message') {
+      toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
+    }
+    toDeleteAll.forEach(p => p.markedForDelete = true);
+    await this.notificationSvc.putAllLocal(toDeleteAll, true); 
+
+    //sync
+    this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
   }
 
   private async _getAllNotifications() {

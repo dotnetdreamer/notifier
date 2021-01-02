@@ -9,6 +9,8 @@ const { SplashScreen, StatusBar, Device } = Plugins;
 import { Observable } from 'rxjs';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
+import { debounceTime } from 'rxjs/operators';
+import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
 
 import { AppSettingService } from './modules/shared/app-setting.service';
 import { SyncHelperService } from './modules/shared/sync/sync-helper.service';
@@ -19,9 +21,7 @@ import { AppConstant } from './modules/shared/app-constant';
 import { SyncConstant } from './modules/shared/sync/sync-constant';
 import { UserConstant } from './modules/authentication/user-constant';
 import { IUserProfile } from './modules/authentication/user.model';
-import { debounceTime } from 'rxjs/operators';
 import { LocalizationService } from './modules/shared/localization.service';
-import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
 import { INotification, INotificationIgnored } from './modules/notification/notification.model';
 import { NotificationService } from './modules/notification/notification.service';
 import { SyncEntity } from './modules/shared/sync/sync.model';
@@ -55,9 +55,7 @@ export class AppComponent {
     this._subscribeToEvents();
 
     this.platform.ready().then(async () => {
-      if(this.platform.is('capacitor')) {
-        await this._startListening();
-      }
+
     });
   }
 
@@ -67,6 +65,10 @@ export class AppComponent {
         console.log('Event received: EVENT_DB_INITIALIZED');
       }
 
+      if(this.platform.is('capacitor')) {
+        await this._startListening();
+      }
+      
       await this._setDefaults();
     });
 
@@ -115,8 +117,6 @@ export class AppComponent {
       if(AppConstant.DEBUG) {
         console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
       }
-      await this._navigateTo('/home');
-
       const { appVersion } = await (await Device.getInfo());
       this.appVersion = appVersion;
 
@@ -217,13 +217,12 @@ export class AppComponent {
     // await this._navigateTo('/expense/expense-create-or-update');
     // await this._navigateTo('/expense/expense-listing');
     // await this._navigateTo('/category');
-    // await this._navigateTo('/home');
+    await this._navigateTo('/home');
   }
 
   private async _startListening() {
     const sn = new SystemNotificationListener();
     const isListening = await sn.isListening();
-
     if(!isListening) {
       try {
         await sn.requestPermission();
@@ -232,6 +231,26 @@ export class AppComponent {
       }     
     }
     
+    const blackListOfPackages = [], blackListOfText = [];
+    const ignoreNots = await this.notificationIgnoredSvc
+      .getAllLocal();
+
+    ignoreNots.forEach(n => {
+      if(!n.rule) {
+        blackListOfPackages.push(n.text);
+      } else {
+        const mn = {
+          rule: n.rule,
+          value: n.text
+        };
+        blackListOfText.push(mn);
+      }
+    });
+    sn.setBlackList({
+      blackListOfPackages: blackListOfPackages.length ? blackListOfPackages : null,
+      blackListOfText: blackListOfText.length ? blackListOfText : null
+    });
+
     await sn.startListening();
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {

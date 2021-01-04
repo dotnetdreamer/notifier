@@ -236,10 +236,15 @@ export class AppComponent {
     const ignoreNots = await this.notificationIgnoredSvc
       .getAllLocal();
 
+    const info = await Device.getInfo();
     ignoreNots.forEach(n => {
-      if(!n.rule) {
+      //ignore our app... from blacklist. Otherwise we won't see running in background
+      //notification when app goes to background
+      if(!n.rule && n.text != info.appId) {
+        //package
         blackListOfPackages.push(n.text);
       } else {
+        //text
         const mn = {
           rule: n.rule,
           value: n.text

@@ -68,7 +68,7 @@ export class AppComponent {
       if(this.platform.is('capacitor')) {
         await this._startListening();
       }
-      
+
       await this._setDefaults();
     });
 
@@ -230,7 +230,8 @@ export class AppComponent {
 
       }     
     }
-    
+    await sn.startListening();
+
     const blackListOfPackages = [], blackListOfText = [];
     const ignoreNots = await this.notificationIgnoredSvc
       .getAllLocal();
@@ -250,8 +251,6 @@ export class AppComponent {
       blackListOfPackages: blackListOfPackages.length ? blackListOfPackages : null,
       blackListOfText: blackListOfText.length ? blackListOfText : null
     });
-
-    await sn.startListening();
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       // console.log('notificationReceivedEvent', info);

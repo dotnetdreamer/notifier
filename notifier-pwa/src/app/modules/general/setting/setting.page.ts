@@ -12,6 +12,7 @@ import { AppConstant } from '../../shared/app-constant';
 import { SchemaService } from '../../shared/db/schema.service';
 import { IUser, UserRole } from '../../authentication/user.model';
 import { UserService } from '../../authentication/user.service';
+import { NotificationSettingService } from '../../notification/notification-setting.service';
 
 @Component({
   selector: 'page-general-setting',
@@ -31,11 +32,13 @@ export class SettingPage extends BasePage implements OnInit, OnDestroy {
 
   currentUser: IUser;
   UserRole = UserRole;
+
+  ignoreSystemAppsNotifications = false;
   
   private _syncDataPushCompleteSub: Subscription;
 
   constructor(private platform: Platform, @Inject(DOCUMENT) private document: Document
-    , private userSvc: UserService) { 
+    , private userSvc: UserService, private notificationSettingSvc: NotificationSettingService) { 
     super();
 
     this._subscribeToEvents();
@@ -53,7 +56,17 @@ export class SettingPage extends BasePage implements OnInit, OnDestroy {
       this.tables.push(this.schemaSvc.tables[tab]);
     }
 
-    this.currentUser = await this.userSettingSvc.getUserProfileLocal();
+    const result = await Promise.all([
+      this.userSettingSvc.getUserProfileLocal()
+      , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
+      ]);
+    this.currentUser = result[0];
+    this.ignoreSystemAppsNotifications = result[1]; 
+  }
+
+  async onIgnoreSystemAppsOptionChanged() {
+    await this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(
+      this.ignoreSystemAppsNotifications);
   }
 
   async onTableSelectionChanged() {

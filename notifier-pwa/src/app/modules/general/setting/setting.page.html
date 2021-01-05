@@ -15,6 +15,16 @@
 
 <ion-content>
   <ion-list-header>
+    <ion-label>{{'notification.title' | localizedresource | async}}</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item>
+      <ion-label>{{'setting.ignore_system_apps' | localizedresource | async}}</ion-label>
+      <ion-checkbox slot="end" [(ngModel)]="ignoreSystemAppsNotifications" 
+      (ionChange)="onIgnoreSystemAppsOptionChanged()"></ion-checkbox>
+    </ion-item>
+  </ion-list>
+  <ion-list-header>
     <ion-label>{{'setting.database' | localizedresource | async}}</ion-label>
   </ion-list-header>
   <ion-list>

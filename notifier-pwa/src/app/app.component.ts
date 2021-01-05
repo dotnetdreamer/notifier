@@ -27,6 +27,7 @@ import { NotificationService } from './modules/notification/notification.service
 import { SyncEntity } from './modules/shared/sync/sync.model';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { NotificationIgnoredService } from './modules/notification/notification-ignored.service';
+import { NotificationSettingService } from './modules/notification/notification-setting.service';
 
 @Component({
   selector: 'app-root',
@@ -47,6 +48,7 @@ export class AppComponent {
       , private authSvc: UserService, private userSettingSvc: UserSettingService
       , private localizationSvc: LocalizationService, private notificationSvc: NotificationService
       , private notificationIgnoredSvc: NotificationIgnoredService
+      , private notificationSettingSvc: NotificationSettingService
   ) {
     this.initializeApp();
   }
@@ -269,8 +271,26 @@ export class AppComponent {
         return;
       }
 
-      const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
 
+      const ignoreSystemApps = await this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled();
+      if(ignoreSystemApps) {
+        //check if it can be launched
+        let canLaunchApp = true;
+        try {
+          await (<GetAppInfoPlugin>GetAppInfo).canLaunchApp({
+            packageName: info.package
+          });
+        } catch(e) {
+          canLaunchApp = false;
+        }
+
+        if(!canLaunchApp) {
+          //nope! ignore and return!
+          return;
+        }
+      }
+
+      const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
       const notification: INotification = {
         title: info.title,
         text: info.text,

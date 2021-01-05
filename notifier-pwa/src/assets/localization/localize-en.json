@@ -35,7 +35,8 @@
         "title": "Setting",
         "database": "Database",
         "delete_db": "Delete Database",
-        "table": "Table"
+        "table": "Table",
+        "ignore_system_apps": "Ignore system apps notifications"
     },
     "search": {
         "title": "Search"    

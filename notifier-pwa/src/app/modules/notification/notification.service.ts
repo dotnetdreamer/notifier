@@ -469,6 +469,16 @@ export class NotificationService extends BaseService {
             }
         }
 
+        try {
+            await (<GetAppInfoPlugin>GetAppInfo).canLaunchApp({
+                packageName: e.package
+            });
+            e.canLaunchApp = true;
+        } catch(e) {
+            //ignore...
+            e.canLaunchApp = false;
+        }
+
         return e;
     }
 

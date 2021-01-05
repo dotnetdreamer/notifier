@@ -57,7 +57,7 @@
           (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">Delete</ion-item-option>
       </ion-item-options>
       <ion-item-options side="end">
-        <ion-item-option (click)="onLaunchAppClicked(slideItem, item)" *ngIf="isAndroid">Launch</ion-item-option>
+        <ion-item-option (click)="onLaunchAppClicked(slideItem, item)" *ngIf="isAndroid && item.canLaunchApp">Launch</ion-item-option>
         <ion-item-option color="danger" (click)="onIgnoreClicked(slideItem, item)">Ignore</ion-item-option>
       </ion-item-options>
     </ion-item-sliding>  

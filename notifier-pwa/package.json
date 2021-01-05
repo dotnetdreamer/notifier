@@ -28,7 +28,7 @@
     "@pscoped/ngx-pub-sub": "^3.0.2",
     "capacitor-notificationlistener": "file:../../capacitor-notificationlistener",
     "capacitor-persistent-notification": "^0.9.5",
-    "capacitor-plugin-get-app-info": "^1.0.1",
+    "capacitor-plugin-get-app-info": "file:../../capacitor-plugin-get-app-info",
     "moment": "^2.29.1",
     "rxjs": "~6.5.5",
     "tslib": "^2.0.0",

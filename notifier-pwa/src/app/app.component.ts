@@ -225,7 +225,6 @@ export class AppComponent {
   private async _startListening() {
     const sn = new SystemNotificationListener();
     const hasPermission = await sn.hasPermission();
-    debugger;
     if(!hasPermission) {
       await sn.requestPermission();   
     }

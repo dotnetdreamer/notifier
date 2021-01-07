@@ -1,6 +1,7 @@
 export interface INotificationIgnored {
     id?: number;
     text: string;
+    package: string;
     rule?: 'exact' | 'startsWith' | 'contains';
   
     updatedOn?: string;

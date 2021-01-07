@@ -7,6 +7,9 @@ export class NotificationIgnoredItem extends BaseEntity {
   @Column()
   text: string;
 
+  @Column()
+  package: string;
+
   @Column({ nullable: true })
   rule?: 'exact' | 'startsWith' | 'contains';
 

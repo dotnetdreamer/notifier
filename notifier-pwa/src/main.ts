@@ -43,11 +43,11 @@ if(Capacitor.getPlatform() === 'android') {
       {
           // Get some work done before the app closes completely.
           const taskId = BackgroundTask.beforeExit(async () => {
-              try
-              {
+              try {
                   await PersistentNotification.open({
                       title: "App is running in background",
                       icon: "assets/icons/favicon.png",  
+                      body: 'Please do not close'
                       // Icon asset exist in www/icons/icon.png
                       // Icon asset always based upon TLD and 
                       // NOT the location of your code.
@@ -87,13 +87,13 @@ if(Capacitor.getPlatform() === 'android') {
            
           // Now do your continuous background task.
           // Update the notification as necessary.
-          // let interval = 1;
-          // intv = setInterval(() => {
-          //     PersistentNotification.update({
-          //         body: `Seconds gone by: ${interval}`
-          //     });
-          //     interval++;
-          // }, 1000);
+          let interval = 1;
+          intv = setInterval(() => {
+              PersistentNotification.update({
+                body: `Please do not close`
+              });
+              interval++;
+          }, 1000);
       }
       else // App is now opening or resuming.
       {
@@ -109,7 +109,7 @@ if(Capacitor.getPlatform() === 'android') {
               listener = null;
           }
 
-          if(intv != null) {
+          if(intv) {
             clearInterval(intv);
           }
       }

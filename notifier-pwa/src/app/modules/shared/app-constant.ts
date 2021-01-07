@@ -22,7 +22,6 @@ export class AppConstant {
     public static readonly KEY_WORKING_LANGUAGE = "key:workingLanguage";
 
     public static readonly IGNORED_PACKAGES = [
-        'io.ionic.starter',
         'com.android.vending',  //google play
         'android',
         'com.android.systemui',

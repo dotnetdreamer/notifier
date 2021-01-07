@@ -260,6 +260,12 @@ export class AppComponent {
     });
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
+      //ignore current app...
+      const deviceInfo = await Device.getInfo();
+      if(deviceInfo.appId == info.package) {
+        return;
+      }
+
       // console.log('notificationReceivedEvent', info);
       const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
       if(packageIgnored) {
@@ -270,7 +276,6 @@ export class AppComponent {
       if(textIgnored) {
         return;
       }
-
 
       const ignoreSystemApps = await this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled();
       if(ignoreSystemApps) {
@@ -334,7 +339,13 @@ export class AppComponent {
       //fire after the page navigates away...
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
     });
-    sn.addListener('notificationRemovedEvent', (info: SystemNotification) => {
+    sn.addListener('notificationRemovedEvent', async (info: SystemNotification) => {
+      //ignore current app...
+      const deviceInfo = await Device.getInfo();
+      if(deviceInfo.appId == info.package) {
+        return;
+      }
+
       console.log('notificationRemovedEvent', info);
     });
   }

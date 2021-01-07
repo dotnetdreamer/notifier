@@ -12,7 +12,7 @@ import { NotificationIgnoredService } from '../notification-ignored.service';
 import { INotificationIgnored } from '../notification.model';
 
 @Component({
-  selector: 'app-notification-ignored',
+  selector: 'page-notification-ignored',
   templateUrl: './notification-ignored.page.html',
   styleUrls: ['./notification-ignored.page.scss'],
   encapsulation: ViewEncapsulation.None

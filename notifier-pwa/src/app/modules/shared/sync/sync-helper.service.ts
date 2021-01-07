@@ -1,6 +1,9 @@
 import { Injectable } from "@angular/core";
+import { Plugins } from "@capacitor/core";
 
+const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
@@ -102,8 +105,39 @@ export class SyncHelperService {
             for(let p of packages) {
                 const item: INotificationIgnored = {
                     text: p,
+                    package: p,
                     markedForAdd: true
                 };
+
+                //icon
+                if(!item.image) {
+                    try {
+                        const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
+                            packageName: item.package
+                        });
+                        if(imgRslt.value) {
+                            // e.image = `url('${imgRslt.value}')`;
+                            item.image = imgRslt.value;
+                        }
+                    } catch(e) {
+                        //ignore...
+                    }
+                }
+
+                //app name
+                if(!item.appName) {
+                    try {
+                        const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
+                            packageName: item.package
+                        });
+                        if(appName.value) {
+                            // e.image = `url('${imgRslt.value}')`;
+                            item.appName = appName.value;
+                        }
+                    } catch(e) {
+                        //ignore...
+                    }
+                }
                 newItems.push(item);
             }
             await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);

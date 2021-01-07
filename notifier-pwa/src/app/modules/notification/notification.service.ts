@@ -317,7 +317,7 @@ export class NotificationService extends BaseService {
                 // return { advance: 2}
             }, iter, 'readonly');
             req.always(async () => {
-                // results = this._sort(results);                    
+                results = this._sort(results);                    
                 
                 //check for pagesize
                 if(args && args.pageSize && results.length > args.pageSize) {

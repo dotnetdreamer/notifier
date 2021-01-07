@@ -224,15 +224,16 @@ export class AppComponent {
 
   private async _startListening() {
     const sn = new SystemNotificationListener();
+    const hasPermission = await sn.hasPermission();
+    debugger;
+    if(!hasPermission) {
+      await sn.requestPermission();   
+    }
+
     const isListening = await sn.isListening();
     if(!isListening) {
-      try {
-        await sn.requestPermission();
-      } catch (e) {
-
-      }     
+      await sn.startListening();
     }
-    await sn.startListening();
 
     const blackListOfPackages = [], blackListOfText = [];
     const ignoreNots = await this.notificationIgnoredSvc

@@ -212,7 +212,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       appName: notification.appName,
       markedForAdd: true
     };
-    await this.notificationIgnoredSvc.putLocal(item, true);
+    //event must be fired so we can refresh blacklist in app.component
+    await this.notificationIgnoredSvc.putLocal(item, false);
 
     //delete from notifications
     let toDeleteAll: INotification[] = [];

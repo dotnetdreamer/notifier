@@ -28,6 +28,7 @@ import { SyncEntity } from './modules/shared/sync/sync.model';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { NotificationIgnoredService } from './modules/notification/notification-ignored.service';
 import { NotificationSettingService } from './modules/notification/notification-setting.service';
+import { NotificationConstant } from './modules/notification/notification.constant';
 
 @Component({
   selector: 'app-root',
@@ -38,6 +39,8 @@ export class AppComponent {
   workingLanguage;
   appVersion;
   currentUser: IUserProfile;
+  
+  private _systemNotificationListener: SystemNotificationListener;
   
   constructor(
     private router: Router, @Inject(DOCUMENT) private document: Document
@@ -97,6 +100,21 @@ export class AppComponent {
       }
     });
     
+    this.pubsubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_IGNORED_CREATED_OR_UPDATED
+      , async (args: INotificationIgnored) => {
+      if(AppConstant.DEBUG) {
+        console.log('AppComponent:EVENT_NOTIFICATION_IGNORED_CREATED_OR_UPDATED', args);
+      }
+
+      //refresh blacklist...
+      if(!this._systemNotificationListener) {
+        return;
+      }
+
+      const bList = await this.notificationIgnoredSvc.getBlackList();
+      this._systemNotificationListener.setBlackList(bList);
+    });
+
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH, async (table?) => {
       if(AppConstant.DEBUG) {
         console.log('AppComponent: EVENT_SYNC_DATA_PUSH: table:', table);
@@ -234,30 +252,10 @@ export class AppComponent {
       await sn.startListening();
     }
 
-    const blackListOfPackages = [], blackListOfText = [];
-    const ignoreNots = await this.notificationIgnoredSvc
-      .getAllLocal();
-
-    const info = await Device.getInfo();
-    ignoreNots.forEach(n => {
-      //ignore our app... from blacklist. Otherwise we won't see running in background
-      //notification when app goes to background
-      if(!n.rule && n.text != info.appId) {
-        //package
-        blackListOfPackages.push(n.text);
-      } else {
-        //text
-        const mn = {
-          rule: n.rule,
-          value: n.text
-        };
-        blackListOfText.push(mn);
-      }
-    });
-    sn.setBlackList({
-      blackListOfPackages: blackListOfPackages.length ? blackListOfPackages : null,
-      blackListOfText: blackListOfText.length ? blackListOfText : null
-    });
+    //blacklist/ignored
+    const bList = await this.notificationIgnoredSvc
+      .getBlackList();
+    sn.setBlackList(bList);
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       //ignore current app...
@@ -348,6 +346,8 @@ export class AppComponent {
 
       console.log('notificationRemovedEvent', info);
     });
+
+    this._systemNotificationListener = sn;
   }
 
   private async _navigateTo(path, args?, replaceUrl = false) {

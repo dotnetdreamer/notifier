@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
+const { GetAppInfo, Device } = Plugins;
 import * as moment from 'moment';
 
 import { AppConstant } from '../shared/app-constant';
@@ -247,6 +247,34 @@ export class NotificationIgnoredService extends BaseService {
 
                 results = await this._mapAll(results);
                 resolve(results);
+            });
+        });
+    }
+
+    getBlackList() {
+        return new Promise<{ blackListOfPackages: any[], blackListOfText: any[]}>(async (resolve, reject) => {
+            const blackListOfPackages = [], blackListOfText = [];
+            const ignoreNots = await this.getAllLocal();
+            const info = await Device.getInfo();
+
+            ignoreNots.forEach(n => {
+              //ignore our app... from blacklist. Otherwise we won't see running in background
+              //notification when app goes to background
+              if(!n.rule && n.text != info.appId) {
+                //package
+                blackListOfPackages.push(n.text);
+              } else {
+                //text
+                const mn = {
+                  rule: n.rule,
+                  value: n.text
+                };
+                blackListOfText.push(mn);
+              }
+            });
+            resolve({
+                blackListOfPackages: blackListOfPackages.length ? blackListOfPackages : null,
+                blackListOfText: blackListOfText.length ? blackListOfText : null
             });
         });
     }

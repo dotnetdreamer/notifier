@@ -33,6 +33,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   isAndroid = false;
   dates: { selectedDate?: { from, to, fromTime?, toTime? }, todayDate? } = {};
   dataLoaded = false;
+  startupSyncCompleted = false;
   displayHeaderbar = true;
 
   private _syncDataPushCompleteSub: Subscription;
@@ -317,6 +318,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       setTimeout(() => {
         this._syncDataPullCompleteSub.unsubscribe();
         this._syncDataPullCompleteSub = null;
+        this.startupSyncCompleted = true;
       });
     });
   }

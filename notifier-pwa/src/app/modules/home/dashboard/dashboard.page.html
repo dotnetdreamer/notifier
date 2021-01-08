@@ -10,6 +10,11 @@
       </ion-button>
     </ion-buttons> -->
     <ion-title>{{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="animated infinite" [class.spin]="!startupSyncCompleted || !dataLoaded">
+        <ion-icon name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar class="toolbar-calendar">
     <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label>

@@ -176,7 +176,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     try {
-      const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).launchApp({
+      await (<GetAppInfoPlugin>GetAppInfo).launchApp({
         packageName: notification.package
       });
     } catch(e) {

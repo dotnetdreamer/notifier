@@ -474,7 +474,7 @@ export class NotificationService extends BaseService {
                 packageName: e.package
             });
             e.canLaunchApp = true;
-        } catch(e) {
+        } catch(ex) {
             //ignore...
             e.canLaunchApp = false;
         }

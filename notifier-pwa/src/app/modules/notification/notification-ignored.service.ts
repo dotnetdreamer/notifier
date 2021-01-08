@@ -286,7 +286,7 @@ export class NotificationIgnoredService extends BaseService {
     async getByTextLocal(term) {
         const result = await this.dbService.getByFieldName<INotificationIgnored[]>(
             this.schemaSvc.tables.notificationIgnored, 'text', term);
-        return result[0];
+        return <INotificationIgnored>result[0];
     }
 
     async putLocal(item: INotificationIgnored, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {

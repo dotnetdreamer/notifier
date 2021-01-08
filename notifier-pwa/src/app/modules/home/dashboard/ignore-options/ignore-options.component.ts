@@ -57,12 +57,7 @@ import { HelperService } from "src/app/modules/shared/helper.service";
             </ion-toolbar>
         </ion-footer>
     `,
-    styles: [`
-        .ignore-options-modal {
-            --width: calc(100% - 40px);
-            --height: 460px;
-        }
-    `],
+    styleUrls: ['./ignore-options.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class IgnoreOptionsComponent implements OnInit {

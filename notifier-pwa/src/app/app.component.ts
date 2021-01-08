@@ -277,7 +277,7 @@ export class AppComponent {
       }
 
       const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
-      if(textIgnored) {
+      if(textIgnored && textIgnored.package == info.package) {
         if(AppConstant.DEBUG) {
           console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
         }

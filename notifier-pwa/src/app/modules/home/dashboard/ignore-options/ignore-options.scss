@@ -1,0 +1,12 @@
+.ignore-options-modal {
+    --width: calc(100% - 40px);
+    --height: 460px;
+
+    ion-list {
+        ion-item {
+            ion-label {
+                font-size: 14px;
+            }
+        }
+    }
+}

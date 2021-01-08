@@ -267,7 +267,8 @@ export class NotificationIgnoredService extends BaseService {
                 //text
                 const mn = {
                   rule: n.rule,
-                  value: n.text
+                  value: n.text,
+                  package: n.package
                 };
                 blackListOfText.push(mn);
               }

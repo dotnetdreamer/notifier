@@ -36,6 +36,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   displayHeaderbar = true;
 
   private _syncDataPushCompleteSub: Subscription;
+  private _syncDataPullCompleteSub: Subscription;
 
   constructor(private ngZone: NgZone
     , private alertCtrl: AlertController, private platform: Platform
@@ -65,12 +66,16 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     //fix: navigation lag
     setTimeout(async () => {
       await this._getAllNotifications();
-    }, 300);
+    });
   }
 
   ngOnDestroy() {
     if(this._syncDataPushCompleteSub) {
       this._syncDataPushCompleteSub.unsubscribe();
+    }
+
+    if(this._syncDataPullCompleteSub) {
+      this._syncDataPullCompleteSub.unsubscribe();
     }
   }
 
@@ -303,11 +308,16 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     //important to add here since the application loads and the view will show but there will be no data...
     //this is needed only when the application runs first time (i.e startup)
-    // this._syncInitSub = this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
-    //   if(AppConstant.DEBUG) {
-    //     console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
-    //   }
-    //   await this._getExpenses();
-    // });
+    this._syncDataPullCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
+      if(AppConstant.DEBUG) {
+        console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
+      }
+      await this._getAllNotifications();
+      //we only need this first time...kill it!
+      setTimeout(() => {
+        this._syncDataPullCompleteSub.unsubscribe();
+        this._syncDataPullCompleteSub = null;
+      });
+    });
   }
 }

@@ -11,7 +11,8 @@
     </ion-buttons> -->
     <ion-title>{{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}</ion-title>
     <ion-buttons slot="end">
-      <ion-button class="animated infinite" [class.spin]="!startupSyncCompleted || !dataLoaded">
+      <ion-button class="animated infinite" [disabled]="true" 
+        [class.spin]="!startupSyncCompleted || !dataLoaded">
         <ion-icon name="refresh"></ion-icon>
       </ion-button>
     </ion-buttons>

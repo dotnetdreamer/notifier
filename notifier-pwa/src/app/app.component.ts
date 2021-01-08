@@ -261,17 +261,26 @@ export class AppComponent {
       //ignore current app...
       const deviceInfo = await Device.getInfo();
       if(deviceInfo.appId == info.package) {
+        if(AppConstant.DEBUG) {
+          console.log(`Ignoring: ${info.package} is same as ${deviceInfo.appId}`);
+        }
         return;
       }
 
       // console.log('notificationReceivedEvent', info);
       const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
       if(packageIgnored) {
+        if(AppConstant.DEBUG) {
+          console.log(`Ignoring: ${info.package} is added to ignore list via package`);
+        }
         return;
       }
 
       const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
       if(textIgnored) {
+        if(AppConstant.DEBUG) {
+          console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
+        }
         return;
       }
 
@@ -288,6 +297,9 @@ export class AppComponent {
         }
 
         if(!canLaunchApp) {
+          if(AppConstant.DEBUG) {
+            console.log(`Ignoring: ${info.package} is cannot be launched and is system app`);
+          }
           //nope! ignore and return!
           return;
         }
@@ -312,7 +324,7 @@ export class AppComponent {
             }
         } catch(e) {
             //ignore...
-        }
+        } 
 
       //app name
         try {

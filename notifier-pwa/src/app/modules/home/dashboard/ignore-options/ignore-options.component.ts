@@ -21,7 +21,7 @@ import { HelperService } from "src/app/modules/shared/helper.service";
                     </ion-item>
                 </ion-radio-group>
             </ion-list>
-            <ion-list *ngIf="selectedValue == 'message'" #matchingRuleList>
+            <ion-list>
                 <ion-radio-group [value]="selectedRule" 
                     (ionChange)="onMessageRuleChanged($event)">
                     <ion-list-header>
@@ -31,15 +31,15 @@ import { HelperService } from "src/app/modules/shared/helper.service";
                     </ion-list-header>
                     <ion-item>
                         <ion-label>Exactly this message</ion-label>
-                        <ion-radio value="exact" mode="ios"></ion-radio>
+                        <ion-radio value="exact" mode="ios" [disabled]="selectedValue != 'message'"></ion-radio>
                     </ion-item>
                     <ion-item>
                         <ion-label>Starts With this message</ion-label>
-                        <ion-radio value="startsWith" mode="ios"></ion-radio>
+                        <ion-radio value="startsWith" mode="ios" [disabled]="selectedValue != 'message'"></ion-radio>
                     </ion-item>
-                    <ion-item>
+                    <ion-item lines="none">
                         <ion-label>Contains this message</ion-label>
-                        <ion-radio value="contains" mode="ios"></ion-radio>
+                        <ion-radio value="contains" mode="ios" [disabled]="selectedValue != 'message'"></ion-radio>
                     </ion-item>
                 </ion-radio-group>
             </ion-list>
@@ -60,13 +60,12 @@ import { HelperService } from "src/app/modules/shared/helper.service";
     styles: [`
         .ignore-options-modal {
             --width: calc(100% - 40px);
-            --height: 280px;
+            --height: 460px;
         }
     `],
     encapsulation: ViewEncapsulation.None
 })
 export class IgnoreOptionsComponent implements OnInit {
-    @ViewChild('matchingRuleList') matchingRuleList: IonList;
     @Input() notification: INotification;
 
     options: any[] = [];
@@ -98,11 +97,6 @@ export class IgnoreOptionsComponent implements OnInit {
         if(this.selectedValue != 'message') {
             return;
         }
-
-        setTimeout(() => {
-            const { el } = <any>this.matchingRuleList;
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
     }
 
     onMessageRuleChanged(ev: CustomEvent) {

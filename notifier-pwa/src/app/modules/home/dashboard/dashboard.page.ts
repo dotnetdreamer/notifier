@@ -162,9 +162,11 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
           await this.notificationSvc.putLocal(notification);
         }
-
-        this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+        
         await this.helperSvc.presentToastGenericSuccess();
+        setTimeout(() => {
+          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+        });
       }
     } catch(e) {
       await this.helperSvc.presentToastGenericError();
@@ -311,9 +313,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     //important to add here since the application loads and the view will show but there will be no data...
     //this is needed only when the application runs first time (i.e startup)
-    this._syncDataPullCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
+    this._syncDataPullCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async (table?) => {
       if(AppConstant.DEBUG) {
-        console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
+        console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
       await this._getAllNotifications();
       //we only need this first time...kill it!

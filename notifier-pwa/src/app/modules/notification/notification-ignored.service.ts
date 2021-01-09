@@ -217,17 +217,19 @@ export class NotificationIgnoredService extends BaseService {
                             item = null;
                         }
                     }
-                    
+
                     if(item && args.silent != null && args.silent != item.silent) {
                         item = null;
                     }
                 }
 
+                //do not show deleted...
+                if(item && item.markedForDelete) {
+                    item = null;
+                }
+
                 if(item) {
-                    //do not show deleted...
-                    if(!item.markedForDelete) {
-                        results.push(item);
-                    }
+                    results.push(item);
                 }
 
                 req.done();

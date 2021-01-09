@@ -30,7 +30,10 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
 
   constructor(private ngZone: NgZone
     , private notificationIgnoredSvc: NotificationIgnoredService, private helperSvc: HelperService
-    , private pubSubSvc: NgxPubSubService) { }
+    , private pubSubSvc: NgxPubSubService) { 
+
+      this._subscribeToEvents();
+    }
 
   ngOnInit() {
   }
@@ -71,9 +74,11 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
         notification.updatedOn = null;
 
         await this.notificationIgnoredSvc.putLocal(notification);
-
-        this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION_IGNORED);
         await this.helperSvc.presentToastGenericSuccess();
+        
+        setTimeout(() => {
+          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION_IGNORED);
+        });
       }
     } catch(e) {
       await this.helperSvc.presentToastGenericError();
@@ -100,4 +105,12 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
+  private _subscribeToEvents() {
+    this._syncDataPushCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH_COMPLETE, async (table?) => {
+      if(AppConstant.DEBUG) {
+        console.log('NotificationIgnoredPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE: table', table);
+      }
+      await this._getAllNotifications();
+    });
+  }
 }

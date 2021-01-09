@@ -53,7 +53,7 @@ export class SyncHelperService {
                 if(AppConstant.DEBUG) {
                     console.log('SyncHelperService: publishing EVENT_SYNC_DATA_PULL_COMPLETE');
                 }
-                this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE);
+                this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, table);
             }
         });
     }

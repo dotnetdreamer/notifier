@@ -133,9 +133,9 @@ export class AppComponent {
       }
     });
 
-    this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async () => {
+    this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async (table?) => {
       if(AppConstant.DEBUG) {
-        console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE');
+        console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
       const { appVersion } = await (await Device.getInfo());
       this.appVersion = appVersion;

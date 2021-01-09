@@ -20,6 +20,7 @@ export interface INotificationIgnored {
     id?: number;
     text: string;
     package: string;
+    silent: boolean;
     rule?: 'exact' | 'startsWith' | 'contains';
     image?: string;
     appName?: string;

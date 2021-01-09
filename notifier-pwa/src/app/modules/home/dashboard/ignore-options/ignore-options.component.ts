@@ -13,6 +13,10 @@ import { HelperService } from "src/app/modules/shared/helper.service";
         </ion-header>
         <ion-content>
             <ion-list>
+            <ion-item>
+                <ion-label>Silent Notification</ion-label>
+                <ion-checkbox slot="end" [value]="silent" (ionChange)="onSilentOptionChanged($event)"></ion-checkbox>
+            </ion-item>
                 <ion-radio-group [value]="selectedValue" 
                     (ionChange)="onMessageTypeChanged($event)">
                     <ion-item *ngFor="let opt of options">
@@ -65,7 +69,8 @@ export class IgnoreOptionsComponent implements OnInit {
 
     options: any[] = [];
     selectedValue = 'app';
-    selectedRule = "exact"
+    selectedRule = "exact";
+    silent = false;
 
     constructor(private modalCtrl: ModalController
         , private helperSvc: HelperService) {
@@ -99,6 +104,11 @@ export class IgnoreOptionsComponent implements OnInit {
         this.selectedRule = value;
     }
 
+    onSilentOptionChanged(ev: CustomEvent) {
+        const { checked } = ev.detail;
+        this.silent = checked;
+    }
+
 
     async onOkButtonClicked() {
         if(!this.selectedValue) {
@@ -113,7 +123,8 @@ export class IgnoreOptionsComponent implements OnInit {
 
         const data = {
             value: this.selectedValue,
-            rule: this.selectedValue == 'app' ? null : this.selectedRule
+            rule: this.selectedValue == 'app' ? null : this.selectedRule,
+            silent: this.silent
         };
         await this.dismiss(data);
     }

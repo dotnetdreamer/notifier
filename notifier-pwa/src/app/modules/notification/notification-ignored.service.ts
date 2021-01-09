@@ -193,7 +193,7 @@ export class NotificationIgnoredService extends BaseService {
         });
     }
 
-    getAllLocal(args?: { term?, pageIndex?, pageSize? })
+    getAllLocal(args?: { term?, silent?, pageIndex?, pageSize? })
         : Promise<INotificationIgnored[]> {
         return new Promise(async (resolve, reject) => {
             let results = [];
@@ -207,12 +207,8 @@ export class NotificationIgnoredService extends BaseService {
             let req = db.open(x => {
                 let v: INotificationIgnored = x.getValue();
                 
-                let item: INotificationIgnored;
+                let item = v;
                 if(args) {
-                    if(args.pageIndex || args.pageSize) {
-                        item = v;
-                    }
-
                     if(item && args.term) {
                         const term = args.term.toLowerCase();
                         const text = item ? item.text.toLowerCase() : v.text.toLowerCase();
@@ -221,8 +217,10 @@ export class NotificationIgnoredService extends BaseService {
                             item = null;
                         }
                     }
-                } else {
-                    item = v;
+                    
+                    if(item && args.silent != null && args.silent != item.silent) {
+                        item = null;
+                    }
                 }
 
                 if(item) {
@@ -254,7 +252,7 @@ export class NotificationIgnoredService extends BaseService {
     getBlackList() {
         return new Promise<{ blackListOfPackages: any[], blackListOfText: any[]}>(async (resolve, reject) => {
             const blackListOfPackages = [], blackListOfText = [];
-            const ignoreNots = await this.getAllLocal();
+            const ignoreNots = await this.getAllLocal({ silent: true });
             const info = await Device.getInfo();
 
             ignoreNots.forEach(n => {

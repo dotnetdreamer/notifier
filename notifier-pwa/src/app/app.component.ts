@@ -250,7 +250,7 @@ export class AppComponent {
     const isListening = await sn.isListening();
     if(!isListening) {
       await sn.startListening();
-    }
+    } 
 
     //blacklist/ignored
     const bList = await this.notificationIgnoredSvc

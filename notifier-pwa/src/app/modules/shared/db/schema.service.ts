@@ -67,6 +67,12 @@ export class SchemaService {
                 }, { 
                     name: 'text', 
                     type: 'TEXT'
+                }, { 
+                    name: 'package', 
+                    type: 'TEXT' 
+                }, { 
+                    name: 'silent', 
+                    type: 'TEXT' 
                 }, {
                     name: 'image', 
                     type: 'TEXT' 

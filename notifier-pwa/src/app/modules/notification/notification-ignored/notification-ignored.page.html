@@ -22,6 +22,7 @@
                 <ion-icon name="refresh" class="animated infinite spin" 
                   *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
                 <div class="info">{{item.appName || item.package}}</div>
+                <ion-icon name="notifications-off" color="danger" *ngIf="item.silent"></ion-icon>
               </div>
             </div>
             <div class="date-time">

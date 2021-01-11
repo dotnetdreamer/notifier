@@ -9,7 +9,8 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "resources:splash": "cordova-res android --skip-config --copy --splash-source ../_docs/branding/splash.png --type splash"
   },
   "private": true,
   "dependencies": {

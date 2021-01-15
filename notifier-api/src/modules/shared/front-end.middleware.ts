@@ -25,8 +25,13 @@ export class FrontendMiddleware implements NestMiddleware {
       res.sendFile(resolvePath(url));
     } else {
       this.logger.log(`Resolving Redirecting: ${url} to index.html`);
-      // in all other cases, redirect to the index.html!
-      res.sendFile(resolvePath('index.html'));
+      if(process.env.NODE_ENV !== 'production') {
+        const resolveDebugPath = (file: string) => path.resolve(`./src/client/${file}`);
+        res.sendFile(resolveDebugPath('index.html'));
+      } else {
+        // in all other cases, redirect to the index.html!
+        res.sendFile(resolvePath('index.html'));
+      }
     }
   } 
 }

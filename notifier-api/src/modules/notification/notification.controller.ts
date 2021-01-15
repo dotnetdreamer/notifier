@@ -1,12 +1,13 @@
 import { Controller, UseInterceptors, Get, ClassSerializerInterceptor, Post, Body, Query, UseGuards, Req } from "@nestjs/common";
 
 import { Request } from "express";
+import { AppConstant } from "../shared/app-constant";
 
 import { NotificationRecord } from "./notification.entity";
 import { INotification } from "./notification.model";
 import { NotificationService } from "./notification.service";
 
-@Controller('notification')
+@Controller(`${AppConstant.ROUTE_PREFIX}/notification`)
 export class NotificationController {
   constructor(private readonly notificationSvc: NotificationService) {}
 

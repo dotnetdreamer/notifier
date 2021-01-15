@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WinstonModule } from 'nest-winston';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -8,6 +9,7 @@ import { NotificationIgnoredItem } from './modules/notification-ignored/notifica
 import { NotificationIgnoredModule } from './modules/notification-ignored/notification-ignored.module';
 import { NotificationRecord } from './modules/notification/notification.entity';
 import { NotificationModule } from './modules/notification/notification.module';
+import { FrontendMiddleware } from './modules/shared/front-end.middleware';
 import { SharedModule } from './modules/shared/shared.module';
 
 const CONNECTION_NAME = "default";
@@ -23,6 +25,9 @@ const CONNECTION_NAME = "default";
       ],
       synchronize: true,
     }),
+    WinstonModule.forRoot({
+      // options
+    }),
     SharedModule,
     NotificationModule,
     NotificationIgnoredModule
@@ -30,4 +35,8 @@ const CONNECTION_NAME = "default";
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(FrontendMiddleware).forRoutes('/');
+  }
+}

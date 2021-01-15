@@ -1,12 +1,13 @@
 import { Controller, UseInterceptors, Get, ClassSerializerInterceptor, Post, Body, Query, UseGuards, Req } from "@nestjs/common";
 
 import { Request } from "express";
+import { AppConstant } from "../shared/app-constant";
 
 import { NotificationIgnoredItem } from "./notification-ignored.entity";
 import { INotificationIgnored } from "./notification-ignored.model";
 import { NotificationIgnoredService } from "./notification-ignored.service";
 
-@Controller('notification-ignored')
+@Controller(`${AppConstant.ROUTE_PREFIX}/notification-ignored`)
 export class NotificationIgnoredController {
   constructor(private readonly notificationIgnoredSvc: NotificationIgnoredService) {}
 

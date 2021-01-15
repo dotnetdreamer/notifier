@@ -11,7 +11,6 @@ import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 import { debounceTime } from 'rxjs/operators';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
-// import { DozeOptimizePlugin } from 'capacitor-plugin-doze-optimize';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppSettingService } from './modules/shared/app-setting.service';

@@ -4,14 +4,14 @@ import { DOCUMENT } from '@angular/common';
 import { Platform } from '@ionic/angular';
 import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
+const { GetAppInfo, DozeOptimize } = Plugins;
 const { SplashScreen, StatusBar, Device } = Plugins;
 import { Observable } from 'rxjs';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 import { debounceTime } from 'rxjs/operators';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
-// import { DozeOptimizePlugin } from 'capacitor-plugin-doze-optimize';
+import { DozeOptimizePlugin } from 'capacitor-plugin-doze-optimize';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppSettingService } from './modules/shared/app-setting.service';
@@ -76,7 +76,10 @@ export class AppComponent {
         if(EnvService.DEBUG) {
           console.log('AppComponent: _subscribeToEvents: Ignoring BatteryOptimizations');
         }
-
+        
+        this._ignoringBatteryOptimizations()
+        .then((iboResult) => {
+          if(iboResult) {
             const sn = new SystemNotificationListener();
             if(EnvService.DEBUG) {
               console.log('AppComponent: _subscribeToEvents: Requesting permission');
@@ -92,6 +95,8 @@ export class AppComponent {
                 this._systemNotificationListener = sn;
               }
             });
+          }
+        });
       }
 
       await this._setDefaults();
@@ -285,15 +290,15 @@ export class AppComponent {
     });
   }
 
-  // private _ignoringBatteryOptimizations() {
-  //   return new Promise<boolean>(async (resolve, reject) => {
-  //     const res1 = await (<DozeOptimizePlugin>DozeOptimize).isIgnoringBatteryOptimizations();
-  //     if(!res1.result) {
-  //       const res2 = await (<DozeOptimizePlugin>DozeOptimize).requestOptimizations();
-  //     }   
-  //     resolve(true);
-  //   });
-  // }
+  private _ignoringBatteryOptimizations() {
+    return new Promise<boolean>(async (resolve, reject) => {
+      const res1 = await (<DozeOptimizePlugin>DozeOptimize).isIgnoringBatteryOptimizations();
+      if(!res1.result) {
+        const res2 = await (<DozeOptimizePlugin>DozeOptimize).requestOptimizations();
+      }   
+      resolve(true);
+    });
+  }
 
   private async _startListening(sn: SystemNotificationListener) {
     const isListening = await sn.isListening();

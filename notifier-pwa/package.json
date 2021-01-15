@@ -29,6 +29,7 @@
     "@pscoped/ngx-pub-sub": "^3.0.2",
     "capacitor-notificationlistener": "file:../../capacitor-notificationlistener",
     "capacitor-persistent-notification": "^0.9.5",
+    "capacitor-plugin-doze-optimize": "file:../../capacitor-plugin-doze-optimize",
     "capacitor-plugin-get-app-info": "file:../../capacitor-plugin-get-app-info",
     "moment": "^2.29.1",
     "rxjs": "~6.5.5",

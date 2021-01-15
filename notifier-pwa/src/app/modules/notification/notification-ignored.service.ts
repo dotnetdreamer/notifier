@@ -6,6 +6,7 @@ import * as moment from 'moment';
 
 import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
+import { EnvService } from '../shared/env.service';
 import { NotificationConstant } from './notification.constant';
 import { INotificationIgnored } from './notification.model';
 
@@ -62,7 +63,7 @@ export class NotificationIgnoredService extends BaseService {
     push() {
         return new Promise(async (resolve, reject) => {
             let unSycedLocal = await this.getUnSyncedLocal();
-            if(AppConstant.DEBUG) {
+            if(EnvService.DEBUG) {
                 console.log('NotificationIgnoredService: sync: unSycedLocal items length', unSycedLocal.length);
             }
 
@@ -140,7 +141,7 @@ export class NotificationIgnoredService extends BaseService {
 
                 //now make updates
                 await Promise.all(promises);
-                if(AppConstant.DEBUG) {
+                if(EnvService.DEBUG) {
                     console.log('NotificationIgnoredService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);

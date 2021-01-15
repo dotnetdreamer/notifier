@@ -5,6 +5,7 @@ import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { Subscription } from 'rxjs';
 
 import { AppConstant } from '../../shared/app-constant';
+import { EnvService } from '../../shared/env.service';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
@@ -97,7 +98,7 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
       } catch(e) {
         this.notifications = [];
       } finally {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log('NotificationIgnoredPage: _getAllNotifications: notifications', this.notifications);
         }
         this.dataLoaded = true;
@@ -107,7 +108,7 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
 
   private _subscribeToEvents() {
     this._syncDataPushCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH_COMPLETE, async (table?) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('NotificationIgnoredPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE: table', table);
       }
       await this._getAllNotifications();

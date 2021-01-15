@@ -11,6 +11,7 @@ import { AppConstant } from '../app-constant';
 import { NotificationService } from '../../notification/notification.service';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { INotification, INotificationIgnored } from '../../notification/notification.model';
+import { EnvService } from "../env.service";
 
 
 @Injectable({
@@ -50,7 +51,7 @@ export class SyncHelperService {
             } catch(e) {
                 reject(e);
             } finally {
-                if(AppConstant.DEBUG) {
+                if(EnvService.DEBUG) {
                     console.log('SyncHelperService: publishing EVENT_SYNC_DATA_PULL_COMPLETE');
                 }
                 this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, table);

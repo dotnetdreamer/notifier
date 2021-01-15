@@ -11,6 +11,8 @@ import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 import { debounceTime } from 'rxjs/operators';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
+// import { DozeOptimizePlugin } from 'capacitor-plugin-doze-optimize';
+import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppSettingService } from './modules/shared/app-setting.service';
 import { SyncHelperService } from './modules/shared/sync/sync-helper.service';
@@ -25,10 +27,10 @@ import { LocalizationService } from './modules/shared/localization.service';
 import { INotification, INotificationIgnored } from './modules/notification/notification.model';
 import { NotificationService } from './modules/notification/notification.service';
 import { SyncEntity } from './modules/shared/sync/sync.model';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { NotificationIgnoredService } from './modules/notification/notification-ignored.service';
 import { NotificationSettingService } from './modules/notification/notification-setting.service';
 import { NotificationConstant } from './modules/notification/notification.constant';
+import { EnvService } from './modules/shared/env.service';
 
 @Component({
   selector: 'app-root',
@@ -66,19 +68,37 @@ export class AppComponent {
 
   private async _subscribeToEvents() {
     this.pubsubSvc.subscribe(AppConstant.EVENT_DB_INITIALIZED, async () => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('Event received: EVENT_DB_INITIALIZED');
       }
 
       if(this.platform.is('capacitor')) {
-        await this._startListening();
+        if(EnvService.DEBUG) {
+          console.log('AppComponent: _subscribeToEvents: Ignoring BatteryOptimizations');
+        }
+
+            const sn = new SystemNotificationListener();
+            if(EnvService.DEBUG) {
+              console.log('AppComponent: _subscribeToEvents: Requesting permission');
+            }
+            this._requestPermission(sn)
+            .then(async (pResult) => {
+              if(pResult) {
+                if(EnvService.DEBUG) {
+                  console.log('AppComponent: _subscribeToEvents: Starting listening');
+                }
+                await this._startListening(sn);      
+                
+                this._systemNotificationListener = sn;
+              }
+            });
       }
 
       await this._setDefaults();
     });
 
     this.pubsubSvc.subscribe(AppConstant.EVENT_LANGUAGE_CHANGED, async (params) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('EVENT_LANGUAGE_CHANGED', params);
       }
       const { wkLangauge, reload } = params;
@@ -102,7 +122,7 @@ export class AppComponent {
     
     this.pubsubSvc.subscribe(NotificationConstant.EVENT_NOTIFICATION_IGNORED_CREATED_OR_UPDATED
       , async (args: INotificationIgnored) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent:EVENT_NOTIFICATION_IGNORED_CREATED_OR_UPDATED', args);
       }
 
@@ -116,14 +136,14 @@ export class AppComponent {
     });
 
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH, async (table?) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: EVENT_SYNC_DATA_PUSH: table:', table);
       }
       await this.syncHelperSvc.push(table);
     });
 
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL, async (table?) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: EVENT_SYNC_DATA_PULL: table:', table);
       }
       try {
@@ -134,7 +154,7 @@ export class AppComponent {
     });
 
     this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async (table?) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
       const { appVersion } = await (await Device.getInfo());
@@ -147,7 +167,7 @@ export class AppComponent {
 
     this.pubsubSvc.subscribe(UserConstant.EVENT_USER_LOGGEDIN
       , async (params: { user: IUserProfile, redirectToHome: boolean, pull: boolean }) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: EVENT_USER_LOGGEDIN: params', params);
       }
 
@@ -169,7 +189,7 @@ export class AppComponent {
     });
     
     this.pubsubSvc.subscribe(UserConstant.EVENT_USER_LOGGEDOUT, async (args) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: EVENT_USER_LOGGEDOUT: args', args);
       }
       this.currentUser = null;
@@ -187,7 +207,7 @@ export class AppComponent {
       return () => subc.unsubscribe()
     }).pipe(debounceTime(500))
       .subscribe(async (totalTables) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: EVENT_SYNC_DATA_PUSH_COMPLETE: totalTables', totalTables);
       }
     });
@@ -206,13 +226,16 @@ export class AppComponent {
       wkl = 'en';
       await this.appSettingSvc.putWorkingLanguage(wkl);
 
+      //ignore system notifications
+      this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(true);
+
       //put sample data
       this.syncHelperSvc.syncSampleData();
     }
     this.pubsubSvc.publishEvent(AppConstant.EVENT_LANGUAGE_CHANGED, { wkLangauge: wkl, reload: false });
     this.workingLanguage = wkl;
     
-    if(AppConstant.DEBUG) {
+    if(EnvService.DEBUG) {
       console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');
     }    
     this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL);
@@ -226,7 +249,7 @@ export class AppComponent {
       //   groupId: 16
       // });  
 
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: _setDefaults: publishing EVENT_SYNC_DATA_PULL');
       }
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL);
@@ -240,19 +263,45 @@ export class AppComponent {
     await this._navigateTo('/home');
   }
 
-  private async _startListening() {
-    const sn = new SystemNotificationListener();
-    const hasPermission = await sn.hasPermission();
-    if(!hasPermission) {
-      await sn.requestPermission();   
-    }
+  private async _requestPermission(sn: SystemNotificationListener) {
+    return new Promise<boolean>((resolve, reject) => {
+      let isFirstTime = true;
+      const tim = 50;
 
+      let t = setTimeout(async function check() {
+        const hasPermission = await sn.hasPermission();
+        if(!hasPermission) {
+          if(isFirstTime) {
+            await sn.requestPermission();  
+            isFirstTime = false;
+          }
+
+          t = setTimeout(check, tim);  
+        } else {
+          clearTimeout(t);
+          resolve(true);
+        }
+      }, tim);
+    });
+  }
+
+  // private _ignoringBatteryOptimizations() {
+  //   return new Promise<boolean>(async (resolve, reject) => {
+  //     const res1 = await (<DozeOptimizePlugin>DozeOptimize).isIgnoringBatteryOptimizations();
+  //     if(!res1.result) {
+  //       const res2 = await (<DozeOptimizePlugin>DozeOptimize).requestOptimizations();
+  //     }   
+  //     resolve(true);
+  //   });
+  // }
+
+  private async _startListening(sn: SystemNotificationListener) {
     const isListening = await sn.isListening();
     if(!isListening) {
       await sn.startListening();
-    } 
+    }
 
-    //blacklist/ignored
+    //blacklist/ignored  
     const bList = await this.notificationIgnoredSvc
       .getBlackList();
     sn.setBlackList(bList);
@@ -261,7 +310,7 @@ export class AppComponent {
       //ignore current app...
       const deviceInfo = await Device.getInfo();
       if(deviceInfo.appId == info.package) {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log(`Ignoring: ${info.package} is same as ${deviceInfo.appId}`);
         }
         return;
@@ -270,7 +319,7 @@ export class AppComponent {
       // console.log('notificationReceivedEvent', info);
       const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
       if(packageIgnored) {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log(`Ignoring: ${info.package} is added to ignore list via package`);
         }
         return;
@@ -278,7 +327,7 @@ export class AppComponent {
 
       const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
       if(textIgnored && textIgnored.package == info.package) {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
         }
         return;
@@ -297,7 +346,7 @@ export class AppComponent {
         }
 
         if(!canLaunchApp) {
-          if(AppConstant.DEBUG) {
+          if(EnvService.DEBUG) {
             console.log(`Ignoring: ${info.package} is cannot be launched and is system app`);
           }
           //nope! ignore and return!
@@ -339,7 +388,7 @@ export class AppComponent {
             //ignore...
         }
 
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('AppComponent: notificationReceivedEvent: notification', notification)
       }
 
@@ -358,8 +407,6 @@ export class AppComponent {
 
       console.log('notificationRemovedEvent', info);
     });
-
-    this._systemNotificationListener = sn;
   }
 
   private async _navigateTo(path, args?, replaceUrl = false) {

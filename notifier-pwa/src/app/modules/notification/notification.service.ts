@@ -9,6 +9,7 @@ import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
 import { NotificationConstant } from './notification.constant';
 import { INotification } from './notification.model';
+import { EnvService } from '../shared/env.service';
 
 declare const ydn: any;
 
@@ -65,7 +66,7 @@ export class NotificationService extends BaseService {
     push() {
         return new Promise(async (resolve, reject) => {
             let unSycedLocal = await this.getUnSyncedLocal();
-            if(AppConstant.DEBUG) {
+            if(EnvService.DEBUG) {
                 console.log('NotificationService: sync: unSycedLocal items length', unSycedLocal.length);
             }
 
@@ -143,7 +144,7 @@ export class NotificationService extends BaseService {
 
                 //now make updates
                 await Promise.all(promises);
-                if(AppConstant.DEBUG) {
+                if(EnvService.DEBUG) {
                     console.log('NotificationService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);

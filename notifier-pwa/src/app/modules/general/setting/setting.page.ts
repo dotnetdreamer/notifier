@@ -13,6 +13,7 @@ import { SchemaService } from '../../shared/db/schema.service';
 import { IUser, UserRole } from '../../authentication/user.model';
 import { UserService } from '../../authentication/user.service';
 import { NotificationSettingService } from '../../notification/notification-setting.service';
+import { EnvService } from '../../shared/env.service';
 
 @Component({
   selector: 'page-general-setting',
@@ -141,7 +142,7 @@ export class SettingPage extends BasePage implements OnInit, OnDestroy {
 
   private _subscribeToEvents() {
     this._syncDataPushCompleteSub = this.pubsubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PUSH_COMPLETE, async () => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('SettingPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
       }
       setTimeout(async () => {

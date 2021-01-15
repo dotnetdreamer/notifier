@@ -15,6 +15,7 @@ import { DbWebService } from './db/db-web.service';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { UserSettingService } from '../authentication/user-setting.service';
 import { UserConstant } from '../authentication/user-constant';
+import { EnvService } from './env.service';
 
 @Injectable({
     providedIn: 'root'
@@ -65,7 +66,7 @@ export class BaseService {
 
             args.body = args.body || {};  
             if(!args.overrideUrl) {
-                let newUrl = `${AppConstant.BASE_API_URL + args.url}`;
+                let newUrl = `${EnvService.BASE_API_URL + args.url}`;
 
                 for(let prop in args.body) {
                     if(args.body.hasOwnProperty(prop)) {
@@ -102,7 +103,7 @@ export class BaseService {
 
             let newUrl;
             if(!args.overrideUrl) {
-                newUrl = `${AppConstant.BASE_API_URL + args.url}`;
+                newUrl = `${EnvService.BASE_API_URL + args.url}`;
             } else {
                 newUrl = args.url;
             }
@@ -168,7 +169,7 @@ export class BaseService {
     }
 
     protected async handleError(e: HttpErrorResponse, args: HttpParams) {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
             console.log('BaseService: handleError', e);
         }
         switch(e.status) {

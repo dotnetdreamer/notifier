@@ -9,6 +9,7 @@ import { SchemaService, ITableOptions } from './schema.service';
 import { AppConstant } from "../app-constant";
 import { DbService } from './db-base.service';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import { EnvService } from '../env.service';
 
 @Injectable({
     providedIn: 'root'
@@ -58,7 +59,7 @@ export class DbSqlService implements DbService {
                 clearTimeout(timerId);
                 timerId = null;
                 
-                if(AppConstant.DEBUG) {
+                if(EnvService.DEBUG) {
                     console.log('Event firing: EVENT_DB_INITIALIZED');
                 }
 
@@ -117,7 +118,7 @@ export class DbSqlService implements DbService {
 
             sql += `COMMIT TRANSACTION;`;
 
-            if(AppConstant.DEBUG) {
+            if(EnvService.DEBUG) {
                 console.log('DbService: put: sql:', sql);
             }     
 
@@ -217,7 +218,7 @@ export class DbSqlService implements DbService {
 
                 sql += `COMMIT TRANSACTION;`;
 
-                if(AppConstant.DEBUG) {
+                if(EnvService.DEBUG) {
                     console.log('DbService: _prepareTables: sql:', sql);
                 }
                 

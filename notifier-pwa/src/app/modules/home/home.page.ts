@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { IonTabs } from '@ionic/angular';
 import { AppConstant } from '../shared/app-constant';
 import { BasePage } from '../shared/base.page';
+import { EnvService } from '../shared/env.service';
 
 @Component({
   selector: 'page-home',
@@ -19,7 +20,7 @@ export class HomePage extends BasePage {
 
   async onTabClicked(selectedTab) {
     this.selectedTab = selectedTab;
-    if(AppConstant.DEBUG) {
+    if(EnvService.DEBUG) {
       console.log('selectedTab', this.selectedTab);
     }
 

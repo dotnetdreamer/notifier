@@ -17,6 +17,7 @@ import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { IgnoreOptionsComponent } from './ignore-options/ignore-options.component';
+import { EnvService } from '../../shared/env.service';
 
 
 @Component({
@@ -269,7 +270,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       } catch(e) {
         this.notifications = [];
       } finally {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
         this.dataLoaded = true;
@@ -280,7 +281,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   private _subscribeToEvents() {
     if(this.platform.is('capacitor')) {
       App.addListener('appStateChange', async (state: { isActive: boolean }) => {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log('DashboardPage: appStateChange', state);
         }
         //app came to foregroud...
@@ -301,7 +302,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     });
     this._syncDataPushCompleteSub = obv.pipe(debounceTime(500))
     .subscribe(() => {
-        if(AppConstant.DEBUG) {
+        if(EnvService.DEBUG) {
           console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
         }
         //force refresh...
@@ -314,7 +315,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     //important to add here since the application loads and the view will show but there will be no data...
     //this is needed only when the application runs first time (i.e startup)
     this._syncDataPullCompleteSub = this.pubSubSvc.subscribe(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, async (table?) => {
-      if(AppConstant.DEBUG) {
+      if(EnvService.DEBUG) {
         console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
       await this._getAllNotifications();

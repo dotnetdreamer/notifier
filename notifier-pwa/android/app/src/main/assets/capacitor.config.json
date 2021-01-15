@@ -1,6 +1,6 @@
 {
-  "appId": "io.ionic.starter",
-  "appName": "notifier",
+  "appId": "net.dotnetdreamer.notifierdev",
+  "appName": "Notifier-Dev",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",

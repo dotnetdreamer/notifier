@@ -1,6 +1,6 @@
 {
-  "appId": "net.dotnetdreamer.notifier",
-  "appName": "Notifier",
+  "appId": "net.dotnetdreamer.notifierdev",
+  "appName": "Notifier-Dev",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",

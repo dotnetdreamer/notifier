@@ -107,7 +107,7 @@ export class SyncHelperService {
                 const item: INotificationIgnored = {
                     text: p,
                     package: p,
-                    silent: false,
+                    silent: true,
                     markedForAdd: true
                 };
 

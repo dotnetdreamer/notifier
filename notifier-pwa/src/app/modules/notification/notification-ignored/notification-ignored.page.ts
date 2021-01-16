@@ -71,10 +71,14 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
           return;
         }
 
-        notification.markedForDelete = true;
-        notification.updatedOn = null;
+        if(notification.markedForAdd) {
+          await this.notificationIgnoredSvc.remove(notification.id);
+        } else {
+          notification.markedForDelete = true;
+          notification.updatedOn = null;
 
-        await this.notificationIgnoredSvc.putLocal(notification);
+          await this.notificationIgnoredSvc.putLocal(notification);
+        }
         await this.helperSvc.presentToastGenericSuccess();
         
         setTimeout(() => {

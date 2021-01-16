@@ -70,6 +70,8 @@ export class AppComponent {
       if(EnvService.DEBUG) {
         console.log('Event received: EVENT_DB_INITIALIZED');
       }
+      
+      await this._setDefaults();
 
       if(this.platform.is('capacitor')) {
         if(EnvService.DEBUG) {
@@ -93,7 +95,6 @@ export class AppComponent {
         });
       }
 
-      await this._setDefaults();
     });
 
     this.pubsubSvc.subscribe(AppConstant.EVENT_LANGUAGE_CHANGED, async (params) => {
@@ -404,7 +405,9 @@ export class AppComponent {
         return;
       }
 
-      console.log('notificationRemovedEvent', info);
+      if(EnvService.DEBUG) {
+        console.log(`notificationRemovedEvent`, info);
+      }
     });
   }
 

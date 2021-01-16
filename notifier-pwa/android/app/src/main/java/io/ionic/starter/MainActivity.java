@@ -1,4 +1,4 @@
-package io.ionic.starter;
+package net.dotnetdreamer.notifierdev;
 
 import android.os.Bundle;
 

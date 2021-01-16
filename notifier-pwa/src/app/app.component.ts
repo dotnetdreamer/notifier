@@ -76,21 +76,21 @@ export class AppComponent {
           console.log('AppComponent: _subscribeToEvents: Ignoring BatteryOptimizations');
         }
 
-            const sn = new SystemNotificationListener();
+        const sn = new SystemNotificationListener();
+        if(EnvService.DEBUG) {
+          console.log('AppComponent: _subscribeToEvents: Requesting permission');
+        }
+        this._requestPermission(sn)
+        .then(async (pResult) => {
+          if(pResult) {
             if(EnvService.DEBUG) {
-              console.log('AppComponent: _subscribeToEvents: Requesting permission');
+              console.log('AppComponent: _subscribeToEvents: Starting listening');
             }
-            this._requestPermission(sn)
-            .then(async (pResult) => {
-              if(pResult) {
-                if(EnvService.DEBUG) {
-                  console.log('AppComponent: _subscribeToEvents: Starting listening');
-                }
-                await this._startListening(sn);      
-                
-                this._systemNotificationListener = sn;
-              }
-            });
+            await this._startListening(sn);      
+            
+            this._systemNotificationListener = sn;
+          }
+        });
       }
 
       await this._setDefaults();

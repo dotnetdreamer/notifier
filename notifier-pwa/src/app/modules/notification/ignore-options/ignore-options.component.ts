@@ -13,10 +13,10 @@ import { HelperService } from "src/app/modules/shared/helper.service";
         </ion-header>
         <ion-content>
             <ion-list>
-            <ion-item>
-                <ion-label>Silent Notification</ion-label>
-                <ion-checkbox slot="end" [value]="silent" (ionChange)="onSilentOptionChanged($event)"></ion-checkbox>
-            </ion-item>
+                <ion-item>
+                    <ion-label>Silent Notification</ion-label>
+                    <ion-checkbox slot="end" [value]="silent" (ionChange)="onSilentOptionChanged($event)"></ion-checkbox>
+                </ion-item>
                 <ion-radio-group [value]="selectedValue" 
                     (ionChange)="onMessageTypeChanged($event)">
                     <ion-item *ngFor="let opt of options">
@@ -24,6 +24,11 @@ import { HelperService } from "src/app/modules/shared/helper.service";
                         <ion-radio slot="start" [value]="opt.value" mode="ios"></ion-radio>
                     </ion-item>
                 </ion-radio-group>
+            </ion-list>
+            <ion-list>
+                <ion-item>
+                    <ion-textarea [(ngModel)]="notification.text" [disabled]="selectedValue != 'message'"></ion-textarea>
+                </ion-item>
             </ion-list>
             <ion-list>
                 <ion-radio-group [value]="selectedRule" 
@@ -124,7 +129,8 @@ export class IgnoreOptionsComponent implements OnInit {
         const data = {
             value: this.selectedValue,
             rule: this.selectedValue == 'app' ? null : this.selectedRule,
-            silent: this.silent
+            silent: this.silent,
+            text: this.notification.text
         };
         await this.dismiss(data);
     }

@@ -215,7 +215,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     const silent = data.silent;
 
     const item: INotificationIgnored = {
-      text: value == 'app' ? notification.package : notification.text,
+      text: value == 'app' ? notification.package : data.text,
       package: notification.package,
       silent: silent,
       rule: value == 'app' ? null : rule,

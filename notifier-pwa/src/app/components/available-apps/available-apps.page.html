@@ -10,22 +10,34 @@
 </ion-header>
 
 <ion-content>
-  <ion-searchbar></ion-searchbar>
-  <ion-item class="no-padding" lines="none">
-    <div class="notification-item">
-      <div class="icon-container">
-        <!-- <img [src]="item.image | safe: 'url'" /> -->
-      </div>
-      <div class="app-description-date-time">
-        <div class="app-description">
-          <!-- <div class="description" [innerHTML]="(item.title || item.text) | trimText:60"></div>
-          <div class="app-info-icon">
-            <ion-icon name="refresh" class="animated infinite spin" 
-              *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
-            <div class="info">{{item.appName || item.package}}</div>
+  <!-- <ion-searchbar></ion-searchbar> -->
+  <ion-virtual-scroll [items]="applications" approxItemHeight="85px" class="notifications">
+    <ion-item class="no-padding" lines="none" *virtualItem="let item;let index=index;" 
+      (click)="onNotificationItemClicked(item)">
+      <div class="notification-item" [class.notification-item-even]="index % 2">
+        <div class="icon-container">
+          <img [src]="item.image | safe: 'url'" />
+        </div>
+        <div class="app-description-date-time">
+          <div class="app-description">
+            <div class="description" [innerHTML]="item.name"></div>
+            <div class="app-info-icon">
+              <!-- <ion-icon name="refresh" class="animated infinite spin" 
+                *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon> -->
+              <div class="info">{{item.package}}</div>
+              <!-- <ion-icon name="notifications-off" color="danger" *ngIf="item.silent"></ion-icon> -->
+            </div>
+          </div>
+          <!-- <div class="date-time">
+            <div class="time">
+              {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
+            </div>
+            <div class="date">
+              {{item.createdOn | formateDate | async}}
+            </div>
           </div> -->
         </div>
       </div>
-    </div>
-  </ion-item>
+    </ion-item>
+  </ion-virtual-scroll>
 </ion-content>

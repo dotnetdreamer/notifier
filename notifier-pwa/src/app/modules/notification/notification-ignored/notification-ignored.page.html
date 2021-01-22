@@ -24,7 +24,7 @@
                 <div class="info">{{item.appName || item.package}}</div>
                 <ion-icon name="notifications-off" color="danger" *ngIf="item.silent"></ion-icon>
               </div>
-            </div>
+            </div> 
             <div class="date-time">
               <div class="time">
                 {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
@@ -42,9 +42,9 @@
       </ion-item-options>
     </ion-item-sliding>  
   </ion-virtual-scroll>
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="isAndroid">
     <ion-fab-button (click)="onAddNewClicked()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
-  </ion-fab>
+  </ion-fab> 
 </ion-content>

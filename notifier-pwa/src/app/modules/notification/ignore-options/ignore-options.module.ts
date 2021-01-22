@@ -5,12 +5,14 @@ import { IonicModule } from "@ionic/angular";
 
 import { PipesModule } from "src/app/pipes/pipes.module";
 import { IgnoreOptionsComponent } from "./ignore-options.component";
+import { FormsModule } from "@angular/forms";
 
 @NgModule({ 
     imports: [
         PipesModule,
         IonicModule,
-        CommonModule
+        CommonModule,
+        FormsModule
     ],
     declarations: [
         IgnoreOptionsComponent

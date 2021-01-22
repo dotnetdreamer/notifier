@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { IonContent, IonItemSliding, ModalController } from '@ionic/angular';
+import { IonContent, IonItemSliding, ModalController, Platform } from '@ionic/angular';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 
 import { Subscription } from 'rxjs';
@@ -10,8 +10,10 @@ import { EnvService } from '../../shared/env.service';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
+import { IgnoreOptionsComponent } from '../ignore-options/ignore-options.component';
 import { NotificationIgnoredService } from '../notification-ignored.service';
-import { INotificationIgnored } from '../notification.model';
+import { INotification, INotificationIgnored } from '../notification.model';
+import { NotificationService } from '../notification.service';
 
 @Component({
   selector: 'page-notification-ignored',
@@ -31,14 +33,16 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
   private _syncDataPushCompleteSub: Subscription;
 
   constructor(private ngZone: NgZone
-    , private modalCtrl: ModalController
+    , private modalCtrl: ModalController, private platform: Platform
     , private notificationIgnoredSvc: NotificationIgnoredService, private helperSvc: HelperService
+    , private notificationSvc: NotificationService
     , private pubSubSvc: NgxPubSubService) { 
 
       this._subscribeToEvents();
     }
 
   ngOnInit() {
+    this.isAndroid = this.platform.is('android') && this.platform.is('capacitor');
   }
 
   ngAfterViewInit() {
@@ -54,22 +58,68 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  async onAddNewClicked() {
-    const modal = await this.modalCtrl.create({
-      component: AvailableAppsPage,
-      componentProps: {
+  async onAddNewClicked() { 
+    if(!this.isAndroid) {
+      return;
+    }
 
-      },
+    const modalAp = await this.modalCtrl.create({
+      component: AvailableAppsPage,
       cssClass: 'available-apps-modal',
       backdropDismiss: false
     });
-    await modal.present();
-
-    const { data } = await modal.onDidDismiss();
-    if(!data) {
+    await modalAp.present();
+    const resultAp = await modalAp.onDidDismiss();
+    if(!resultAp.data) {
       return;
     }
     
+    const modalIo = await this.modalCtrl.create({
+      component: IgnoreOptionsComponent,
+      componentProps: {
+        notification: {
+          title: resultAp.data.name,
+          package: resultAp.data.package,
+          text: `Type your message here...`
+        }
+      },
+      cssClass: 'ignore-options-modal',
+      backdropDismiss: false
+    });
+    await modalIo.present();
+    const resultIo = await modalIo.onDidDismiss();
+    if(!resultIo.data) {
+      return;
+    }
+
+    const value: 'app' | 'message' = resultIo.data.value;
+    const rule: 'exact' | 'startsWith' | 'contains' = resultIo.data.rule;
+    const silent = resultIo.data.silent;
+    const item: INotificationIgnored = {
+      text: value == 'app' ? resultAp.data.package : resultIo.data.text,
+      package: resultAp.data.package,
+      silent: silent,
+      rule: value == 'app' ? null : rule,
+      image: resultAp.data.image,
+      appName: resultAp.data.package,
+      markedForAdd: true
+    };
+
+    //event must be fired so we can refresh blacklist in app.component
+    await this.notificationIgnoredSvc.putLocal(item, false);
+
+    //delete from notifications
+    let toDeleteAll: INotification[] = [];
+    if(value == 'app') {
+      toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(item.package);
+    } else if(value == 'message') {
+      toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(item.text);
+    }
+    toDeleteAll.forEach(p => p.markedForDelete = true);
+    await this.notificationSvc.putAllLocal(toDeleteAll, true); 
+
+    //sync
+    this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
   }
   
   async onNotificationItemClicked(ev: CustomEvent, notification: INotificationIgnored

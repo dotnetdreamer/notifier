@@ -1,5 +1,10 @@
 page-notification-ignored {
     ion-content {
         --padding-bottom: 80px;
+
+        ion-fab {
+            margin-bottom: 60px;
+            margin-right: 10px;
+        }
     }
 }

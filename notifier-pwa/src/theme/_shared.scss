@@ -1,98 +1,106 @@
-.notification-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-left: var(--ion-padding, 16px);
-    padding-right: var(--ion-padding, 16px);
-    min-height: 80px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    width: 100%;
+.notifications {
+    ion-item {
+        --padding-start: 0;
+        --padding-inline-end: 0;
+        --inner-padding-end: 0;
 
-    .icon-container {
-        min-width: 50px;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-right: 5px;
-        
-        ion-icon {
-            font-size: 28px;
-        }
-    }
-
-    .app-description-date-time {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        .app-description {
+        .notification-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-left: var(--ion-padding, 16px);
+            padding-right: var(--ion-padding, 16px);
+            min-height: 80px;
+            padding-top: 10px;
+            padding-bottom: 10px;
             width: 100%;
 
-            .description {
-                font-size: 1em;
-                margin-bottom: 5px;
-                white-space: normal;
-                word-break: break-word;
-            }
-
-            .app-info-icon {
+            .icon-container {
+                min-width: 50px;
+                width: 50px;
+                height: 50px;
                 display: flex;
                 align-items: center;
+                justify-content: space-between;
+                margin-right: 5px;
+                
+                ion-icon {
+                    font-size: 28px;
+                }
+            }
 
-                .info {
-                    font-size: 0.8em;
-                    word-break: break-all;
+            .app-description-date-time {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                .app-description {
+                    width: 100%;
+
+                    .description {
+                        font-size: 1em;
+                        margin-bottom: 5px;
+                        white-space: normal;
+                        word-break: break-word;
+                    }
+
+                    .app-info-icon {
+                        display: flex;
+                        align-items: center;
+
+                        .info {
+                            font-size: 0.8em;
+                            word-break: break-all;
+                        }
+
+                        // img {
+                        //     width: 20px;
+                        //     height: 20px;
+                        //     margin-right: 5px;
+                        // }
+
+                        ion-icon {
+                            font-size: 14px;
+                            margin-left: 5px;
+                            margin-right: 5px;
+
+                            &:first-child {
+                                margin-left: 0;
+                            }
+                        }
+                    }
                 }
 
-                // img {
-                //     width: 20px;
-                //     height: 20px;
-                //     margin-right: 5px;
-                // }
-
-                ion-icon {
-                    font-size: 14px;
+                .date-time {
+                    text-align: right;
                     margin-left: 5px;
-                    margin-right: 5px;
+                    min-width: 100px;
+                    
+                    .date {
+                        font-size: 0.8em;
+                    }
+                    .time {
+                        font-size: 1em;
+                        margin-bottom: 5px;
 
-                    &:first-child {
-                        margin-left: 0;
+                        > span {
+                            font-size: 0.6em;
+                        }
                     }
                 }
             }
-        }
 
-        .date-time {
-            text-align: right;
-            margin-left: 5px;
-            min-width: 100px;
-            
-            .date {
-                font-size: 0.8em;
-            }
-            .time {
-                font-size: 1em;
-                margin-bottom: 5px;
-
-                > span {
-                    font-size: 0.6em;
-                }
+            &.notification-item-even {
+                background-color: var(--color-notification-item-alt);
             }
         }
-    }
-
-    &.notification-item-even {
-        background-color: var(--color-notification-item-alt);
     }
 }
 
-
 .alert-wrapper {
-    --min-width: calc(100% - 62px);
+    --width: calc(100% - 62px);
+    --max-width: auto;
 }
 
 .alert-radio-label {
@@ -105,4 +113,12 @@
 
 .hidden {
     display: none !important;
+}
+
+
+@media (min-width: 1024px) {
+
+    .alert-wrapper {
+        --max-width: 500px;
+    }
 }

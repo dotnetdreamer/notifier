@@ -1,22 +1,20 @@
-import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { DashboardPage } from './dashboard.page';
 
 import { DashboardPageRoutingModule } from './dashboard-routing.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
 import { ComponentsWithOutFormsModule } from 'src/app/components/components-without-forms.module';
 import { CalendarSwiperModule } from 'src/app/components/calendar-swiper/calendar-swiper.module';
-import { IgnoreOptionsComponent } from './ignore-options/ignore-options.component';
+import { IgnoreOptionsModule } from '../../notification/ignore-options/ignore-options.module';
 
 @NgModule({
   imports: [
     ComponentsWithOutFormsModule,
     CalendarSwiperModule,
     PipesModule,
-    DashboardPageRoutingModule
+    DashboardPageRoutingModule,
+    IgnoreOptionsModule
   ],
-  declarations: [DashboardPage, IgnoreOptionsComponent]
+  declarations: [DashboardPage]
 })
 export class DashboardPageModule {}

@@ -7,7 +7,7 @@
 <ion-content #listingNotificationIgnoredContent>
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
 
-  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications">
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
       <ion-item class="no-padding" lines="none" 
         (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
@@ -41,6 +41,10 @@
           (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">{{'common.delete' | localizedresource | async}}</ion-item-option>
       </ion-item-options>
     </ion-item-sliding>  
-
   </ion-virtual-scroll>
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="onAddNewClicked()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

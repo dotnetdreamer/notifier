@@ -16,8 +16,8 @@ import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
 import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
-import { IgnoreOptionsComponent } from './ignore-options/ignore-options.component';
 import { EnvService } from '../../shared/env.service';
+import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore-options.component';
 
 
 @Component({
@@ -27,7 +27,7 @@ import { EnvService } from '../../shared/env.service';
   encapsulation: ViewEncapsulation.None
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('listingContent') listingContent: IonContent;
+  @ViewChild('notificationsContent') listingContent: IonContent;
 
   AppConstant = AppConstant;
   notifications: INotification[] = [];

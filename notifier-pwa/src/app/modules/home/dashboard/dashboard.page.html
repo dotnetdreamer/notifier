@@ -23,14 +23,14 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content #listingContent [scrollEvents]="true" (ionScroll)="onIonScrolling($event)">
+<ion-content #notificationsContent [scrollEvents]="true" (ionScroll)="onIonScrolling($event)">
   <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
 
-  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="expenses">
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications">
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
       <ion-item class="no-padding" lines="none" 
         (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">

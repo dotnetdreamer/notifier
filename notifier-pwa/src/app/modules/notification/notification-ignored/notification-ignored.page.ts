@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { IonContent, IonItemSliding } from '@ionic/angular';
+import { IonContent, IonItemSliding, ModalController } from '@ionic/angular';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 
 import { Subscription } from 'rxjs';
@@ -30,6 +30,7 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
   private _syncDataPushCompleteSub: Subscription;
 
   constructor(private ngZone: NgZone
+    , private modalCtrl: ModalController
     , private notificationIgnoredSvc: NotificationIgnoredService, private helperSvc: HelperService
     , private pubSubSvc: NgxPubSubService) { 
 
@@ -52,6 +53,9 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
+  async onAddNewClicked() {
+
+  }
   
   async onNotificationItemClicked(ev: CustomEvent, notification: INotificationIgnored
     , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {

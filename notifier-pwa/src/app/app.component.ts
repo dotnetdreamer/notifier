@@ -296,10 +296,10 @@ export class AppComponent {
   // }
 
   private async _startListening(sn: SystemNotificationListener) {
-    const isListening = await sn.isListening();
-    if(!isListening) {
+    // const isListening = await sn.isListening();
+    // if(!isListening) {
       await sn.startListening();
-    }
+    // }
 
     //blacklist/ignored  
     const bList = await this.notificationIgnoredSvc

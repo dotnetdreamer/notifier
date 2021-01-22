@@ -4,4 +4,4 @@
 </div>
 
 ### Introducation
-<p>The repository consists of two projects i.e `notifier-api` and `notifier-pwa`. API project is built with (NestJS)[https://nestjs.com/] and PWA is built with (Ionic)[https://ionicframework.com/] and (Capacitor)[https://capacitorjs.com/].</p>
+<p>The repository consists of two projects i.e `notifier-api` and `notifier-pwa`. API project is built with [NestJS](https://nestjs.com/) and PWA is built with [Ionic](https://ionicframework.com/) and [Capacitor](https://capacitorjs.com/).</p>

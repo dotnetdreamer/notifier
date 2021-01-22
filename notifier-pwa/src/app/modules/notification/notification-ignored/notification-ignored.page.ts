@@ -3,6 +3,7 @@ import { IonContent, IonItemSliding, ModalController } from '@ionic/angular';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 
 import { Subscription } from 'rxjs';
+import { AvailableAppsPage } from 'src/app/components/available-apps/available-apps.page';
 
 import { AppConstant } from '../../shared/app-constant';
 import { EnvService } from '../../shared/env.service';
@@ -54,7 +55,21 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
   }
 
   async onAddNewClicked() {
+    const modal = await this.modalCtrl.create({
+      component: AvailableAppsPage,
+      componentProps: {
 
+      },
+      cssClass: 'available-apps-modal',
+      backdropDismiss: false
+    });
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    if(!data) {
+      return;
+    }
+    
   }
   
   async onNotificationItemClicked(ev: CustomEvent, notification: INotificationIgnored

@@ -5,12 +5,14 @@ import { NotificationIgnoredPageRoutingModule } from './notification-ignored-rou
 import { NotificationIgnoredPage } from './notification-ignored.page';
 import { ComponentsWithOutFormsModule } from 'src/app/components/components-without-forms.module';
 import { PipesModule } from 'src/app/pipes/pipes.module';
+import { AvailableAppsPageModule } from 'src/app/components/available-apps/available-apps.module';
 
 @NgModule({
   imports: [
     ComponentsWithOutFormsModule,
     PipesModule,
-    NotificationIgnoredPageRoutingModule
+    NotificationIgnoredPageRoutingModule,
+    AvailableAppsPageModule
   ],
   declarations: [NotificationIgnoredPage]
 })

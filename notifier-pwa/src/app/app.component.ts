@@ -226,11 +226,14 @@ export class AppComponent {
       wkl = 'en';
       await this.appSettingSvc.putWorkingLanguage(wkl);
 
-      //ignore system notifications
-      this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(true);
+      //should be done only from mobile
+      if(this.platform.is('capacitor')) {
+        //ignore system notifications
+        this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(true);
 
-      //put sample data
-      this.syncHelperSvc.syncSampleData();
+        //put sample data
+        this.syncHelperSvc.syncSampleData();
+      }
     }
     this.pubsubSvc.publishEvent(AppConstant.EVENT_LANGUAGE_CHANGED, { wkLangauge: wkl, reload: false });
     this.workingLanguage = wkl;

@@ -12,5 +12,6 @@ The repository consists of two projects i.e **notifier-api** and **notifier-pwa*
 3. Navigate to i.e **notifier-pwa** directory and run `npm i`.
 5. Now navigate to **notifier-pwa** and run `npm i`
 6. Navigate to **notifier-api** directory (if not already) and run `npm run start`. This will kick in the NestJs in debug mode
-7. Open another command line and navigate to ***notifier-pwa** and run ionic serve
-8. By this time, you should have both projects running
+7. Note down the **notifier-api** project address and port (usually http://localhost:3000) and go to ***notifier-pwa** -> src -> assets -> env.js and add the API urls there in `BASE_URL` and `BASE_API_URL`
+8. Open another command line and navigate to ***notifier-pwa** and run ionic serve
+9. By this time, you should have both projects running

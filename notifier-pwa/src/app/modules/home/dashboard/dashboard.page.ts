@@ -247,7 +247,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     const filters = {
       fromDate: this.dates.selectedDate.from,
-      toDate: this.dates.selectedDate.to
+      toDate: this.dates.selectedDate.to,
+      pageIndex: 1,
+      pageSize: 10
     };
 
     this.ngZone.run(async () => {
@@ -255,7 +257,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       const fromDateMonth = moment(filters.fromDate).format('M');
       const toDateMonth = moment(filters.toDate).format('M');
 
-      try {
+      try { 
         //if changed month is not same as current month, then we don't have entries local..
         if(currentMonth != fromDateMonth || currentMonth != toDateMonth) {
           this.notifications = await this.notificationSvc.getNotifications(filters);

@@ -247,13 +247,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     const filters = {
       fromDate: this.dates.selectedDate.from,
-      toDate: this.dates.selectedDate.to,
-      // fromTime: this.dates.selectedDate.fromTime,
-      // toTime: this.dates.selectedDate.toTime
+      toDate: this.dates.selectedDate.to
     };
-
-    // const notifications = await this.notificationSvc.getAllLocal(filters)
-    // this.notifications = notifications;
 
     this.ngZone.run(async () => {
       const currentMonth = moment().format('M');

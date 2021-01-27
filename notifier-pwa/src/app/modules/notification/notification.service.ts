@@ -197,7 +197,49 @@ export class NotificationService extends BaseService {
         });
     }
 
-    getAllLocal(args?: { term?, fromDate?, toDate?, fromTime?, toTime?, pageIndex?, pageSize? })
+    getAllLocalNew(args?: { term?, fromDate?, toDate?, pageIndex?, pageSize? })
+        : Promise<INotification[]> {
+        return new Promise(async (resolve, reject) => {
+            const db = this.dbService.Db;
+            let query = `SELECT * FROM ${this.schemaSvc.tables.notification}`;
+            //do not show deleted...
+            query += ` WHERE markedForDelete = false`;
+
+            if(!args.pageIndex) {
+                args.pageIndex = 1;
+            }
+
+            if(!args.pageSize) {
+                args.pageSize = AppConstant.MAX_PAGE_SIZE;
+            }
+
+            if(args.fromDate && args.toDate) {
+                const fromDateCreatedOnUtc = moment.utc(args.fromDate).format(AppConstant.DEFAULT_DATE_FORMAT);
+                query += ` AND createdOn >= "${fromDateCreatedOnUtc}"`;
+
+                const toDateCreatedOnUtc = moment.utc(args.toDate).format(AppConstant.DEFAULT_DATE_FORMAT);
+                query += ` AND createdOn <= "${toDateCreatedOnUtc}"`;
+            }
+
+            query += ` ORDER BY id DESC`;
+            if(args.pageIndex && args.pageSize) {
+                const skip = (args.pageIndex - 1) * args.pageSize;
+                query += ` LIMIT ${args.pageSize} OFFSET ${skip}`;
+            }
+
+            if(EnvService.DEBUG) {
+                console.log('Executing NotificationService: getAllLocalNew: query', query);
+            }
+
+            db.executeSql(query).then((results) => {
+                console.log(results);
+            }, (e) => {
+                reject(e);
+            });
+        });
+    }
+
+    getAllLocal(args?: { term?, fromDate?, toDate?, pageIndex?, pageSize? })
         : Promise<INotification[]> {
         return new Promise(async (resolve, reject) => {
             let results = [];
@@ -207,71 +249,34 @@ export class NotificationService extends BaseService {
             //(store_name, key_range, reverse)
             const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification);
             
-            // let idx = 0;
-            let req = db.open(x => {
+            if(!args.pageIndex) {
+                args.pageIndex = 1;
+            }
+
+            if(!args.pageSize) {
+                args.pageSize = AppConstant.MAX_PAGE_SIZE;
+            }
+
+            const skip = (args.pageIndex - 1) * args.pageSize;
+            let idx = 1;
+            const req = db.open(x => {
+                if(idx < skip || idx > args.pageSize) {
+                    req.done();
+                    return;
+                }
+
                 let v: INotification = x.getValue();
-                
                 let item: INotification;
                 if(args) {
-                    if(args.pageIndex || args.pageSize) {
-                        item = v;
-                    }
+                    if(args.fromDate && args.toDate) {
+                        //change date to utc first
+                        const fromDateCreatedOnUtc = moment.utc(args.fromDate).format(AppConstant.DEFAULT_DATE_FORMAT);
+                        const createdOnUtc = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATE_FORMAT);
+                        const toDateCreatedOnUtc = moment.utc(args.toDate).format(AppConstant.DEFAULT_DATE_FORMAT);;
 
-                    if(args.fromDate || args.toDate) {
-                        const createdOnUtcStr = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATE_FORMAT);
-
-                        if(args.fromDate && args.toDate) {
-                            //change date to utc first
-                            let fromDateCreatedOnUtc, toDateCreatedOnUtc, createdOnUtc;
-
-                            if(args.fromTime) {
-                                const fromTime = moment.utc(args.fromTime, AppConstant.DEFAULT_TIME_FORMAT)
-                                    .format(AppConstant.DEFAULT_TIME_FORMAT)
-                                    .split(':')
-                                    .map(t => +t);
-                                fromDateCreatedOnUtc = moment(args.fromDate)
-                                    .set('hour', fromTime[0])
-                                    .set('minute', fromTime[1])
-                                    // .set('second', 0)
-                                    .utc()
-                                    .format(AppConstant.DEFAULT_DATETIME_FORMAT);
-                                createdOnUtc = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATETIME_FORMAT);
-                            } else {
-                                fromDateCreatedOnUtc = moment.utc(args.fromDate).format(AppConstant.DEFAULT_DATE_FORMAT);
-                                createdOnUtc = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATE_FORMAT);
-                            }
-
-                            if(args.toTime) {
-                                const toTime = moment.utc(args.toTime, AppConstant.DEFAULT_TIME_FORMAT)
-                                    .format(AppConstant.DEFAULT_TIME_FORMAT)
-                                    .split(':')
-                                    .map(t => +t);
-                                toDateCreatedOnUtc = moment.utc(args.toDate)
-                                    .set('hour', toTime[0])
-                                    .set('minute', toTime[1])
-                                    .format(AppConstant.DEFAULT_DATETIME_FORMAT);
-                                createdOnUtc = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATETIME_FORMAT);
-                            } else {
-                                toDateCreatedOnUtc = moment.utc(args.toDate).format(AppConstant.DEFAULT_DATE_FORMAT);;
-                                createdOnUtc = moment.utc(v.createdOn).format(AppConstant.DEFAULT_DATE_FORMAT);
-                            }
-
-                            if(createdOnUtc >= fromDateCreatedOnUtc 
-                                && createdOnUtc <= toDateCreatedOnUtc) {
-                                item = v;
-                            }
-                        } else if (args.fromDate) {
-                            //change date to utc first
-                            const fromDateCreatedOnUtc = moment.utc(args.fromDate).format(AppConstant.DEFAULT_DATE_FORMAT);
-                            if(createdOnUtcStr >= fromDateCreatedOnUtc) {
-                                item = v;
-                            }
-                        } else if (args.toDate) {
-                            //change date to utc first
-                            const toDateCreatedOnUtc = moment.utc(args.toDate).format(AppConstant.DEFAULT_DATE_FORMAT);
-                            if(createdOnUtcStr <= toDateCreatedOnUtc) {
-                                item = v;
-                            } 
+                        if(createdOnUtc >= fromDateCreatedOnUtc 
+                            && createdOnUtc <= toDateCreatedOnUtc) {
+                            item = v;
                         }
                     }
 
@@ -284,22 +289,6 @@ export class NotificationService extends BaseService {
                             item = null;
                         }
                     }
-
-                    // if(item) {
-                    //     //either show grouped or non-grouped or explicilty set groupId to null (e.g in dashboard)
-                    //     if(args.groupId) {
-                    //         if(!item.group) {
-                    //             item = null;
-                    //         } else if(item.group.id != args.groupId) {
-                    //             item = null;
-                    //         }
-                    //     } else if(args.groupId === null) {
-                    //         //do not show goruped items if null is passed
-                    //         if(item.group) {
-                    //             item = null;
-                    //         }
-                    //     }
-                    // }
                 } else {
                     item = v;
                 }
@@ -312,7 +301,7 @@ export class NotificationService extends BaseService {
                 }
 
                 req.done();
-                // idx++;
+                idx++;
                 // console.log(idx);
 
                 // return { advance: 2}
@@ -321,10 +310,10 @@ export class NotificationService extends BaseService {
                 results = this._sort(results);                    
                 
                 //check for pagesize
-                if(args && args.pageSize && results.length > args.pageSize) {
-                    const pageIndex = (args.pageIndex ? args.pageIndex - 1 : 0) * args.pageSize;
-                    results = results.slice(pageIndex, args.pageSize);
-                }
+                // if(args && args.pageSize && results.length > args.pageSize) {
+                //     const pageIndex = (args.pageIndex ? args.pageIndex - 1 : 0) * args.pageSize;
+                //     results = results.slice(pageIndex, args.pageSize);
+                // }
 
                 results = await this._mapAll(results);
                 resolve(results);

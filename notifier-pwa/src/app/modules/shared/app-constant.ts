@@ -6,6 +6,7 @@ export class AppConstant {
     public static readonly DEFAULT_DATE_FORMAT = "YYYY-MM-DD";
     public static readonly DEFAULT_TIME_FORMAT = "HH:mm";
     public static readonly DEFAULT_TIME_FORMAT_WITH_AM_PM = "h:mm A";
+    public static readonly MAX_PAGE_SIZE = Number.MAX_SAFE_INTEGER;;
 
     public static readonly GOOGLE_SIGNIN_CLIENT_ID = "";
     

@@ -316,6 +316,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
       await this._getAllNotifications();
+      
       //we only need this first time...kill it!
       setTimeout(() => {
         this._syncDataPullCompleteSub.unsubscribe();
@@ -323,5 +324,14 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         this.startupSyncCompleted = true;
       });
     });
+  }
+
+  //https://stackoverflow.com/a/21988185/15076581
+  private _comparer(otherArray: INotification[]) {
+    return function(current: INotification){
+      return otherArray.filter(function(other){
+        return other.text == current.text && other.title == current.title;
+      }).length == 0;
+    }
   }
 }

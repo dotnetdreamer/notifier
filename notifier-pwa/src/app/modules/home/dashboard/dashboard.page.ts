@@ -265,7 +265,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           this.notifications = await this.notificationSvc.getAllLocal(filters);
         }
       } catch(e) {
-        this.notifications = [];
+        await this.helperSvc.presentToastGenericError(true);
+        // this.notifications = [];
       } finally {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
@@ -281,7 +282,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: appStateChange', state);
         }
-        //app came to foregroud...
+        //app came to foreground...
         if(state.isActive) {
           await this._getAllNotifications();
         }
@@ -305,7 +306,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         //force refresh...
         // this.expenses = [];
         setTimeout(async () => {
-          await this._getAllNotifications();
+          await this._refreshVisibleItems();
         });
     });
 
@@ -315,7 +316,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       if(EnvService.DEBUG) {
         console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
-      await this._getAllNotifications();
+      await this._refreshVisibleItems();
       
       //we only need this first time...kill it!
       setTimeout(() => {
@@ -333,5 +334,21 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         return other.text == current.text && other.title == current.title;
       }).length == 0;
     }
+  }
+
+  private async _refreshVisibleItems() {
+    const promises = [];
+    for(let n of this.notifications) {
+      const prom = this.notificationSvc.getByIdLocal(n.id)
+      .then(newNot => {
+        n = {
+          ...newNot
+        };
+        return newNot;
+      });
+      promises.push(prom);
+    }
+
+    await Promise.all(promises);
   }
 }

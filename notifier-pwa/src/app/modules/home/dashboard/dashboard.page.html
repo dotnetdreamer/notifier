@@ -9,13 +9,15 @@
         <ion-icon name="close" *ngIf="displaySearch"></ion-icon>
       </ion-button>
     </ion-buttons> -->
-    <ion-title>{{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}</ion-title>
-    <ion-buttons slot="end">
+    <ion-title>
+      {{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}&nbsp;{{'common.outof' | localizedresource | async}}&nbsp;{{totalAvailableNotifications}}
+    </ion-title>
+    <!-- <ion-buttons slot="end">
       <ion-button class="animated infinite" [disabled]="true" 
         [class.spin]="!startupSyncCompleted || !dataLoaded">
         <ion-icon name="refresh"></ion-icon>
       </ion-button>
-    </ion-buttons>
+    </ion-buttons> -->
   </ion-toolbar>
   <ion-toolbar class="toolbar-calendar">
     <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label>
@@ -24,12 +26,13 @@
 </ion-header>
 
 <ion-content #notificationsContent [scrollEvents]="true" (ionScroll)="onIonScrolling($event)">
-  <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
+  <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)" 
+    *ngIf="startupSyncCompleted">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <ion-progress-bar type="indeterminate" *ngIf="!startupSyncCompleted"></ion-progress-bar>
+  <ion-progress-bar type="indeterminate" *ngIf="!startupSyncCompleted || !dataLoaded"></ion-progress-bar>
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
-  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications">
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications" #virtualScroll [trackBy]="identify">
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
       <ion-item class="no-padding" lines="none" 
         (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
@@ -66,6 +69,10 @@
         <ion-item-option color="danger" (click)="onIgnoreClicked(slideItem, item)">Ignore</ion-item-option>
       </ion-item-options>
     </ion-item-sliding>  
-
   </ion-virtual-scroll>
+  <div class="loade-more-button">
+    <ion-button (click)="onLoadMoreClicked()" *ngIf="totalAvailableNotifications != notifications.length"> 
+      <ion-label>Load More...</ion-label>
+    </ion-button>
+  </div>
 </ion-content>

@@ -28,8 +28,23 @@ export class NotificationService extends BaseService {
             try {
                 //by default fetch 30 days records only
                 const fromDate = moment().add(-30, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
-                let items = await this.getNotifications({ fromDate: fromDate, sync: true });
-                let allItems;
+
+                //chunks
+                let pageIndex = 1, pageSize = 100
+                , totalAvailable = 0, maxToFetch = NotificationConstant.MAX_NOTIFICATIONS_TO_FETCH;
+                let allItems, items = [];
+                do {
+                    let result = await this.getNotifications({ 
+                        pageIndex: pageIndex,
+                        pageSize: pageSize, 
+                        fromDate: fromDate
+                    });
+                    
+                    totalAvailable = result.total;
+                    items.push(...result.data);
+                    pageIndex++;
+                    // console.log(items.length, totalAvailable)
+                } while(items.length < totalAvailable && items.length < maxToFetch);
 
                 if(!items.length) {
                     //no items found or don't have access on server, get local items and delete it!
@@ -47,7 +62,7 @@ export class NotificationService extends BaseService {
                     }
                 }
 
-                //no items found ons server? don't proceed!
+                //no items found on server? don't proceed!
                 if(!items.length) {
                     resolve();
                     return;
@@ -68,7 +83,12 @@ export class NotificationService extends BaseService {
 
     push() {
         return new Promise(async (resolve, reject) => {
-            let unSycedLocal = await this.getUnSyncedLocal();
+            //chunks
+            // let pageIndex = 1, pageSize = 10 , totalAvailable = 0;
+            let unSycedLocal = [];
+            //TODO: need to push with chunks
+            const result = await this.getUnSyncedLocal({ pageIndex: 1, pageSize: 100 });
+            unSycedLocal = result.data;
             if(EnvService.DEBUG) {
                 console.log('NotificationService: sync: unSycedLocal items length', unSycedLocal.length);
             }
@@ -158,25 +178,57 @@ export class NotificationService extends BaseService {
         });
     }
 
-    getUnSyncedLocal(): Promise<Array<INotification>> {
+    getUnSyncedLocal(args?: { pageIndex?, pageSize? })
+        : Promise<{ data: INotification[], total: number }> {
         return new Promise(async (resolve, reject) => {
             const db = this.dbService.Db;
             const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification);
 
+            if(!args) {
+                args = {};
+            }
+
+            if(!args.pageIndex) {
+                args.pageIndex = 1;
+            }
+
+            if(!args.pageSize) {
+                args.pageSize = AppConstant.MAX_PAGE_SIZE;
+            }
+
             const unSynced = [];
+            const total = await this.count();
+            const skip = (args.pageIndex - 1) * args.pageSize;
+            let idx = 0;
+
             let req = db.open(x => {
+                idx++;
+
+                if(idx <= skip) {
+                    req.done();
+                    return;
+                }
+
+                if(unSynced.length == args.pageSize || skip >= total) {
+                    req.done();
+                    return { advance: 2 };
+                }
+
                 let v: INotification = x.getValue();
                 if (v.markedForAdd || v.markedForUpdate || v.markedForDelete) {
                     unSynced.push(v);
                 }
             }, iter);
             req.always(() => {
-                resolve(unSynced);
+                resolve({
+                    data: unSynced,
+                    total: total
+                });
             });
         });
     }
 
-    getNotifications(args?: { fromDate?, toDate?, sync? }) {
+    getNotifications(args: { pageIndex, pageSize, fromDate?, toDate? }) {
         let body;
 
         if(args && (args.fromDate || args.toDate )) {
@@ -194,13 +246,14 @@ export class NotificationService extends BaseService {
             
             body = { ...args };
         }
-        return this.getData<INotification[]>({
+        
+        return this.getData<{ total: number, data: INotification[] }>({
             url: `${this.BASE_URL}/getAll`,
             body: body
         });
     }
 
-    getAllLocalNew(args?: { term?, fromDate?, toDate?, pageIndex?, pageSize? })
+    getAllLocalNew(args?: { term?, fromDate?, toDate?, pageIndex, pageSize })
         : Promise<INotification[]> {
         return new Promise(async (resolve, reject) => {
             const db = this.dbService.Db;
@@ -243,9 +296,9 @@ export class NotificationService extends BaseService {
     }
 
     getAllLocal(args?: { term?, fromDate?, toDate?, pageIndex?, pageSize? })
-        : Promise<INotification[]> {
+        : Promise<{ total:number, data: INotification[]}> {
         return new Promise(async (resolve, reject) => {
-            let results = [];
+            let results = [], total = 0;
             const db = this.dbService.Db;
             // new ydn.db.IndexValueIterator(store, opt.key, key_range, (pageSize == 0 ? undefined : pageSize), (skip > 0 ? skip: undefined), false);
             //https://github.com/yathit/ydn-db/blob/8d217ba5ff58a1df694b5282e20ebc2c52104197/test/qunit/ver_1_iteration.js#L117
@@ -260,7 +313,7 @@ export class NotificationService extends BaseService {
                 args.pageSize = AppConstant.MAX_PAGE_SIZE;
             }
 
-            const totalAvailable = await this.count();
+            total = await this.count();
             const skip = (args.pageIndex - 1) * args.pageSize;
             let idx = 0;
             const req = db.open(x => {
@@ -271,7 +324,7 @@ export class NotificationService extends BaseService {
                     return;
                 }
 
-                if(results.length == args.pageSize || skip >= totalAvailable) {
+                if(results.length == args.pageSize || skip >= total) {
                     req.done();
                     return { advance: 2 };
                 }
@@ -326,7 +379,7 @@ export class NotificationService extends BaseService {
                 // }
 
                 results = await this._mapAll(results);
-                resolve(results);
+                resolve({ total: total, data: results });
             });
         });
     }

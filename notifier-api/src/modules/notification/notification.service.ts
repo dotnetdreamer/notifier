@@ -21,7 +21,7 @@ export class NotificationService {
   async findAll(args?: { 
     pageIndex, pageSize
     , fromDate?: string, toDate?: string
-    , showHidden?: boolean, sync?: boolean
+    , showHidden?: boolean
   }): Promise<{ data: any[], total: number }> {
     let qb = await getRepository(NotificationRecord)
       .createQueryBuilder('not'); 

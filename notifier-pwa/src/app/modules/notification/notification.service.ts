@@ -26,8 +26,8 @@ export class NotificationService extends BaseService {
     pull() {
         return new Promise(async (resolve, reject) => {
             try {
-                //by default fetch 90 days records only
-                const fromDate = moment().add(-90, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
+                //by default fetch 30 days records only
+                const fromDate = moment().add(-30, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
                 let items = await this.getNotifications({ fromDate: fromDate, sync: true });
                 let allItems;
 
@@ -182,13 +182,13 @@ export class NotificationService extends BaseService {
         if(args && (args.fromDate || args.toDate )) {
             //change date to utc first
             if(args.fromDate) {
-                const fromDate = moment(args.fromDate).endOf('D').utc()
+                const fromDate = moment(args.fromDate).utc(false).endOf('D')
                     .format(AppConstant.DEFAULT_DATETIME_FORMAT);
                 args.fromDate = fromDate;
             }
             if(args.toDate) {
                 //if there is no time, add it...
-                const toDate = moment(args.toDate).endOf('D').utc().format(AppConstant.DEFAULT_DATETIME_FORMAT);
+                const toDate = moment(args.toDate).utc(false).endOf('D').format(AppConstant.DEFAULT_DATETIME_FORMAT);
                 args.toDate = toDate;
             }
             

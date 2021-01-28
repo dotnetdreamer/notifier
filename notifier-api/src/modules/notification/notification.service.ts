@@ -19,9 +19,10 @@ export class NotificationService {
   ) {}
 
   async findAll(args?: { 
-    fromDate?: string, toDate?: string
+    pageIndex, pageSize
+    , fromDate?: string, toDate?: string
     , showHidden?: boolean, sync?: boolean
-  }): Promise<any[]> {
+  }): Promise<{ data: any[], total: number }> {
     let qb = await getRepository(NotificationRecord)
       .createQueryBuilder('not'); 
       
@@ -41,13 +42,20 @@ export class NotificationService {
     qb = qb.orderBy("not.receivedOnUtc", 'DESC')
       .addOrderBy('not.id', 'DESC');
 
-    const notificationRecords = await qb.getMany();
+      const skip = (args.pageIndex - 1) * args.pageSize;
+    qb = qb.skip(skip).take(args.pageSize);
 
-    const data = notificationRecords.map(async (e) => {
+    const [ data, total ] = await qb.getManyAndCount();
+
+    const notificationRecords = await Promise.all(data.map(async (e) => {
       const map = await this._map(e);
       return map;
-    });
-    return Promise.all(data);
+    }));
+
+    return {
+      data: notificationRecords,
+      total: total
+    };
   }
 
   findOne(id): Promise<NotificationRecord> {

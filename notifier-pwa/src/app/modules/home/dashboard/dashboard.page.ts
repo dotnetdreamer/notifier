@@ -256,10 +256,16 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       } else if(value == 'message') {
         toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
       }
+
       toDeleteAll.forEach(p => {
         p.markedForDelete = true;
 
         const idx = this.notifications.findIndex(n => n.id == p.id);
+        if(idx == -1) {
+          //notification not visible in screen...
+          return;
+        }
+
         this.notifications[idx].markedForDelete = true;
       });
       await this.notificationSvc.putAllLocal(toDeleteAll, true); 

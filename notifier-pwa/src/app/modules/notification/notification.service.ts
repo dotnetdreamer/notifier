@@ -83,6 +83,9 @@ export class NotificationService extends BaseService {
 
     push() {
         return new Promise(async (resolve, reject) => {
+            if(EnvService.DEBUG) {
+                console.log('NotificationService: push: started');
+            }
             //chunks
             // let pageIndex = 1, pageSize = 10 , totalAvailable = 0;
             let unSycedLocal = [];
@@ -90,7 +93,7 @@ export class NotificationService extends BaseService {
             const result = await this.getUnSyncedLocal({ pageIndex: 1, pageSize: 100 });
             unSycedLocal = result.data;
             if(EnvService.DEBUG) {
-                console.log('NotificationService: sync: unSycedLocal items length', unSycedLocal.length);
+                console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
             }
 
             //do not push same records again...

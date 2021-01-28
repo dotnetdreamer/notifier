@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { App, Capacitor, Plugins } from '@capacitor/core';
-import { AlertController, IonContent, IonItemSliding, ModalController, Platform } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, IonVirtualScroll, ModalController, Platform } from '@ionic/angular';
 
 const { GetAppInfo } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
@@ -28,6 +28,7 @@ import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('notificationsContent') listingContent: IonContent;
+  @ViewChild('virtualScroll') virtualScroll: IonVirtualScroll;
 
   AppConstant = AppConstant;
   notifications: INotification[] = [];
@@ -36,7 +37,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   dataLoaded = false;
   startupSyncCompleted = false;
   displayHeaderbar = true;
-
+  pageIndex = 1;
+  
   private _syncDataPushCompleteSub: Subscription;
   private _syncDataPullCompleteSub: Subscription;
 
@@ -83,7 +85,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   async onIonRefreshed(ev) {
     const { detail } = ev;
+
     this.notifications = [];
+    this.pageIndex = 1;
 
     // //pull latest. Important as other members need to have lastest information
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL, SyncEntity.NOTIFICATION);
@@ -96,6 +100,21 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     setTimeout(() => {
       detail.complete();
     }, 1000);
+  }
+
+  async onIonInfinite(ev) {
+    this.pageIndex++;
+    await this._getAllNotifications();
+
+    setTimeout(() => {
+      ev.target.complete();
+
+      // App logic to determine if all data is loaded
+      // and disable the infinite scroll
+      // if (data.length == 1000) {
+      //   ev.target.disabled = true;
+      // }
+    }, 300);
   }
 
   
@@ -240,6 +259,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
   }
 
+  identify(index, item: INotification) {
+    return item.id;
+  }
+
   private async _getAllNotifications() {
     //reset
     await this.listingContent.scrollToTop();
@@ -248,7 +271,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     const filters = {
       fromDate: this.dates.selectedDate.from,
       toDate: this.dates.selectedDate.to,
-      pageIndex: 1,
+      pageIndex: this.pageIndex,
       pageSize: 10
     };
 
@@ -258,12 +281,15 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       const toDateMonth = moment(filters.toDate).format('M');
 
       try { 
+        let res;
         //if changed month is not same as current month, then we don't have entries local..
         if(currentMonth != fromDateMonth || currentMonth != toDateMonth) {
-          this.notifications = await this.notificationSvc.getNotifications(filters);
+          res = await this.notificationSvc.getNotifications(filters);
         } else {
-          this.notifications = await this.notificationSvc.getAllLocal(filters);
+          res = await this.notificationSvc.getAllLocal(filters);
         }
+
+        this.notifications.push(...res);
       } catch(e) {
         this.notifications = [];
       } finally {
@@ -271,6 +297,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
         this.dataLoaded = true;
+        // this.virtualScroll.checkEnd();
       }
     });
   }

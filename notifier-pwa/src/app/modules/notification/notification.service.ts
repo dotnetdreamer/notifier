@@ -28,7 +28,7 @@ export class NotificationService extends BaseService {
             try {
                 //by default fetch 90 days records only
                 const fromDate = moment().add(-90, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
-                const items = await this.getNotifications({ fromDate: fromDate, sync: true });
+                let items = await this.getNotifications({ fromDate: fromDate, sync: true });
                 let allItems;
 
                 if(!items.length) {
@@ -52,6 +52,9 @@ export class NotificationService extends BaseService {
                     resolve();
                     return;
                 }
+
+                //pre-sort
+                items = this._sort(items);
 
                 //now add
                 await this.putAllLocal(items, true, true);
@@ -257,12 +260,20 @@ export class NotificationService extends BaseService {
                 args.pageSize = AppConstant.MAX_PAGE_SIZE;
             }
 
+            const totalAvailable = await this.count();
             const skip = (args.pageIndex - 1) * args.pageSize;
-            let idx = 1;
+            let idx = 0;
             const req = db.open(x => {
-                if(idx < skip || idx > args.pageSize) {
+                idx++;
+
+                if(idx <= skip) {
                     req.done();
                     return;
+                }
+
+                if(results.length == args.pageSize || skip >= totalAvailable) {
+                    req.done();
+                    return { advance: 2 };
                 }
 
                 let v: INotification = x.getValue();
@@ -301,13 +312,12 @@ export class NotificationService extends BaseService {
                 }
 
                 req.done();
-                idx++;
                 // console.log(idx);
 
                 // return { advance: 2}
             }, iter, 'readonly');
             req.always(async () => {
-                results = this._sort(results);                    
+                // results = this._sort(results);                    
                 
                 //check for pagesize
                 // if(args && args.pageSize && results.length > args.pageSize) {
@@ -399,6 +409,10 @@ export class NotificationService extends BaseService {
 
     removeAll() {
         return this.dbService.removeAll(this.schemaSvc.tables.notification);
+    }
+
+    count() {
+        return this.dbService.count(this.schemaSvc.tables.notification);
     }
 
     private _addQueuePattern(items: INotification[]) {

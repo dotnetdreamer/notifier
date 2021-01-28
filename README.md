@@ -18,10 +18,10 @@ The repository consists of two projects i.e **notifier-api** and **notifier-pwa*
 
 ## Author(s)
 * **Idrees Khan** (dotnetdreamer)
+
+## Follow:
 [GitHub](https://github.com/dotnetdreamer)
 | [Twitter](https://twitter.com/dotnetdreamer)
-
-Follow me:
 
 ## License
 ```

@@ -308,7 +308,7 @@ export class NotificationService extends BaseService {
             // new ydn.db.IndexValueIterator(store, opt.key, key_range, (pageSize == 0 ? undefined : pageSize), (skip > 0 ? skip: undefined), false);
             //https://github.com/yathit/ydn-db/blob/8d217ba5ff58a1df694b5282e20ebc2c52104197/test/qunit/ver_1_iteration.js#L117
             //(store_name, key_range, reverse)
-            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification);
+            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification, null, true);
             
             if(!args) {
                 args = {};

@@ -32,13 +32,14 @@
   </ion-refresher>
   <ion-progress-bar type="indeterminate" *ngIf="!startupSyncCompleted || !dataLoaded"></ion-progress-bar>
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
-  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications" #virtualScroll [trackBy]="identify">
+  
+  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications" #virtualScroll>
     <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
       <ion-item class="no-padding" lines="none" 
         (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
         <div class="notification-item" [class.notification-item-even]="index % 2">
           <div class="icon-container">
-            <img [src]="item.image | safe: 'url'" />
+            <img [src]="item.package | appIcon | async | safe: 'url'" />
           </div>
           <div class="app-description-date-time">
             <div class="app-description">
@@ -46,7 +47,7 @@
               <div class="app-info-icon">
                 <ion-icon name="refresh" class="animated infinite spin" 
                   *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
-                <div class="info">{{item.appName || item.package}}</div>
+                <div class="info">{{item.package | appName | async}}</div>
               </div>
             </div>
             <div class="date-time">
@@ -71,7 +72,7 @@
     </ion-item-sliding>  
   </ion-virtual-scroll>
   <div class="loade-more-button">
-    <ion-button (click)="onLoadMoreClicked()" *ngIf="totalAvailableNotifications != notifications.length"> 
+    <ion-button (click)="onLoadMoreClicked()" *ngIf="dataLoaded && totalAvailableNotifications != notifications.length"> 
       <ion-label>Load More...</ion-label>
     </ion-button>
   </div>

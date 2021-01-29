@@ -12,6 +12,7 @@ import { NotificationService } from '../../notification/notification.service';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { INotification, INotificationIgnored } from '../../notification/notification.model';
 import { EnvService } from "../env.service";
+import { AppInfoService } from "../../app-info/app-info.service";
 
 
 @Injectable({
@@ -20,7 +21,8 @@ import { EnvService } from "../env.service";
 export class SyncHelperService {
     constructor(private pubsubSvc: NgxPubSubService
         , private notificationSvc: NotificationService
-        , private notificationIgnoredSvc: NotificationIgnoredService) {
+        , private notificationIgnoredSvc: NotificationIgnoredService
+        , private appInfoSvc: AppInfoService) {
     }
 
     pull(table?: SyncEntity) {
@@ -35,6 +37,9 @@ export class SyncHelperService {
                     case SyncEntity.NOTIFICATION_IGNORED:
                         promises.push(this.notificationIgnoredSvc.pull());
                     break;
+                    case SyncEntity.APP_INFO:
+                        promises.push(this.appInfoSvc.pull());
+                    break;
                     default:
                     break;
                 }
@@ -43,6 +48,8 @@ export class SyncHelperService {
                 promises.push(this.notificationSvc.pull());
                 //notification ignored
                 promises.push(this.notificationIgnoredSvc.pull());
+                //app-info
+                promises.push(this.appInfoSvc.pull());
             }
             
             try {
@@ -70,15 +77,19 @@ export class SyncHelperService {
                     case SyncEntity.NOTIFICATION_IGNORED:
                         promises.push(this.notificationIgnoredSvc.push());
                     break;
+                    case SyncEntity.APP_INFO:
+                        promises.push(this.appInfoSvc.push());
+                    break;
                     default:
                     break;
                 }
             } else {   //sync all
                 //notification
                 promises.push(this.notificationSvc.push());
-
                 //notification ignored
                 promises.push(this.notificationIgnoredSvc.push());
+                //app-info
+                promises.push(this.appInfoSvc.push());
             }
             
             if(!promises.length) {
@@ -110,36 +121,6 @@ export class SyncHelperService {
                     silent: true,
                     markedForAdd: true
                 };
-
-                //icon
-                if(!item.image) {
-                    try {
-                        const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
-                            packageName: item.package
-                        });
-                        if(imgRslt.value) {
-                            // e.image = `url('${imgRslt.value}')`;
-                            item.image = imgRslt.value;
-                        }
-                    } catch(e) {
-                        //ignore...
-                    }
-                }
-
-                //app name
-                if(!item.appName) {
-                    try {
-                        const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
-                            packageName: item.package
-                        });
-                        if(appName.value) {
-                            // e.image = `url('${imgRslt.value}')`;
-                            item.appName = appName.value;
-                        }
-                    } catch(e) {
-                        //ignore...
-                    }
-                }
                 newItems.push(item);
             }
             await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);

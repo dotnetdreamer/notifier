@@ -242,8 +242,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         package: notification.package,
         silent: silent,
         rule: value == 'app' ? null : rule,
-        image: notification.image,
-        appName: notification.appName,
         markedForAdd: true
       };
       //event must be fired so we can refresh blacklist in app.component
@@ -314,9 +312,11 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
-        this.dataLoaded = true;
-
         this.virtualScroll.checkEnd();
+
+        setTimeout(() => {
+          this.dataLoaded = true;
+        }, 300);
       }
     });
   }
@@ -329,6 +329,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         }
         //app came to foreground...
         if(state.isActive) {
+          //force refresh...
+          this.pageIndex = 1;
+          this.notifications = [];
+          this.dates.selectedDate.from = this.dates._maindDate.from;
+          this.dates.selectedDate.to = this.dates._maindDate.to;
+
           await this._getAllNotifications();
         }
       });

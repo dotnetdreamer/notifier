@@ -30,6 +30,8 @@ import { NotificationIgnoredService } from './modules/notification/notification-
 import { NotificationSettingService } from './modules/notification/notification-setting.service';
 import { NotificationConstant } from './modules/notification/notification.constant';
 import { EnvService } from './modules/shared/env.service';
+import { AppInfoService } from './modules/app-info/app-info.service';
+import { IAppInfo } from './modules/app-info/app-info.model';
 
 @Component({
   selector: 'app-root',
@@ -53,6 +55,7 @@ export class AppComponent {
       , private localizationSvc: LocalizationService, private notificationSvc: NotificationService
       , private notificationIgnoredSvc: NotificationIgnoredService
       , private notificationSettingSvc: NotificationSettingService
+      , private appInfoSvc: AppInfoService
   ) {
     this.initializeApp();
   }
@@ -365,38 +368,43 @@ export class AppComponent {
         receivedOnUtc: utcTime
       };
 
-       //icon
-        try {
-            const imgRslt = await (<GetAppInfoPlugin>GetAppInfo).getAppIcon({
-              packageName: notification.package
-            });
-            if(imgRslt.value) {
-                // e.image = `url('${imgRslt.value}')`;
-                notification.image = imgRslt.value;
-            }
-        } catch(e) {
-            //ignore...
-        } 
-
-      //app name
-        try {
-            const appName = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
-                packageName: notification.package
-            });
-            if(appName.value) {
-                // e.image = `url('${imgRslt.value}')`;
-                notification.appName = appName.value;
-            }
-        } catch(e) {
-            //ignore...
+      let image, appName;
+      try {
+        const iconAppNameRslt = await Promise.all([
+          (<GetAppInfoPlugin>GetAppInfo).getAppIcon({ packageName: notification.package })
+          , (<GetAppInfoPlugin>GetAppInfo).getAppLabel({ packageName: notification.package })
+        ]);
+        //icon
+        if(iconAppNameRslt[0].value) {
+          image = iconAppNameRslt[0].value;
         }
+
+        //app name
+        if(iconAppNameRslt[1].value) {
+          appName = iconAppNameRslt[1].value;
+        }
+      } catch(e) {
+        //ignore...
+      }
+ 
+      const promises = [];
+      if(image && appName) {
+        const appInfo: IAppInfo = {
+          appName: appName,
+          image: image,
+          package: notification.package
+        };
+        //for now no need to fire event
+        promises.push(this.appInfoSvc.addOrUpdate(appInfo, true));
+      }
 
       if(EnvService.DEBUG) {
         console.log('AppComponent: notificationReceivedEvent: notification', notification)
       }
+      promises.push(this.notificationSvc.putLocal(notification));
 
-      await this.notificationSvc.putLocal(notification);
-      // await this.helperSvc.presentToastGenericSuccess();
+      //save all
+      await Promise.all(promises);
   
       //fire after the page navigates away...
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);

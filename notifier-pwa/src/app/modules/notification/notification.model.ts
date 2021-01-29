@@ -4,8 +4,6 @@ export interface INotification {
     text: string;
     package: string;
     receivedOnUtc: string;
-    image?: string;
-    appName?: string;
     canLaunchApp?: boolean;
 
     updatedOn?: string;

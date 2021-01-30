@@ -23,6 +23,7 @@ export class AppIconPipe implements PipeTransform {
 
             let icon;
             const info = await this.appInfoSvc.getByPackageLocal(pkg);
+            console.log(pkg, info)
             if(info) {
                 icon = info.image;
             }

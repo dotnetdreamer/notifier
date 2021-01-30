@@ -1,8 +1,8 @@
-import { Component, Inject, Renderer2 } from '@angular/core';
+import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Platform } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
+import { DeviceInfo, Plugins } from '@capacitor/core';
 
 const { GetAppInfo } = Plugins;
 const { SplashScreen, StatusBar, Device } = Plugins;
@@ -38,11 +38,12 @@ import { IAppInfo } from './modules/app-info/app-info.model';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   workingLanguage;
   appVersion;
   currentUser: IUserProfile;
   
+  private _deviceInfo: DeviceInfo;
   private _systemNotificationListener: SystemNotificationListener;
   
   constructor(
@@ -64,8 +65,11 @@ export class AppComponent {
     this._subscribeToEvents();
 
     this.platform.ready().then(async () => {
-
     });
+  }
+
+  async ngOnInit() {
+    this._deviceInfo = await Device.getInfo();
   }
 
   private async _subscribeToEvents() {
@@ -314,31 +318,13 @@ export class AppComponent {
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       //ignore current app...
-      const deviceInfo = await Device.getInfo();
-      if(deviceInfo.appId == info.package) {
+      if(this._deviceInfo.appId == info.package) {
         if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is same as ${deviceInfo.appId}`);
+          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
         }
         return;
       }
-
-      // console.log('notificationReceivedEvent', info);
-      const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
-      if(packageIgnored) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is added to ignore list via package`);
-        }
-        return;
-      }
-
-      const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
-      if(textIgnored && textIgnored.package == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
-        }
-        return;
-      }
-
+     
       const ignoreSystemApps = await this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled();
       if(ignoreSystemApps) {
         //check if it can be launched
@@ -360,6 +346,22 @@ export class AppComponent {
         }
       }
 
+      const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
+      if(packageIgnored) {
+        if(EnvService.DEBUG) {
+          console.log(`Ignoring: ${info.package} is added to ignore list via package`);
+        }
+        return;
+      }
+
+      const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
+      if(textIgnored && textIgnored.package == info.package) {
+        if(EnvService.DEBUG) {
+          console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
+        }
+        return;
+      }
+
       const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
       const notification: INotification = {
         title: info.title,
@@ -374,6 +376,7 @@ export class AppComponent {
           (<GetAppInfoPlugin>GetAppInfo).getAppIcon({ packageName: notification.package })
           , (<GetAppInfoPlugin>GetAppInfo).getAppLabel({ packageName: notification.package })
         ]);
+
         //icon
         if(iconAppNameRslt[0].value) {
           image = iconAppNameRslt[0].value;
@@ -407,12 +410,13 @@ export class AppComponent {
       await Promise.all(promises);
   
       //fire after the page navigates away...
+      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.APP_INFO);
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
     });
+
     sn.addListener('notificationRemovedEvent', async (info: SystemNotification) => {
       //ignore current app...
-      const deviceInfo = await Device.getInfo();
-      if(deviceInfo.appId == info.package) {
+      if(this._deviceInfo.appId == info.package) {
         return;
       }
 

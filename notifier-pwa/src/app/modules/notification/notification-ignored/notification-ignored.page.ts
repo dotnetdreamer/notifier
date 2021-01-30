@@ -100,8 +100,6 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
       package: resultAp.data.package,
       silent: silent,
       rule: value == 'app' ? null : rule,
-      image: resultAp.data.image,
-      appName: resultAp.data.package,
       markedForAdd: true
     };
 

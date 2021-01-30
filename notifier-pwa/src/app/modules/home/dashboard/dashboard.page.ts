@@ -76,7 +76,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     //fix: navigation lag
     setTimeout(async () => {
-      await this._getAllNotifications();
+      await this._getAllNotifications({ resetDefaults: true });
     });
   }
 
@@ -92,19 +92,13 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   async onIonRefreshed(ev) {
     const { detail } = ev;
-
-    this.notifications = [];
-    this.pageIndex = 1;
-    this.dates.selectedDate.from = this.dates._maindDate.from;
-    this.dates.selectedDate.to = this.dates._maindDate.to;
-
     // //pull latest. Important as other members need to have lastest information
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL, SyncEntity.NOTIFICATION);
 
     // //now push
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
 
-    await this._getAllNotifications();
+    await this._getAllNotifications({ resetDefaults: true });
 
     setTimeout(() => {
       detail.complete();
@@ -123,8 +117,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.dataLoaded = false;
     this.notifications = [];
+    this.pageIndex = 1;
+    this.totalAvailableNotifications = 0;
+
     //reset scroll
     await this.listingContent.scrollToTop(0);
 
@@ -277,9 +273,30 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private async _getAllNotifications() {
+  private async _getAllNotifications(args?: { virtualScrollCheckEnd?, resetDefaults? }) {
+    if(!args) {
+      args = {};
+    }
+
+    if(typeof args.virtualScrollCheckEnd === 'undefined') {
+      args.virtualScrollCheckEnd = true;
+    }
+
+    if(typeof args.resetDefaults === 'undefined') {
+      args.resetDefaults = false;
+    }
+
     //reset
     this.dataLoaded = false;
+
+    if(args.resetDefaults) {
+      //force refresh...
+      this.totalAvailableNotifications = 0;
+      this.pageIndex = 1;
+      this.notifications = [];
+      this.dates.selectedDate.from = this.dates._maindDate.from;
+      this.dates.selectedDate.to = this.dates._maindDate.to;
+    }
 
     const filters = {
       fromDate: this.dates.selectedDate.from,
@@ -312,9 +329,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
-        this.virtualScroll.checkEnd();
 
         setTimeout(() => {
+          if(args.virtualScrollCheckEnd) {
+            this.virtualScroll.checkEnd();
+          }
+  
           this.dataLoaded = true;
         }, 300);
       }
@@ -329,13 +349,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         }
         //app came to foreground...
         if(state.isActive) {
-          //force refresh...
-          this.pageIndex = 1;
-          this.notifications = [];
-          this.dates.selectedDate.from = this.dates._maindDate.from;
-          this.dates.selectedDate.to = this.dates._maindDate.to;
-
-          await this._getAllNotifications();
+          await this._getAllNotifications({ 
+            virtualScrollCheckEnd: state.isActive,
+            resetDefaults: true
+          });
         }
       });
     }
@@ -353,13 +370,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
         }
-        //force refresh...
-        this.pageIndex = 1;
-        this.notifications = [];
-        this.dates.selectedDate.from = this.dates._maindDate.from;
-        this.dates.selectedDate.to = this.dates._maindDate.to;
-
-        await this._getAllNotifications();
+        await this._getAllNotifications({ 
+          resetDefaults: true
+        });
     });
 
     //important to add here since the application loads and the view will show but there will be no data...
@@ -391,7 +404,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   private async _refreshVisibleItems() {
     if(!this.notifications.length) {
       //fetch all
-      await this._getAllNotifications();
+      await this._getAllNotifications({ 
+        resetDefaults: true
+      });
       return;
     }
 

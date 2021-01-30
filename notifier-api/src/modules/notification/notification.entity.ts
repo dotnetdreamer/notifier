@@ -13,12 +13,6 @@ export class NotificationRecord extends BaseComplexEntity {
   @Column()
   package: string;
 
-  @Column({ nullable: true })
-  image?: string;
-
-  @Column({ nullable: true })
-  appName?: string;
-
   @Column()
   receivedOnUtc: Date;
 }

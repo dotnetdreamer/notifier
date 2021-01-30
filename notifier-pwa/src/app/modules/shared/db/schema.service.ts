@@ -28,12 +28,6 @@ export class SchemaService {
                     name: 'package', 
                     type: 'TEXT' 
                 }, {
-                    name: 'image', 
-                    type: 'TEXT' 
-                }, {
-                    name: 'appName', 
-                    type: 'TEXT'
-                }, {
                     name: 'receivedOn', 
                     type: 'TEXT' 
                 }, { 

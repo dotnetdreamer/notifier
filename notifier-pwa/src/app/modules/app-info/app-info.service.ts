@@ -342,7 +342,6 @@ export class AppInfoService extends BaseService {
 
     addOrUpdate(item: IAppInfo, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
         return new Promise(async (resolve, reject) => {
-            debugger;
             const toAdd = await this.getByPackageLocal(item.package);
             if(toAdd) {
                 resolve();

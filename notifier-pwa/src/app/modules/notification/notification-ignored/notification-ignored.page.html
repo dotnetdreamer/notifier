@@ -13,7 +13,7 @@
         (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
         <div class="notification-item" [class.notification-item-even]="index % 2">
           <div class="icon-container">
-            <img [src]="item.image | safe: 'url'" />
+            <img [src]="item.package | appIcon | async | safe: 'url'" />
           </div>
           <div class="app-description-date-time">
             <div class="app-description">
@@ -21,7 +21,7 @@
               <div class="app-info-icon">
                 <ion-icon name="refresh" class="animated infinite spin" 
                   *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
-                <div class="info">{{item.appName || item.package}}</div>
+                  <div class="info">{{item.package | appName | async}}</div>
                 <ion-icon name="notifications-off" color="danger" *ngIf="item.silent"></ion-icon>
               </div>
             </div> 

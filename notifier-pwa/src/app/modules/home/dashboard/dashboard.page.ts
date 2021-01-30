@@ -347,8 +347,15 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: appStateChange', state);
         }
+
         //app came to foreground...
         if(state.isActive) {
+          //refresh only if any items are changed
+          const total = await this.notificationSvc.count();
+          if(total == this.totalAvailableNotifications) {
+            return;
+          }
+
           await this._getAllNotifications({ 
             virtualScrollCheckEnd: state.isActive,
             resetDefaults: true

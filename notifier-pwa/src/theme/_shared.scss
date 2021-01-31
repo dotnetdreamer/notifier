@@ -130,11 +130,9 @@ ion-header {
 
     .notifications {
         ion-item {
-            max-width: 1024px;
-            margin: 0 auto;
-            
             .notification-item {
-
+                max-width: 1024px;
+                margin: 0 auto;
             }
         }
     }

@@ -20,8 +20,13 @@
   <ion-list>
     <ion-item>
       <ion-label>{{'setting.ignore_system_apps' | localizedresource | async}}</ion-label>
-      <ion-checkbox slot="end" [(ngModel)]="ignoreSystemAppsNotifications" 
+      <ion-checkbox slot="end" [(ngModel)]="vm.ignoreSystemAppsNotifications" 
       (ionChange)="onIgnoreSystemAppsOptionChanged()"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>{{'setting.ignore_empty_messages' | localizedresource | async}}</ion-label>
+      <ion-checkbox slot="end" [(ngModel)]="vm.ignoreEmptyMessages" 
+      (ionChange)="onIgnoreEmptyMessageOptionChanged()"></ion-checkbox>
     </ion-item>
   </ion-list>
   <ion-list-header>

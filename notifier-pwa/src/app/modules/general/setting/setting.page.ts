@@ -34,7 +34,11 @@ export class SettingPage extends BasePage implements OnInit, OnDestroy {
   currentUser: IUser;
   UserRole = UserRole;
 
-  ignoreSystemAppsNotifications = false;
+  vm = {
+    ignoreSystemAppsNotifications: false,
+    ignoreEmptyMessages: false
+  }
+  
   
   private _syncDataPushCompleteSub: Subscription;
 
@@ -60,14 +64,21 @@ export class SettingPage extends BasePage implements OnInit, OnDestroy {
     const result = await Promise.all([
       this.userSettingSvc.getUserProfileLocal()
       , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
+      , this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
       ]);
     this.currentUser = result[0];
-    this.ignoreSystemAppsNotifications = result[1]; 
+    this.vm.ignoreSystemAppsNotifications = result[1]; 
+    this.vm.ignoreEmptyMessages = result[2]; 
   }
 
   async onIgnoreSystemAppsOptionChanged() {
     await this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(
-      this.ignoreSystemAppsNotifications);
+      this.vm.ignoreSystemAppsNotifications);
+  }
+
+  async onIgnoreEmptyMessageOptionChanged() {
+    await this.notificationSettingSvc.putIgnoreEmptyMessagesEnabled(
+      this.vm.ignoreEmptyMessages);
   }
 
   async onTableSelectionChanged() {

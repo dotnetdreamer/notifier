@@ -237,6 +237,8 @@ export class AppComponent implements OnInit {
       if(this.platform.is('capacitor')) {
         //ignore system notifications
         this.notificationSettingSvc.putIgnoreSystemAppsNotificationEnabled(true);
+        //ignore empty messages
+        this.notificationSettingSvc.putIgnoreEmptyMessagesEnabled(true);
 
         //put sample data
         this.syncHelperSvc.syncSampleData();
@@ -325,7 +327,18 @@ export class AppComponent implements OnInit {
         return;
       }
      
-      const ignoreSystemApps = await this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled();
+      const result = await Promise.all([
+        this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
+        , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
+        , this.notificationIgnoredSvc.getByTextLocal(info.package)
+        , this.notificationIgnoredSvc.getByTextLocal(info.text)
+      ]);
+      const ignoreEmptyMessages = result[0];
+      if(ignoreEmptyMessages && !(info.text?.length || info.text?.trim().length)) {
+        return;
+      }
+
+      const ignoreSystemApps = result[1];
       if(ignoreSystemApps) {
         //check if it can be launched
         let canLaunchApp = true;
@@ -346,7 +359,7 @@ export class AppComponent implements OnInit {
         }
       }
 
-      const packageIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.package);
+      const packageIgnored = result[2];
       if(packageIgnored) {
         if(EnvService.DEBUG) {
           console.log(`Ignoring: ${info.package} is added to ignore list via package`);
@@ -354,7 +367,7 @@ export class AppComponent implements OnInit {
         return;
       }
 
-      const textIgnored = await this.notificationIgnoredSvc.getByTextLocal(info.text);
+      const textIgnored = result[3];
       if(textIgnored && textIgnored.package == info.package) {
         if(EnvService.DEBUG) {
           console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);

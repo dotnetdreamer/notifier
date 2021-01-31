@@ -31,7 +31,7 @@ export class NotificationService extends BaseService {
 
                 //chunks
                 let pageIndex = 1, pageSize = 100
-                , totalAvailable = 0, maxToFetch = NotificationConstant.MAX_NOTIFICATIONS_TO_FETCH;
+                , totalAvailable = 0, maxToFetch = NotificationConstant.MAX_ITEMS_LIMIT;
                 let allItems = [], items = [];
                 do {
                     let result = await this.getNotifications({ 
@@ -89,27 +89,34 @@ export class NotificationService extends BaseService {
                 console.log('NotificationService: push: started');
             }
             //chunks
-            // let pageIndex = 1, pageSize = 10 , totalAvailable = 0;
+            let pageIndex = 1, pageSize = NotificationConstant.MAX_ITEMS_LIMIT;
+            const result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
+            if(result.total == 0) {
+                resolve();
+                return;
+            }
+
             let unSycedLocal = [];
-            //TODO: need to push with chunks
-            const result = await this.getUnSyncedLocal({ pageIndex: 1, pageSize: 100 });
             unSycedLocal = result.data;
+            //do not push same records again...
+            unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
             if(EnvService.DEBUG) {
                 console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
             }
-
-            //do not push same records again...
-            unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
 
             if(!unSycedLocal.length) {
                 resolve();
                 return;
             }
             
+            //TODO: need to push with chunks
+            // do {
+            // } while(result.total == 0);
+
             //add to push queue
             this._addQueuePattern(unSycedLocal);
 
-            let items: Array<any>;
+            let items: any[];
             //server returns array of dictionary objects, each key in dict is the localdb id
             //we map the localids and update its serverid locally
             try {
@@ -370,6 +377,9 @@ export class NotificationService extends BaseService {
                     //do not show deleted...
                     if(!item.markedForDelete) {
                         results.push(item);
+                    } else {
+                        //decrease back the idx as item was deleted
+                        idx--;
                     }
                 }
 

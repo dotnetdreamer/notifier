@@ -14,7 +14,6 @@ import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
-import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { EnvService } from '../../shared/env.service';
 import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore-options.component';
@@ -197,7 +196,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           
           await this.helperSvc.presentToastGenericSuccess();
           setTimeout(() => {
-            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
           });
         break;  
         case 'copy':
@@ -444,12 +443,16 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       });
     } else {
       const all = this.notifications.map(async n => {
-        const newNot = await this.notificationSvc.getByIdLocal(n.id)
+        const newNot = await this.notificationSvc.getByIdLocal(n.id);
+        if(!newNot) {
+          return null;
+        }
+
         n = {
           ...newNot
         };
         return n;
-      });
+      }).filter(n => n != null);
       this.notifications = await Promise.all(all);
     }
 

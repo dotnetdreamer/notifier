@@ -1,5 +1,5 @@
 export class NotificationConstant {
-    public static readonly MAX_NOTIFICATIONS_TO_FETCH = 1000;
+    public static readonly MAX_ITEMS_LIMIT = 1000;
 
     public static readonly KEY_IGNORE_SYSTEM_APPS_NOTIFICATIONS = "key:ignoreSystemApps";
 

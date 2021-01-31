@@ -14,7 +14,7 @@ The repository consists of two projects i.e **notifier-api** and **notifier-pwa*
 6. Navigate to **notifier-api** directory (if not already) and run `npm run start`. This will kick in the NestJs in debug mode
 7. Note down the **notifier-api** project address and port (usually http://localhost:3000) and go to **notifier-pwa -> src -> assets -> env.js** and add the API urls there in `BASE_URL` and `BASE_API_URL`
 8. In **notifier-pwa** project, go to **android -> app -> src -> main -> res -> xml -> network_security_config.xml** file and update your API url there. If you don't do this, you will get typical **net::ERR_CLEARTEXT_NOT_PERMITTED** error 
-9. Open another command line and navigate to ***notifier-pwa** and run ionic serve
+9. Open another command line and navigate to **notifier-pwa** and run ionic serve
 10. By this time, you should have both projects running
 
 ## Author(s)

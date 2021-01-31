@@ -306,6 +306,9 @@ export class AppInfoService extends BaseService {
                     //do not show deleted...
                     if(!item.markedForDelete) {
                         results.push(item);
+                    } else {
+                        //decrease back the idx as item was deleted
+                        idx--;
                     }
                 }
 

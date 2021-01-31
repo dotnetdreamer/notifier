@@ -42,7 +42,7 @@ export class NotificationService {
     qb = qb.orderBy("not.receivedOnUtc", 'DESC')
       .addOrderBy('not.id', 'DESC');
 
-      const skip = (args.pageIndex - 1) * args.pageSize;
+    const skip = (args.pageIndex - 1) * args.pageSize;
     qb = qb.skip(skip).take(args.pageSize);
 
     const [ data, total ] = await qb.getManyAndCount();

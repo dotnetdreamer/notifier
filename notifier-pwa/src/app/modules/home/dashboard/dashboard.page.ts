@@ -2,7 +2,7 @@ import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEnc
 import { App, Capacitor, Plugins } from '@capacitor/core';
 import { AlertController, IonContent, IonItemSliding, IonVirtualScroll, ModalController, Platform } from '@ionic/angular';
 
-const { GetAppInfo } = Plugins;
+const { GetAppInfo, Clipboard } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { Observable, Subscription } from 'rxjs';
@@ -18,6 +18,7 @@ import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { EnvService } from '../../shared/env.service';
 import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore-options.component';
+import { LocalizationService } from '../../shared/localization.service';
 
 
 @Component({
@@ -49,7 +50,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     , private modalCtrl: ModalController
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private notificationIgnoredSvc: NotificationIgnoredService
-    , private helperSvc: HelperService) {
+    , private helperSvc: HelperService, private localizationSvc: LocalizationService) {
 
     this._subscribeToEvents();
   }
@@ -153,7 +154,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   } 
 
   async onNotificationItemClicked(ev: CustomEvent, notification: INotification
-    , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {
+    , action: 'detail' | 'edit' | 'delete' | 'copy', slideItem?: IonItemSliding) {
     ev.stopImmediatePropagation();
 
     if(slideItem) {
@@ -161,28 +162,54 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     try {
-      if(action == 'detail') {
-        const txt = notification.text || notification.title;
-        await this.helperSvc.presentInfoDialog(txt, notification.title);
-      } else if(action == 'delete') {
-        const confirm = await this.helperSvc.presentConfirmDialog();
-        if(!confirm) {
-          return;
-        }
+      const txt = notification.text || notification.title;
 
-        if(notification.markedForAdd) {
-          await this.notificationSvc.remove(notification.id);
-        } else {
-          notification.markedForDelete = true;
-          notification.updatedOn = null;
+      switch(action) {
+        case 'detail':
+          const copyButton = {
+            text: await this.localizationSvc.getResource('common.copy'),
+            role: null,
+            handler: async () => {
+              await this.onNotificationItemClicked(ev, notification, 'copy', slideItem);
+            }
+          };
 
-          await this.notificationSvc.putLocal(notification);
-        }
-        
-        await this.helperSvc.presentToastGenericSuccess();
-        setTimeout(() => {
-          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
-        });
+          await this.helperSvc.presentInfoDialog({
+            message: txt,
+            title: notification.title,
+            buttons: [copyButton]
+          });
+        break;
+        case 'delete':
+          const confirm = await this.helperSvc.presentConfirmDialog();
+          if(!confirm) {
+            return;
+          }
+
+          if(notification.markedForAdd) {
+            await this.notificationSvc.remove(notification.id);
+          } else {
+            notification.markedForDelete = true;
+            notification.updatedOn = null;
+
+            await this.notificationSvc.putLocal(notification);
+          }
+          
+          await this.helperSvc.presentToastGenericSuccess();
+          setTimeout(() => {
+            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+          });
+        break;  
+        case 'copy':
+          await Clipboard.write({
+            label: notification.title,
+            string: txt
+          });
+          const msg = await this.localizationSvc.getResource('common.copied');
+          await this.helperSvc.presentToast(msg);
+        break;
+        default:
+        break;
       }
     } catch(e) {
       await this.helperSvc.presentToastGenericError();
@@ -330,13 +357,14 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
 
+
         setTimeout(() => {
-          if(args.virtualScrollCheckEnd) {
+          if(args.virtualScrollCheckEnd && this.virtualScroll) {
             this.virtualScroll.checkEnd();
           }
   
           this.dataLoaded = true;
-        }, 300);
+        }, 1000);
       }
     });
   }
@@ -414,17 +442,21 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       await this._getAllNotifications({ 
         resetDefaults: true
       });
-      return;
+    } else {
+      const all = this.notifications.map(async n => {
+        const newNot = await this.notificationSvc.getByIdLocal(n.id)
+        n = {
+          ...newNot
+        };
+        return n;
+      });
+      this.notifications = await Promise.all(all);
     }
 
-    const all = this.notifications.map(async n => {
-      const newNot = await this.notificationSvc.getByIdLocal(n.id)
-      n = {
-        ...newNot
-      };
-      return n;
-    });
-    this.notifications = await Promise.all(all);
-    this.virtualScroll.checkEnd();
+    setTimeout(() => {
+      if(this.virtualScroll) {
+        this.virtualScroll.checkEnd();
+      }
+    }, 1000);
   }
 }

@@ -49,22 +49,30 @@ export class HelperService {
         return this.presentToast(msg);
     }
     
-    async presentInfoDialog(message, title?, okButtonCallback?) {
+    async presentInfoDialog(args: { message, title?, okButtonCallback?
+        , buttons?: Array<{ text, role, handler }> }) {
         let okTxt = await this.localizationService.getResource('common.ok');
-        const alert = await this.alertCtrl.create({
-            message: message,
-            header: title,
-            buttons: [
-                {
-                    text: okTxt,
-                    role: 'cancel',
-                    handler: () => {
-                        if(okButtonCallback) {
-                            okButtonCallback();
-                        }
-                    }
+
+        const buttons = [];
+        if(args.buttons && args.buttons.length) {
+            buttons.push(...args.buttons);
+        }
+
+        //ok button
+        buttons.push({
+            text: okTxt,
+            role: 'cancel',
+            handler: () => {
+                if(args.okButtonCallback) {
+                    args.okButtonCallback();
                 }
-            ]
+            }
+        });
+
+        const alert = await this.alertCtrl.create({
+            message: args.message,
+            header: args.title,
+            buttons: buttons
         });
         return alert.present();
     }

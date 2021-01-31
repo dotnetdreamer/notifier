@@ -131,7 +131,9 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
     try {
       if(action == 'detail') {
         const txt = notification.text;
-        await this.helperSvc.presentInfoDialog(txt);
+        await this.helperSvc.presentInfoDialog({
+          message: txt
+        });
       } else if(action == 'delete') {
         const confirm = await this.helperSvc.presentConfirmDialog();
         if(!confirm) {

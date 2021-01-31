@@ -21,7 +21,11 @@
         "you": "You",
         "on": "on",
         "total": "Total",
-        "outof": "Out of"
+        "outof": "Out of",
+        "copied": "Copied",
+        "copy": "Copy",
+        "launch": "Launch",
+        "ignore": "Ignore"
     },
     "home": {
         "title": "Home",

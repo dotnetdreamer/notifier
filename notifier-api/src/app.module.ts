@@ -5,6 +5,8 @@ import { WinstonModule } from 'nest-winston';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AppSettings } from './modules/app-settings/app-settings.entity';
+import { AppSettingsModule } from './modules/app-settings/app-settings.module';
 import { NotificationIgnoredItem } from './modules/notification-ignored/notification-ignored.entity';
 import { NotificationIgnoredModule } from './modules/notification-ignored/notification-ignored.module';
 import { NotificationRecord } from './modules/notification/notification.entity';
@@ -22,6 +24,7 @@ const CONNECTION_NAME = "default";
       database: './_db/notifier.db',
       entities: [
         NotificationRecord, NotificationIgnoredItem
+        , AppSettings
       ],
       synchronize: true,
     }),
@@ -30,7 +33,8 @@ const CONNECTION_NAME = "default";
     }),
     SharedModule,
     NotificationModule,
-    NotificationIgnoredModule
+    NotificationIgnoredModule,
+    AppSettingsModule
   ],
   controllers: [AppController],
   providers: [AppService],

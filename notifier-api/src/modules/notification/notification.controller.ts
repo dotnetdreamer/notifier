@@ -14,12 +14,12 @@ export class NotificationController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('getAll')
   async getAll(@Req() req: Request,
-   @Query() filters?: { fromDate?: string, toDate?: string, sync?: boolean }) {
-    const data = await this.notificationSvc.findAll({
+   @Query() filters?: { pageIndex, pageSize, fromDate?: string, toDate?: string }) {
+    const result = await this.notificationSvc.findAll({
       ...filters
     });
 
-    return data;
+    return result;
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

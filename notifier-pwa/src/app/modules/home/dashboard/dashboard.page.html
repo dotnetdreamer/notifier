@@ -9,13 +9,15 @@
         <ion-icon name="close" *ngIf="displaySearch"></ion-icon>
       </ion-button>
     </ion-buttons> -->
-    <ion-title>{{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}</ion-title>
-    <ion-buttons slot="end">
+    <ion-title>
+      {{'common.total' | localizedresource | async}}&nbsp;:&nbsp;{{notifications.length}}&nbsp;{{'common.outof' | localizedresource | async}}&nbsp;{{totalAvailableNotifications}}
+    </ion-title>
+    <!-- <ion-buttons slot="end">
       <ion-button class="animated infinite" [disabled]="true" 
         [class.spin]="!startupSyncCompleted || !dataLoaded">
         <ion-icon name="refresh"></ion-icon>
       </ion-button>
-    </ion-buttons>
+    </ion-buttons> -->
   </ion-toolbar>
   <ion-toolbar class="toolbar-calendar">
     <ion-label>{{ dates?.selectedDate?.from }}&nbsp;-&nbsp;{{ dates?.selectedDate?.to }}</ion-label>
@@ -24,48 +26,65 @@
 </ion-header>
 
 <ion-content #notificationsContent [scrollEvents]="true" (ionScroll)="onIonScrolling($event)">
-  <ion-refresher slot="fixed" (ionRefresh)="onIonRefreshed($event)">
+  <ion-progress-bar type="indeterminate" *ngIf="!startupSyncCompleted || !dataLoaded"></ion-progress-bar>
+  <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200" 
+    (ionRefresh)="onIonRefreshed($event)" [class.hidden]="!startupSyncCompleted || !dataLoaded">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
-  <ion-progress-bar type="indeterminate" *ngIf="!startupSyncCompleted"></ion-progress-bar>
   <no-data *ngIf="!notifications.length && dataLoaded"></no-data>
-  <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications">
-    <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
-      <ion-item class="no-padding" lines="none" 
-        (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
-        <div class="notification-item" [class.notification-item-even]="index % 2">
-          <div class="icon-container">
-            <img [src]="item.image | safe: 'url'" />
-          </div>
-          <div class="app-description-date-time">
-            <div class="app-description">
-              <div class="description" [innerHTML]="(item.title || item.text) | trimText:60"></div>
-              <div class="app-info-icon">
-                <ion-icon name="refresh" class="animated infinite spin" 
-                  *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
-                <div class="info">{{item.appName || item.package}}</div>
+  
+  <ng-container *ngIf="notifications && notifications.length">
+    <ion-virtual-scroll [items]="notifications" approxItemHeight="85px" class="notifications" #virtualScroll>
+      <ion-item-sliding #slideItem *virtualItem="let item;let index=index;">
+        <ion-item class="no-padding" lines="none" 
+          (click)="onNotificationItemClicked($event, item, 'detail', slideItem)">
+          <div class="notification-item">
+            <div class="icon-container">
+              <img [src]="item.package | appIcon | async | safe: 'url'" />
+            </div>
+            <div class="app-description-date-time">
+              <div class="app-description">
+                <div class="description" [innerHTML]="(item.title || item.text) | trimText:40"></div>
+                <div class="app-info-icon">
+                  <ion-icon name="refresh" class="animated infinite spin" 
+                    *ngIf="item.markedForAdd || item.markedForUpdate || item.markedForDelete"></ion-icon>
+                  <div class="info">{{item.package | appName | async}}</div>
+                </div>
+              </div>
+              <div class="date-time">
+                <div class="time">
+                  {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
+                </div>
+                <div class="date">
+                  {{item.createdOn | formateDate | async}}
+                </div>
               </div>
             </div>
-            <div class="date-time">
-              <div class="time">
-                {{item.createdOn | formateDate: AppConstant.DEFAULT_TIME_FORMAT_WITH_AM_PM | async}}
-              </div>
-              <div class="date">
-                {{item.createdOn | formateDate | async}}
-              </div>
-            </div>
           </div>
-        </div>
-      </ion-item>
-      <ion-item-options side="start">
-        <ion-item-option color="danger" 
-          (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">Delete</ion-item-option>
-      </ion-item-options>
-      <ion-item-options side="end">
-        <ion-item-option (click)="onLaunchAppClicked(slideItem, item)" *ngIf="isAndroid && item.canLaunchApp">Launch</ion-item-option>
-        <ion-item-option color="danger" (click)="onIgnoreClicked(slideItem, item)">Ignore</ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>  
+        </ion-item>
+        <ion-item-options side="start">
+          <ion-item-option color="danger" (click)="onNotificationItemClicked($event, item, 'delete', slideItem)">
+            {{'common.delete' | localizedresource | async}}
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="onIgnoreClicked(slideItem, item)">
+            {{'common.ignore' | localizedresource | async}}
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item-options side="end">
+          <ion-item-option (click)="onLaunchAppClicked(slideItem, item)" *ngIf="isAndroid && item.canLaunchApp">
+            {{'common.launch' | localizedresource | async}}
+          </ion-item-option>
+          <ion-item-option color="secondary" (click)="onNotificationItemClicked($event, item, 'copy', slideItem)">
+            {{'common.copy' | localizedresource | async}}
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>  
+    </ion-virtual-scroll>
 
-  </ion-virtual-scroll>
+    <div class="loade-more-button">
+      <ion-button (click)="onLoadMoreClicked()" *ngIf="dataLoaded && totalAvailableNotifications != notifications.length"> 
+        <ion-label>Load More...</ion-label>
+      </ion-button>
+    </div>
+  </ng-container>
 </ion-content>

@@ -7,17 +7,17 @@ import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
-import { NotificationConstant } from './notification.constant';
-import { INotification } from './notification.model';
+import { AppInfoConstant } from './app-info.constant';
 import { EnvService } from '../shared/env.service';
+import { IAppInfo } from './app-info.model';
 
 declare const ydn: any;
 
 @Injectable({
     providedIn: 'root'
 })
-export class NotificationService extends BaseService {
-    private readonly BASE_URL = "notification";
+export class AppInfoService extends BaseService {
+    private readonly BASE_URL = "app-info";
 
     constructor() {
         super();
@@ -26,25 +26,11 @@ export class NotificationService extends BaseService {
     pull() {
         return new Promise(async (resolve, reject) => {
             try {
-                //by default fetch 30 days records only
-                const fromDate = moment().add(-30, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
-
                 //chunks
-                let pageIndex = 1, pageSize = 100
-                , totalAvailable = 0, maxToFetch = NotificationConstant.MAX_ITEMS_LIMIT;
                 let allItems = [], items = [];
-                do {
-                    let result = await this.getNotifications({ 
-                        pageIndex: pageIndex,
-                        pageSize: pageSize, 
-                        fromDate: fromDate
-                    });
-                    
-                    totalAvailable = result.total;
-                    items.push(...result.data);
-                    pageIndex++;
-                    // console.log(items.length, totalAvailable)
-                } while(items.length < totalAvailable && items.length < maxToFetch);
+
+                let result = await this.getAppInfoList();
+                items = result.data;
 
                 if(!items.length) {
                     //no items found or don't have access on server, get local items and delete it!
@@ -74,8 +60,6 @@ export class NotificationService extends BaseService {
                 //now add
                 await this.putAllLocal(items, true, true);
 
-                //cleanup
-                items = null, allItems = null;
                 resolve();
             } catch(e) {
                 reject(e);
@@ -86,37 +70,30 @@ export class NotificationService extends BaseService {
     push() {
         return new Promise(async (resolve, reject) => {
             if(EnvService.DEBUG) {
-                console.log('NotificationService: push: started');
+                console.log('AppInfoService: push: started');
             }
             //chunks
-            let pageIndex = 1, pageSize = NotificationConstant.MAX_ITEMS_LIMIT;
-            const result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
-            if(result.total == 0) {
-                resolve();
-                return;
+            // let pageIndex = 1, pageSize = 10 , totalAvailable = 0;
+            let unSycedLocal = [];
+            //TODO: need to push with chunks
+            const result = await this.getUnSyncedLocal({ pageIndex: 1, pageSize: 100 });
+            unSycedLocal = result.data;
+            if(EnvService.DEBUG) {
+                console.log('AppInfoService: push: unSycedLocal items length', unSycedLocal.length);
             }
 
-            let unSycedLocal = [];
-            unSycedLocal = result.data;
             //do not push same records again...
             unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
-            if(EnvService.DEBUG) {
-                console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
-            }
 
             if(!unSycedLocal.length) {
                 resolve();
                 return;
             }
             
-            //TODO: need to push with chunks
-            // do {
-            // } while(result.total == 0);
-
             //add to push queue
             this._addQueuePattern(unSycedLocal);
 
-            let items: any[];
+            let items: Array<any>;
             //server returns array of dictionary objects, each key in dict is the localdb id
             //we map the localids and update its serverid locally
             try {
@@ -169,7 +146,7 @@ export class NotificationService extends BaseService {
                         //we remove the item immedialty as it causes issue when we run update promise down
                         await this.remove(item.id);
 
-                        const pItem: INotification = cp[item.id];
+                        const pItem: IAppInfo = cp[item.id];
                         promises.push(this.putLocal(pItem, true, true));
                     } else if (item.markedForDelete) {
                         const promise = this.remove(item.id);
@@ -180,7 +157,7 @@ export class NotificationService extends BaseService {
                 //now make updates
                 await Promise.all(promises);
                 if(EnvService.DEBUG) {
-                    console.log('NotificationService: sync: complete');
+                    console.log('AppInfoService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);
                 resolve();
@@ -191,10 +168,10 @@ export class NotificationService extends BaseService {
     }
 
     getUnSyncedLocal(args?: { pageIndex?, pageSize? })
-        : Promise<{ data: INotification[], total: number }> {
+        : Promise<{ data: IAppInfo[], total: number }> {
         return new Promise(async (resolve, reject) => {
             const db = this.dbService.Db;
-            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification);
+            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.appInfo);
 
             if(!args) {
                 args = {};
@@ -226,7 +203,7 @@ export class NotificationService extends BaseService {
                     return { advance: 2 };
                 }
 
-                let v: INotification = x.getValue();
+                let v: IAppInfo = x.getValue();
                 if (v.markedForAdd || v.markedForUpdate || v.markedForDelete) {
                     unSynced.push(v);
                 }
@@ -240,10 +217,14 @@ export class NotificationService extends BaseService {
         });
     }
 
-    getNotifications(args: { pageIndex, pageSize, fromDate?, toDate? }) {
+    getAppInfoList(args?: { fromDate?, toDate? }) {
         let body;
 
-        if(args && (args.fromDate || args.toDate )) {
+        if(!args) {
+            args = {};
+        }
+
+        if(args.fromDate || args.toDate ) {
             //change date to utc first
             if(args.fromDate) {
                 const fromDate = moment(args.fromDate).utc(false).endOf('D')
@@ -259,63 +240,21 @@ export class NotificationService extends BaseService {
             body = { ...args };
         }
         
-        return this.getData<{ total: number, data: INotification[] }>({
+        return this.getData<{ total: number, data: IAppInfo[] }>({
             url: `${this.BASE_URL}/getAll`,
             body: body
         });
     }
 
-    getAllLocalNew(args?: { term?, fromDate?, toDate?, pageIndex, pageSize })
-        : Promise<INotification[]> {
-        return new Promise(async (resolve, reject) => {
-            const db = this.dbService.Db;
-            let query = `SELECT * FROM ${this.schemaSvc.tables.notification}`;
-            //do not show deleted...
-            query += ` WHERE markedForDelete = false`;
-
-            if(!args.pageIndex) {
-                args.pageIndex = 1;
-            }
-
-            if(!args.pageSize) {
-                args.pageSize = AppConstant.MAX_PAGE_SIZE;
-            }
-
-            if(args.fromDate && args.toDate) {
-                const fromDateCreatedOnUtc = moment.utc(args.fromDate).format(AppConstant.DEFAULT_DATE_FORMAT);
-                query += ` AND createdOn >= "${fromDateCreatedOnUtc}"`;
-
-                const toDateCreatedOnUtc = moment.utc(args.toDate).format(AppConstant.DEFAULT_DATE_FORMAT);
-                query += ` AND createdOn <= "${toDateCreatedOnUtc}"`;
-            }
-
-            query += ` ORDER BY id DESC`;
-            if(args.pageIndex && args.pageSize) {
-                const skip = (args.pageIndex - 1) * args.pageSize;
-                query += ` LIMIT ${args.pageSize} OFFSET ${skip}`;
-            }
-
-            if(EnvService.DEBUG) {
-                console.log('Executing NotificationService: getAllLocalNew: query', query);
-            }
-
-            db.executeSql(query).then((results) => {
-                console.log(results);
-            }, (e) => {
-                reject(e);
-            });
-        });
-    }
-
-    getAllLocal(args?: { term?, fromDate?, toDate?, pageIndex?, pageSize? })
-        : Promise<{ total:number, data: INotification[]}> {
+    getAllLocal(args?: { fromDate?, toDate?, pageIndex?, pageSize? })
+        : Promise<{ total:number, data: IAppInfo[]}> {
         return new Promise(async (resolve, reject) => {
             let results = [], total = 0;
             const db = this.dbService.Db;
             // new ydn.db.IndexValueIterator(store, opt.key, key_range, (pageSize == 0 ? undefined : pageSize), (skip > 0 ? skip: undefined), false);
             //https://github.com/yathit/ydn-db/blob/8d217ba5ff58a1df694b5282e20ebc2c52104197/test/qunit/ver_1_iteration.js#L117
             //(store_name, key_range, reverse)
-            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.notification, null, true);
+            const iter = new ydn.db.ValueIterator(this.schemaSvc.tables.appInfo);
             
             if(!args) {
                 args = {};
@@ -345,8 +284,8 @@ export class NotificationService extends BaseService {
                     return { advance: 2 };
                 }
 
-                let v: INotification = x.getValue();
-                let item: INotification;
+                let v: IAppInfo = x.getValue();
+                let item: IAppInfo;
                 if(args) {
                     if(args.fromDate && args.toDate) {
                         //change date to utc first
@@ -357,16 +296,6 @@ export class NotificationService extends BaseService {
                         if(createdOnUtc >= fromDateCreatedOnUtc 
                             && createdOnUtc <= toDateCreatedOnUtc) {
                             item = v;
-                        }
-                    }
-
-                    if(item && args.term) {
-                        const term = args.term.toLowerCase();
-                        const title = item ? item.title.toLowerCase() : v.title.toLowerCase();
-                        const text = item ? item.text.toLowerCase() : v.text.toLowerCase();
-                        
-                        if(!title.includes(term) && !(text.includes(term))) {
-                            item = null;
                         }
                     }
                 } else {
@@ -404,20 +333,34 @@ export class NotificationService extends BaseService {
     }
 
     getByIdLocal(id) {
-        return this.dbService.get<INotification>(this.schemaSvc.tables.notification, id);
-    }
-
-    async getByTextLocal(term) {
-        return this.dbService.getByFieldName<INotification>(
-            this.schemaSvc.tables.notification, 'text', term);
+        return this.dbService.get<IAppInfo>(this.schemaSvc.tables.appInfo, id);
     }
 
     async getByPackageLocal(pckage) {
-        return this.dbService.getByFieldName<INotification>(
-            this.schemaSvc.tables.notification, 'package', pckage);
+        const info = await this.dbService.getByFieldName<IAppInfo>(
+            this.schemaSvc.tables.appInfo, 'package', pckage);
+
+        return <IAppInfo>info[0];
     }
 
-    async putLocal(item: INotification, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
+    addOrUpdate(item: IAppInfo, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
+        return new Promise(async (resolve, reject) => {
+            const toAdd = await this.getByPackageLocal(item.package);
+            if(toAdd) {
+                resolve();
+                return;
+            }
+
+            try {
+                const result = await this.putLocal(item, ignoreFiringEvent, ignoreDefaults);
+                resolve(result);
+            } catch(e) {
+                reject(e);
+            }
+        });
+    }
+
+    async putLocal(item: IAppInfo, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
         //defaults
          if(!ignoreDefaults) {
             if(typeof item.markedForAdd === 'undefined' 
@@ -453,21 +396,21 @@ export class NotificationService extends BaseService {
             item.updatedOn = moment(item.updatedOn).utc().toISOString();
         }
 
-        return this.dbService.putLocal(this.schemaSvc.tables.notification, item)
+        return this.dbService.putLocal(this.schemaSvc.tables.appInfo, item)
         .then((affectedRows) => {
             if(!ignoreFiringEvent) {
-                this.pubsubSvc.publishEvent(NotificationConstant.EVENT_NOTIFICATION_CREATED_OR_UPDATED, item);
+                this.pubsubSvc.publishEvent(AppInfoConstant.EVENT_APP_INFO_CREATED_OR_UPDATED, item);
             }
             return affectedRows;
         });
     }
 
-    putAllLocal(items: INotification[], ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
+    putAllLocal(items: IAppInfo[], ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
         return new Promise(async (resolve, reject) => {
             const promises = [];
 
-            for(let exp of items) {
-                promises.push(this.putLocal(exp, ignoreFiringEvent, ignoreDefaults));
+            for(let appInfo of items) {
+                promises.push(this.putLocal(appInfo, ignoreFiringEvent, ignoreDefaults));
             }
 
             await Promise.all(promises);
@@ -476,37 +419,37 @@ export class NotificationService extends BaseService {
     }
 
     remove(id) {
-        return this.dbService.remove(this.schemaSvc.tables.notification, id);
+        return this.dbService.remove(this.schemaSvc.tables.appInfo, id);
     }
 
     removeAll() {
-        return this.dbService.removeAll(this.schemaSvc.tables.notification);
+        return this.dbService.removeAll(this.schemaSvc.tables.appInfo);
     }
 
     count() {
-        return this.dbService.count(this.schemaSvc.tables.notification);
+        return this.dbService.count(this.schemaSvc.tables.appInfo);
     }
 
-    private _addQueuePattern(items: INotification[]) {
+    private _addQueuePattern(items: IAppInfo[]) {
         items.map(item => {
-            item['queuePattern'] = `${this.schemaSvc.tables.notification}_${item.id}_${item.createdOn}`;
+            item['queuePattern'] = `${this.schemaSvc.tables.appInfo}_${item.id}_${item.createdOn}`;
             return item;
         });
     }
 
-    private _findInQueue(item: INotification) {
-        return this.findInQueue(`${this.schemaSvc.tables.notification}_${item.id}_${item.createdOn}`);
+    private _findInQueue(item: IAppInfo) {
+        return this.findInQueue(`${this.schemaSvc.tables.appInfo}_${item.id}_${item.createdOn}`);
     }
 
-    private _mapAll(expenses: Array<INotification>) {
-        const result = expenses.map(async (e) => {
-            const exp = await this._map(e);
-            return exp;
+    private _mapAll(appInfoList: Array<IAppInfo>) {
+        const result = appInfoList.map(async (e) => {
+            const appInfo = await this._map(e);
+            return appInfo;
         });
         return Promise.all(result);
     }
 
-    private async _map(e: INotification) {
+    private async _map(e: IAppInfo) {
         //only convert dates for data that came from server
         // if(!e.markedForAdd && !e.markedForUpdate && !e.markedForDelete) {
             e.createdOn = moment(e.createdOn).local(false).format(AppConstant.DEFAULT_DATETIME_FORMAT);
@@ -515,24 +458,14 @@ export class NotificationService extends BaseService {
             }
         // }
 
-        try {
-            await (<GetAppInfoPlugin>GetAppInfo).canLaunchApp({
-                packageName: e.package
-            });
-            e.canLaunchApp = true;
-        } catch(ex) {
-            //ignore...
-            e.canLaunchApp = false;
-        }
-
         return e;
     }
 
-    private _sort(items: Array<INotification>) {
+    private _sort(items: Array<IAppInfo>) {
         //by id first
         items.sort((a, b) => b.id - a.id);
         //then by date
-        items = items.sort((aDate: INotification, bDate: INotification) => {
+        items = items.sort((aDate: IAppInfo, bDate: IAppInfo) => {
             return moment(bDate.createdOn).diff(aDate.createdOn);
         });
 

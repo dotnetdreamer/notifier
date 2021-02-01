@@ -20,7 +20,12 @@
         "viewall": "View all",
         "you": "You",
         "on": "on",
-        "total": "Total"
+        "total": "Total",
+        "outof": "Out of",
+        "copied": "Copied",
+        "copy": "Copy",
+        "launch": "Launch",
+        "ignore": "Ignore"
     },
     "home": {
         "title": "Home",
@@ -36,7 +41,8 @@
         "database": "Database",
         "delete_db": "Delete Database",
         "table": "Table",
-        "ignore_system_apps": "Ignore system apps notifications"
+        "ignore_system_apps": "Ignore system apps notifications",
+        "ignore_empty_messages": "Ignore empty messages"
     },
     "search": {
         "title": "Search"    

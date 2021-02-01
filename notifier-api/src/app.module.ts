@@ -7,6 +7,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppSettings } from './modules/app-settings/app-settings.entity';
 import { AppSettingsModule } from './modules/app-settings/app-settings.module';
+import { AppInfo } from './modules/app-info/app-info.entity';
+import { AppInfoModule } from './modules/app-info/app-info.module';
 import { NotificationIgnoredItem } from './modules/notification-ignored/notification-ignored.entity';
 import { NotificationIgnoredModule } from './modules/notification-ignored/notification-ignored.module';
 import { NotificationRecord } from './modules/notification/notification.entity';
@@ -23,8 +25,10 @@ const CONNECTION_NAME = "default";
       type: 'sqlite',
       database: './_db/notifier.db',
       entities: [
-        NotificationRecord, NotificationIgnoredItem
         , AppSettings
+        , NotificationRecord
+        , NotificationIgnoredItem
+        , AppInfo
       ],
       synchronize: true,
     }),
@@ -32,6 +36,7 @@ const CONNECTION_NAME = "default";
       // options
     }),
     SharedModule,
+    AppInfoModule,
     NotificationModule,
     NotificationIgnoredModule,
     AppSettingsModule

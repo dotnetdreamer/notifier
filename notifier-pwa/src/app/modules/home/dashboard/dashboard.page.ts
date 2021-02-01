@@ -1,8 +1,8 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { App, Capacitor, Plugins } from '@capacitor/core';
-import { AlertController, IonContent, IonItemSliding, ModalController, Platform } from '@ionic/angular';
+import { AlertController, IonContent, IonItemSliding, IonVirtualScroll, ModalController, Platform } from '@ionic/angular';
 
-const { GetAppInfo } = Plugins;
+const { GetAppInfo, Clipboard } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { Observable, Subscription } from 'rxjs';
@@ -14,10 +14,10 @@ import { NotificationService } from '../../notification/notification.service';
 import { AppConstant } from '../../shared/app-constant';
 import { HelperService } from '../../shared/helper.service';
 import { SyncConstant } from '../../shared/sync/sync-constant';
-import { SyncEntity } from '../../shared/sync/sync.model';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
 import { EnvService } from '../../shared/env.service';
 import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore-options.component';
+import { LocalizationService } from '../../shared/localization.service';
 
 
 @Component({
@@ -28,15 +28,19 @@ import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('notificationsContent') listingContent: IonContent;
+  @ViewChild('virtualScroll') virtualScroll: IonVirtualScroll;
 
   AppConstant = AppConstant;
   notifications: INotification[] = [];
+  totalAvailableNotifications = 0;
   isAndroid = false;
-  dates: { selectedDate?: { from, to, fromTime?, toTime? }, todayDate? } = {};
+  dates: { _maindDate: { from, to }, selectedDate?: { from, to }, todayDate? } = <any>{};
   dataLoaded = false;
   startupSyncCompleted = false;
   displayHeaderbar = true;
-
+  pageIndex = 1;
+  pageSize = 20;
+  
   private _syncDataPushCompleteSub: Subscription;
   private _syncDataPullCompleteSub: Subscription;
 
@@ -45,7 +49,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     , private modalCtrl: ModalController
     , private pubSubSvc: NgxPubSubService
     , private notificationSvc: NotificationService, private notificationIgnoredSvc: NotificationIgnoredService
-    , private helperSvc: HelperService) {
+    , private helperSvc: HelperService, private localizationSvc: LocalizationService) {
 
     this._subscribeToEvents();
   }
@@ -55,19 +59,24 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     this.isAndroid = this.platform.is('android') && this.platform.is('capacitor');
 
     this.dates.todayDate = moment().format(AppConstant.DEFAULT_DATE_FORMAT);
+    this.dates._maindDate = <any>{};
     this.dates.selectedDate = <any>{};
     
     //show all current month expenses
     const fromDate = moment().startOf('M').format(AppConstant.DEFAULT_DATE_FORMAT);
     const toDate = moment().endOf('M').format(AppConstant.DEFAULT_DATE_FORMAT);
+    this.dates._maindDate.from = fromDate;
+    this.dates._maindDate.to = toDate;
     this.dates.selectedDate.from = fromDate;
     this.dates.selectedDate.to = toDate;
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
+    await this.listingContent.scrollToTop();
+
     //fix: navigation lag
     setTimeout(async () => {
-      await this._getAllNotifications();
+      await this._getAllNotifications({ resetDefaults: true });
     });
   }
 
@@ -83,19 +92,23 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
   async onIonRefreshed(ev) {
     const { detail } = ev;
-    this.notifications = [];
-
     // //pull latest. Important as other members need to have lastest information
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL, SyncEntity.NOTIFICATION);
 
     // //now push
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
 
-    await this._getAllNotifications();
+    await this._getAllNotifications({ resetDefaults: true });
 
     setTimeout(() => {
       detail.complete();
     }, 1000);
+  }
+
+  async onLoadMoreClicked() { 
+    this.pageIndex++;
+
+    await this._getAllNotifications();
   }
 
   
@@ -104,8 +117,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.dataLoaded = false;
     this.notifications = [];
+    this.pageIndex = 1;
+    this.totalAvailableNotifications = 0;
+
     //reset scroll
     await this.listingContent.scrollToTop(0);
 
@@ -138,7 +153,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   } 
 
   async onNotificationItemClicked(ev: CustomEvent, notification: INotification
-    , action: 'detail' | 'edit' | 'delete', slideItem?: IonItemSliding) {
+    , action: 'detail' | 'edit' | 'delete' | 'copy', slideItem?: IonItemSliding) {
     ev.stopImmediatePropagation();
 
     if(slideItem) {
@@ -146,28 +161,54 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     try {
-      if(action == 'detail') {
-        const txt = notification.text || notification.title;
-        await this.helperSvc.presentInfoDialog(txt, notification.title);
-      } else if(action == 'delete') {
-        const confirm = await this.helperSvc.presentConfirmDialog();
-        if(!confirm) {
-          return;
-        }
+      const txt = notification.text || notification.title;
 
-        if(notification.markedForAdd) {
-          await this.notificationSvc.remove(notification.id);
-        } else {
-          notification.markedForDelete = true;
-          notification.updatedOn = null;
+      switch(action) {
+        case 'detail':
+          const copyButton = {
+            text: await this.localizationSvc.getResource('common.copy'),
+            role: null,
+            handler: async () => {
+              await this.onNotificationItemClicked(ev, notification, 'copy', slideItem);
+            }
+          };
 
-          await this.notificationSvc.putLocal(notification);
-        }
-        
-        await this.helperSvc.presentToastGenericSuccess();
-        setTimeout(() => {
-          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
-        });
+          await this.helperSvc.presentInfoDialog({
+            message: txt,
+            title: notification.title,
+            buttons: [copyButton]
+          });
+        break;
+        case 'delete':
+          const confirm = await this.helperSvc.presentConfirmDialog();
+          if(!confirm) {
+            return;
+          }
+
+          if(notification.markedForAdd) {
+            await this.notificationSvc.remove(notification.id);
+          } else {
+            notification.markedForDelete = true;
+            notification.updatedOn = null;
+
+            await this.notificationSvc.putLocal(notification);
+          }
+          
+          await this.helperSvc.presentToastGenericSuccess();
+          setTimeout(() => {
+            this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
+          });
+        break;  
+        case 'copy':
+          await Clipboard.write({
+            label: notification.title,
+            string: txt
+          });
+          const msg = await this.localizationSvc.getResource('common.copied');
+          await this.helperSvc.presentToast(msg);
+        break;
+        default:
+        break;
       }
     } catch(e) {
       await this.helperSvc.presentToastGenericError();
@@ -209,47 +250,85 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     if(!data) {
       return;
     }
-    
-    const value: 'app' | 'message' = data.value;
-    const rule: 'exact' | 'startsWith' | 'contains' = data.rule;
-    const silent = data.silent;
 
-    const item: INotificationIgnored = {
-      text: value == 'app' ? notification.package : data.text,
-      package: notification.package,
-      silent: silent,
-      rule: value == 'app' ? null : rule,
-      image: notification.image,
-      appName: notification.appName,
-      markedForAdd: true
-    };
-    //event must be fired so we can refresh blacklist in app.component
-    await this.notificationIgnoredSvc.putLocal(item, false);
+    const loader = await this.helperSvc.loader;
+    await loader.present();
+  
+    try {
+      const value: 'app' | 'message' = data.value;
+      const rule: 'exact' | 'startsWith' | 'contains' = data.rule;
+      const silent = data.silent;
 
-    //delete from notifications
-    let toDeleteAll: INotification[] = [];
-    if(value == 'app') {
-      toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(notification.package);
-    } else if(value == 'message') {
-      toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
+      const item: INotificationIgnored = {
+        text: value == 'app' ? notification.package : data.text,
+        package: notification.package,
+        silent: silent,
+        rule: value == 'app' ? null : rule,
+        markedForAdd: true
+      };
+      //event must be fired so we can refresh blacklist in app.component
+      await this.notificationIgnoredSvc.putLocal(item, false);
+
+      //delete from notifications
+      let toDeleteAll: INotification[] = [];
+      if(value == 'app') {
+        toDeleteAll = <INotification[]>await this.notificationSvc.getByPackageLocal(notification.package);
+      } else if(value == 'message') {
+        toDeleteAll = <INotification[]>await this.notificationSvc.getByTextLocal(notification.text);
+      }
+
+      toDeleteAll.forEach(p => {
+        p.markedForDelete = true;
+
+        const idx = this.notifications.findIndex(n => n.id == p.id);
+        if(idx == -1) {
+          //notification not visible in screen...
+          return;
+        }
+
+        this.notifications[idx].markedForDelete = true;
+      });
+      await this.notificationSvc.putAllLocal(toDeleteAll, true); 
+
+      //sync
+      this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
+    }catch(e) {
+
+    } finally {
+      await loader.dismiss();
     }
-    toDeleteAll.forEach(p => p.markedForDelete = true);
-    await this.notificationSvc.putAllLocal(toDeleteAll, true); 
-
-    //sync
-    this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
   }
 
-  private async _getAllNotifications() {
+  private async _getAllNotifications(args?: { virtualScrollCheckEnd?, resetDefaults? }) {
+    if(!args) {
+      args = {};
+    }
+
+    if(typeof args.virtualScrollCheckEnd === 'undefined') {
+      args.virtualScrollCheckEnd = true;
+    }
+
+    if(typeof args.resetDefaults === 'undefined') {
+      args.resetDefaults = false;
+    }
+
     //reset
-    await this.listingContent.scrollToTop();
     this.dataLoaded = false;
+
+    if(args.resetDefaults) {
+      //force refresh...
+      this.totalAvailableNotifications = 0;
+      this.pageIndex = 1;
+      this.notifications = [];
+      this.dates.selectedDate.from = this.dates._maindDate.from;
+      this.dates.selectedDate.to = this.dates._maindDate.to;
+    }
 
     const filters = {
       fromDate: this.dates.selectedDate.from,
       toDate: this.dates.selectedDate.to,
-      pageIndex: 1,
-      pageSize: 10
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize
     };
 
     this.ngZone.run(async () => {
@@ -258,12 +337,17 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       const toDateMonth = moment(filters.toDate).format('M');
 
       try { 
+        let result: { data, total };
         //if changed month is not same as current month, then we don't have entries local..
         if(currentMonth != fromDateMonth || currentMonth != toDateMonth) {
-          this.notifications = await this.notificationSvc.getNotifications(filters);
+          result = <any>await this.notificationSvc.getNotifications(filters);
         } else {
-          this.notifications = await this.notificationSvc.getAllLocal(filters);
+          result = await this.notificationSvc.getAllLocal(filters);
         }
+
+        this.totalAvailableNotifications = result.total;
+        this.notifications.push(...result.data);
+        // this.notifications = this.notifications.concat(res);
       } catch(e) {
         await this.helperSvc.presentToastGenericError(true);
         // this.notifications = [];
@@ -271,7 +355,15 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: _getAllNotifications: notifications', this.notifications);
         }
-        this.dataLoaded = true;
+
+
+        setTimeout(() => {
+          if(args.virtualScrollCheckEnd && this.virtualScroll) {
+            this.virtualScroll.checkEnd();
+          }
+  
+          this.dataLoaded = true;
+        }, 1000);
       }
     });
   }
@@ -282,13 +374,22 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
         if(EnvService.DEBUG) {
           console.log('DashboardPage: appStateChange', state);
         }
+
         //app came to foreground...
         if(state.isActive) {
-          await this._getAllNotifications();
+          //refresh only if any items are changed
+          const total = await this.notificationSvc.count();
+          if(total == this.totalAvailableNotifications) {
+            return;
+          }
+
+          await this._getAllNotifications({ 
+            virtualScrollCheckEnd: state.isActive,
+            resetDefaults: true
+          });
         }
       });
     }
-
 
     //EVENT_SYNC_DATA_PUSH_COMPLETE is fired by multiple sources, we debounce subscription to execute this once
     const obv = new Observable(observer => {
@@ -299,14 +400,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       return () => subc.unsubscribe()
     });
     this._syncDataPushCompleteSub = obv.pipe(debounceTime(500))
-    .subscribe(() => {
+    .subscribe(async () => {
         if(EnvService.DEBUG) {
           console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
         }
-        //force refresh...
-        // this.expenses = [];
-        setTimeout(async () => {
-          await this._refreshVisibleItems();
+        await this._getAllNotifications({ 
+          resetDefaults: true
         });
     });
 
@@ -337,18 +436,30 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async _refreshVisibleItems() {
-    const promises = [];
-    for(let n of this.notifications) {
-      const prom = this.notificationSvc.getByIdLocal(n.id)
-      .then(newNot => {
+    if(!this.notifications.length) {
+      //fetch all
+      await this._getAllNotifications({ 
+        resetDefaults: true
+      });
+    } else {
+      const all = this.notifications.map(async n => {
+        const newNot = await this.notificationSvc.getByIdLocal(n.id);
+        if(!newNot) {
+          return null;
+        }
+
         n = {
           ...newNot
         };
-        return newNot;
-      });
-      promises.push(prom);
+        return n;
+      }).filter(n => n != null);
+      this.notifications = await Promise.all(all);
     }
 
-    await Promise.all(promises);
+    setTimeout(() => {
+      if(this.virtualScroll) {
+        this.virtualScroll.checkEnd();
+      }
+    }, 1000);
   }
 }

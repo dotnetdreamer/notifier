@@ -13,6 +13,10 @@ page-home-dashboard {
     }
     
     ion-content {
-        --padding-bottom: 80px;
+        --padding-bottom: 100px;
+
+        .loade-more-button {
+            text-align: center;
+        }
     }
 }

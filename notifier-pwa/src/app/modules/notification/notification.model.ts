@@ -4,8 +4,6 @@ export interface INotification {
     text: string;
     package: string;
     receivedOnUtc: string;
-    image?: string;
-    appName?: string;
     canLaunchApp?: boolean;
 
     updatedOn?: string;
@@ -22,8 +20,6 @@ export interface INotificationIgnored {
     package: string;
     silent: boolean;
     rule?: 'exact' | 'startsWith' | 'contains';
-    image?: string;
-    appName?: string;
     
     updatedOn?: string;
     createdOn?: string;

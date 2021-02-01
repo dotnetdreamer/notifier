@@ -9,6 +9,10 @@ const routes: Routes = [
   {
     path: 'general',
     loadChildren: () => import('./modules/general/general.common.module').then( m => m.GeneralCommonModule)
+  },
+  {
+    path: 'app-info',
+    loadChildren: () => import('./modules/app-info/app-info.module').then( m => m.AppInfoPageModule)
   }
 ]; 
 @NgModule({

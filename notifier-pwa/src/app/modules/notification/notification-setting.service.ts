@@ -30,4 +30,23 @@ export class NotificationSettingService extends AppSettingService {
                 return value == 'yes' || value == true;
             });    
     }
+
+    putIgnoreEmptyMessagesEnabled(value = true) {
+        return this.dbService.putLocal(this.schemaSvc.tables.setting, {
+            key: NotificationConstant.KEY_IGNORE_EMPTY_MESSAGES,
+            value: value == true ? 'yes' : 'no'
+        }).then(() => {
+            AppSettingService.settingCache.set(NotificationConstant.KEY_IGNORE_EMPTY_MESSAGES, value);
+        });
+    }
+
+    getIgnoreEmptyMessagesEnabled() {
+        return this.get(NotificationConstant.KEY_IGNORE_EMPTY_MESSAGES)
+            .then(value => {
+                if(typeof value === 'undefined' || value === null) {
+                    return value;
+                }
+                return value == 'yes' || value == true;
+            });    
+    }
 }

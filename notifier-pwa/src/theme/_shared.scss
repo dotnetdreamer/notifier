@@ -1,3 +1,9 @@
+ion-header {
+    ion-title {
+        text-transform: uppercase;
+    }
+}
+
 .notifications {
     ion-item {
         --padding-start: 0;
@@ -117,8 +123,17 @@
 
 
 @media (min-width: 1024px) {
-
     .alert-wrapper {
         --max-width: 500px;
+    }
+
+
+    .notifications {
+        ion-item {
+            .notification-item {
+                max-width: 1024px;
+                margin: 0 auto;
+            }
+        }
     }
 }

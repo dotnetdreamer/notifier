@@ -1,9 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import * as moment from 'moment';
-import { AppConstant } from '../modules/shared/app-constant';
-
-
 @Pipe({
   name:"trimText"
 })

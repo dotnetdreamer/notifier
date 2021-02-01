@@ -8,6 +8,7 @@ export class SchemaService {
     private _notification = "notification";
     private _notificationIgnored = "notificationIgnored";
     private _user = "user";
+    private _appInfo = "appInfo";
 
     schema = {
         stores: [
@@ -26,12 +27,6 @@ export class SchemaService {
                 }, { 
                     name: 'package', 
                     type: 'TEXT' 
-                }, {
-                    name: 'image', 
-                    type: 'TEXT' 
-                }, {
-                    name: 'appName', 
-                    type: 'TEXT'
                 }, {
                     name: 'receivedOn', 
                     type: 'TEXT' 
@@ -100,6 +95,41 @@ export class SchemaService {
                     keyPath: 'text'
                 }]
             }, {
+                name: this._appInfo,
+                columns: [{ 
+                    name: 'id', 
+                    isPrimaryKey: true, 
+                    type: 'INTEGER' 
+                },{ 
+                    name: 'package', 
+                    type: 'TEXT' 
+                }, {
+                    name: 'image', 
+                    type: 'TEXT' 
+                }, {
+                    name: 'appName', 
+                    type: 'TEXT'
+                }, { 
+                    name: 'updatedOn', 
+                    type: 'TEXT' 
+                }, {
+                    name: 'createdOn', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForAdd', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForUpdate', 
+                    type: 'TEXT'  
+                }, {
+                    name: 'markedForDelete', 
+                    type: 'TEXT'  
+                }],
+                indexes: [{
+                    name: 'package',
+                    keyPath: 'package'
+                }]
+            }, {
                 name: this._setting,
                 columns: [{ 
                     name: 'key', 
@@ -116,7 +146,8 @@ export class SchemaService {
         setting: this._setting,
         notification: this._notification,
         notificationIgnored: this._notificationIgnored,
-        user: this._user
+        user: this._user,
+        appInfo: this._appInfo
     };
 
     constructor() {

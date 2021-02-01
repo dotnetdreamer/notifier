@@ -100,8 +100,6 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
       package: resultAp.data.package,
       silent: silent,
       rule: value == 'app' ? null : rule,
-      image: resultAp.data.image,
-      appName: resultAp.data.package,
       markedForAdd: true
     };
 
@@ -133,7 +131,9 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
     try {
       if(action == 'detail') {
         const txt = notification.text;
-        await this.helperSvc.presentInfoDialog(txt);
+        await this.helperSvc.presentInfoDialog({
+          message: txt
+        });
       } else if(action == 'delete') {
         const confirm = await this.helperSvc.presentConfirmDialog();
         if(!confirm) {

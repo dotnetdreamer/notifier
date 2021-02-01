@@ -6,6 +6,8 @@ import { HighlightSearchPipe } from './highlightsearch.pipe';
 import { SafePipe } from './safe.pipe';
 import { CommonModule } from '@angular/common';
 import { TrimTextPipe } from './trimText.pipe';
+import { AppIconPipe } from './appIcon.pipe';
+import { AppNamePipe } from './appName.pipe';
 
 @NgModule({
     declarations: [
@@ -13,7 +15,9 @@ import { TrimTextPipe } from './trimText.pipe';
         FormateDatePipe,
         HighlightSearchPipe,
         SafePipe,
-        TrimTextPipe
+        TrimTextPipe,
+        AppIconPipe,
+        AppNamePipe
     ],
     imports: [
         CommonModule
@@ -24,7 +28,9 @@ import { TrimTextPipe } from './trimText.pipe';
         FormateDatePipe,
         HighlightSearchPipe,
         SafePipe,
-        TrimTextPipe
+        TrimTextPipe,
+        AppIconPipe,
+        AppNamePipe
     ]
 })
 export class PipesModule { }

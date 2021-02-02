@@ -26,8 +26,9 @@ export class NotificationService extends BaseService {
     pull() {
         return new Promise(async (resolve, reject) => {
             try {
-                //by default fetch 30 days records only
-                const fromDate = moment().add(-30, 'days').format(AppConstant.DEFAULT_DATE_FORMAT);
+                //by default fetch current records only
+                const fromDate = moment().startOf('month').format(AppConstant.DEFAULT_DATE_FORMAT);
+                debugger;
 
                 //chunks
                 let pageIndex = 1, pageSize = 100
@@ -246,7 +247,7 @@ export class NotificationService extends BaseService {
         if(args && (args.fromDate || args.toDate )) {
             //change date to utc first
             if(args.fromDate) {
-                const fromDate = moment(args.fromDate).utc(false).endOf('D')
+                const fromDate = moment(args.fromDate).utc(false).startOf('D')
                     .format(AppConstant.DEFAULT_DATETIME_FORMAT);
                 args.fromDate = fromDate;
             }

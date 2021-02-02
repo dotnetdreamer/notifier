@@ -76,7 +76,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
     //fix: navigation lag
     setTimeout(async () => {
-      await this._getAllNotifications({ resetDefaults: true });
+      await this._getAllNotifications({ 
+        resetDefaults: true, 
+        startupSyncCompleted: true 
+      });
     });
   }
 
@@ -98,7 +101,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     // //now push
     // this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
 
-    await this._getAllNotifications({ resetDefaults: true });
+    await this._getAllNotifications({ 
+      resetDefaults: true,
+      startupSyncCompleted: this.startupSyncCompleted 
+    });
 
     setTimeout(() => {
       detail.complete();
@@ -299,9 +305,17 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private async _getAllNotifications(args?: { virtualScrollCheckEnd?, resetDefaults? }) {
+  private async _getAllNotifications(args?: { virtualScrollCheckEnd?, resetDefaults?, startupSyncCompleted? }) {
     if(!args) {
       args = {};
+    }
+
+    //wait untill startup completes
+    if(args.startupSyncCompleted != null && !args.startupSyncCompleted) {
+      if(EnvService.DEBUG) {
+        console.log('DashboardPage: _getAllNotifications: ignoring');
+      }
+      return;
     }
 
     if(typeof args.virtualScrollCheckEnd === 'undefined') {
@@ -385,7 +399,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
           await this._getAllNotifications({ 
             virtualScrollCheckEnd: state.isActive,
-            resetDefaults: true
+            resetDefaults: true,
+            startupSyncCompleted: this.startupSyncCompleted
           });
         }
       });
@@ -405,7 +420,8 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PUSH_COMPLETE');
         }
         await this._getAllNotifications({ 
-          resetDefaults: true
+          resetDefaults: true,
+          startupSyncCompleted: this.startupSyncCompleted
         });
     });
 
@@ -415,7 +431,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       if(EnvService.DEBUG) {
         console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
-      await this._refreshVisibleItems();
+      await this._refreshVisibleItems(true);
       
       //we only need this first time...kill it!
       setTimeout(() => {
@@ -435,11 +451,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private async _refreshVisibleItems() {
+  private async _refreshVisibleItems(startupSyncCompleted?: boolean) {
     if(!this.notifications.length) {
       //fetch all
       await this._getAllNotifications({ 
-        resetDefaults: true
+        resetDefaults: true,
+        startupSyncCompleted: startupSyncCompleted
       });
     } else {
       const all = this.notifications.map(async n => {

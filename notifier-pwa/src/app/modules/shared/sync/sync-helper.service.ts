@@ -1,16 +1,15 @@
 import { Injectable } from "@angular/core";
 import { Plugins } from "@capacitor/core";
 
-const { GetAppInfo } = Plugins;
+const { Device } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
 import { AppConstant } from '../app-constant';
 import { NotificationService } from '../../notification/notification.service';
 import { NotificationIgnoredService } from '../../notification/notification-ignored.service';
-import { INotification, INotificationIgnored } from '../../notification/notification.model';
+import { INotificationIgnored } from '../../notification/notification.model';
 import { EnvService } from "../env.service";
 import { AppInfoService } from "../../app-info/app-info.service";
 
@@ -123,6 +122,17 @@ export class SyncHelperService {
                 };
                 newItems.push(item);
             }
+
+            //current app
+            const deviceInfo = await Device.getInfo();
+            const currentAppItem: INotificationIgnored = {
+                text: deviceInfo.appId,
+                package: deviceInfo.appId,
+                silent: false,  //display notifications popup in statusbar when app goes to background
+                markedForAdd: true
+            };
+            newItems.push(currentAppItem);
+
             await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);
             resolve();
         });

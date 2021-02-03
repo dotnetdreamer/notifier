@@ -77,8 +77,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     //fix: navigation lag
     setTimeout(async () => {
       await this._getAllNotifications({ 
-        resetDefaults: true, 
-        startupSyncCompleted: true 
+        resetDefaults: true
       });
     });
   }

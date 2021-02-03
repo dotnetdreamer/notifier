@@ -396,11 +396,15 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
             return;
           }
 
-          await this._getAllNotifications({ 
-            virtualScrollCheckEnd: state.isActive,
-            resetDefaults: true,
-            startupSyncCompleted: this.startupSyncCompleted
-          });
+          //refresh UI
+          if(this.virtualScroll) {
+            this.virtualScroll.checkEnd();
+          }
+          // await this._getAllNotifications({ 
+          //   virtualScrollCheckEnd: state.isActive,
+          //   resetDefaults: true,
+          //   startupSyncCompleted: this.startupSyncCompleted
+          // });
         }
       });
     }

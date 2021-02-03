@@ -110,10 +110,6 @@ export class NotificationService extends BaseService {
                 return;
             }
             
-            //TODO: need to push with chunks
-            // do {
-            // } while(result.total == 0);
-
             //add to push queue
             this._addQueuePattern(unSycedLocal);
 
@@ -488,6 +484,14 @@ export class NotificationService extends BaseService {
         return this.dbService.count(this.schemaSvc.tables.notification);
     }
 
+    countForToday() {
+        const todayDate = moment().utc().toISOString();
+        return this.dbService.count(this.schemaSvc.tables.notification, {
+            key: 'todayDate',
+            value: ''   //TODO: create index for date
+        });
+    }
+
     private _addQueuePattern(items: INotification[]) {
         items.map(item => {
             item['queuePattern'] = `${this.schemaSvc.tables.notification}_${item.id}_${item.createdOn}`;
@@ -538,5 +542,34 @@ export class NotificationService extends BaseService {
         });
 
         return items;
+    }
+
+    private _pushUnSyncedChunk(pageIndex, pageSize) {
+        return new Promise(async (resolve, reject) => {
+            //chunks
+            let unSycedLocal = [];
+            let result: { data: INotification[], total: number }; 
+            do {
+                result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
+                if(!result.data) {
+                    continue;
+                }
+
+                unSycedLocal = result.data;
+                //do not push same records again...
+                unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
+                if(EnvService.DEBUG) {
+                    console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
+                }
+            } while(!unSycedLocal.length && result.total > 0);
+
+            if(!unSycedLocal.length) {
+                resolve();
+                return;
+            }  
+
+            //add to push queue
+            this._addQueuePattern(unSycedLocal);
+        });
     }
 }

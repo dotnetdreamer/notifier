@@ -193,6 +193,11 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
           if(notification.markedForAdd) {
             await this.notificationSvc.remove(notification.id);
           } else {
+
+            //TODO: delete the records directly which aren't in current month
+            // if(currentMonth != fromDateMonth || currentMonth != toDateMonth) {
+            // }
+
             notification.markedForDelete = true;
             notification.updatedOn = null;
 

@@ -28,7 +28,6 @@ export class NotificationService extends BaseService {
             try {
                 //by default fetch current records only
                 const fromDate = moment().startOf('month').format(AppConstant.DEFAULT_DATE_FORMAT);
-                debugger;
 
                 //chunks
                 let pageIndex = 1, pageSize = 100
@@ -326,7 +325,7 @@ export class NotificationService extends BaseService {
                 args.pageSize = AppConstant.MAX_PAGE_SIZE;
             }
 
-            total = await this.count();
+            total = await this.countForMonth();
             const skip = (args.pageIndex - 1) * args.pageSize;
             let idx = 0;
             const req = db.open(x => {
@@ -450,6 +449,9 @@ export class NotificationService extends BaseService {
             item.updatedOn = moment(item.updatedOn).utc().toISOString();
         }
 
+        //required for index in local db so we can get count efficiently for current month
+        item['month'] = moment.utc(item.createdOn).get('month');
+
         return this.dbService.putLocal(this.schemaSvc.tables.notification, item)
         .then((affectedRows) => {
             if(!ignoreFiringEvent) {
@@ -484,11 +486,18 @@ export class NotificationService extends BaseService {
         return this.dbService.count(this.schemaSvc.tables.notification);
     }
 
-    countForToday() {
-        const todayDate = moment().utc().toISOString();
+    countForMonth(month?: number) {
+        if(!month) {
+            //this month
+            month = moment.utc().get('month');
+        }
+
         return this.dbService.count(this.schemaSvc.tables.notification, {
-            key: 'todayDate',
-            value: ''   //TODO: create index for date
+            key: 'month',
+            value: {
+                from: month,
+                to: month
+            }
         });
     }
 

@@ -37,6 +37,9 @@ export class SchemaService {
                     name: 'createdOn', 
                     type: 'TEXT'  
                 }, {
+                    name: 'month', 
+                    type: 'INTEGER'
+                }, {
                     name: 'markedForAdd', 
                     type: 'TEXT'  
                 }, {
@@ -52,6 +55,9 @@ export class SchemaService {
                 }, {
                     name: 'text',
                     keyPath: 'text'
+                }, {
+                    name: 'month',
+                    keyPath: 'month'
                 }]
             }, {
                 name: this._notificationIgnored,

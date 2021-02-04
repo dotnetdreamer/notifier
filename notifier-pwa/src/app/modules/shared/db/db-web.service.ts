@@ -185,11 +185,11 @@ export class DbWebService implements DbService {
         });
     }
 
-    count(store, opts?: { key, value? }): Promise<number> {
+    count(store, opts?: { key, value?: { from, to } }): Promise<number> {
         return new Promise((resolve, reject) => {
             if (opts) {
                 if(opts.key && opts.value) {
-                    this.db.count(store, opts.key, ydn.db.KeyRange.only(opts.value))
+                    this.db.count(store, opts.key, ydn.db.KeyRange.bound(opts.value.from, opts.value.to))
                     .done(key => {
                         resolve(key);
                     });

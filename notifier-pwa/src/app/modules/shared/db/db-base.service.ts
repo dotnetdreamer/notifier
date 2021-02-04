@@ -12,7 +12,7 @@ export class DbService {
 
     removeAll(store): Promise<any>{ return; }
 
-    count(store, opts?: { key, value? }): Promise<number> { return; }
+    count(store, opts?: { key, value?: { from, to } }): Promise<number> { return; }
 
     delete(): Promise<any> { return; }
 }

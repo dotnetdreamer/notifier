@@ -486,17 +486,21 @@ export class NotificationService extends BaseService {
         return this.dbService.count(this.schemaSvc.tables.notification);
     }
 
-    countForMonth(month?) {
-        if(!month) {
+    countForMonth(fromTimestamp?, toTimestamp?) {
+        if(!fromTimestamp) {
             //this month
-            month = moment.utc().toDate().getTime();
+            fromTimestamp = moment.utc().startOf('month').toDate().getTime();
+        }
+        if(!toTimestamp) {
+            //this month
+            toTimestamp = moment.utc().toDate().getTime();
         }
 
         return this.dbService.count(this.schemaSvc.tables.notification, {
             key: 'dateTimestamp',
             value: {
-                from: month, 
-                to: month
+                from: fromTimestamp, 
+                to: toTimestamp
             }
         });
     }

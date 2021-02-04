@@ -56,8 +56,8 @@ export class SchemaService {
                     name: 'text',
                     keyPath: 'text'
                 }, {
-                    name: 'month',
-                    keyPath: 'month'
+                    name: 'dateTimestamp',
+                    keyPath: 'dateTimestamp'
                 }]
             }, {
                 name: this._notificationIgnored,

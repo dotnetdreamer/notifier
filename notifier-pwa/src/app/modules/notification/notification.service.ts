@@ -450,7 +450,7 @@ export class NotificationService extends BaseService {
         }
 
         //required for index in local db so we can get count efficiently for current month
-        item['month'] = moment.utc(item.createdOn).get('month');
+        item['dateTimestamp'] = moment.utc(item.createdOn).toDate().getTime(); //return milliseconds
 
         return this.dbService.putLocal(this.schemaSvc.tables.notification, item)
         .then((affectedRows) => {
@@ -486,16 +486,16 @@ export class NotificationService extends BaseService {
         return this.dbService.count(this.schemaSvc.tables.notification);
     }
 
-    countForMonth(month?: number) {
+    countForMonth(month?) {
         if(!month) {
             //this month
-            month = moment.utc().get('month');
+            month = moment.utc().toDate().getTime();
         }
 
         return this.dbService.count(this.schemaSvc.tables.notification, {
-            key: 'month',
+            key: 'dateTimestamp',
             value: {
-                from: month,
+                from: month, 
                 to: month
             }
         });

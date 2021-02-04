@@ -2,20 +2,20 @@ import { Controller, UseInterceptors, Get, ClassSerializerInterceptor, Post, Bod
 
 import { Request } from "express";
 import { AppConstant } from "../shared/app-constant";
-import { AppSettings } from "./app-settings.entity";
-import { IAppSettings } from "./app-settings.model";
-import { AppSettingsService } from "./app-settings.service";
+import { AllSettings } from "./all-settings.entity";
+import { IAllSettings } from "./all-settings.model";
+import { AllSettingsService } from "./all-settings.service";
 
 
-@Controller(`${AppConstant.ROUTE_PREFIX}/app-settings`)
-export class AppSettingsController {
-  constructor(private readonly appSettingSvc: AppSettingsService) {}
+@Controller(`${AppConstant.ROUTE_PREFIX}/all-settings`)
+export class AllSettingsController {
+  constructor(private readonly allSettingSvc: AllSettingsService) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get('getAll')
   async getAll(@Req() req: Request,
    @Query() filters?: { sync?: boolean }) {
-    const data = await this.appSettingSvc.findAll({
+    const data = await this.allSettingSvc.findAll({
       ...filters
     });
 
@@ -24,13 +24,13 @@ export class AppSettingsController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('sync')
-  async sync(@Body() models: IAppSettings[]) {
+  async sync(@Body() models: IAllSettings[]) {
     //local id and mapping server record
     let items: Array<Map<number, any>> = [];
 
     for (let model of models)
     {
-      const itemMap: Map<number, IAppSettings> = new Map();
+      const itemMap: Map<number, IAllSettings> = new Map();
       let returnedItem: any;
 
       if (model.markedForAdd) {
@@ -38,10 +38,10 @@ export class AppSettingsController {
         let toAdd = Object.assign({}, model);
         delete toAdd.id;
 
-        const item = await this.appSettingSvc.save(toAdd);
+        const item = await this.allSettingSvc.save(toAdd);
         returnedItem = item;        
       } else if(model.markedForUpdate) {
-        const toUpdate = await this.appSettingSvc.findOne(model.id);
+        const toUpdate = await this.allSettingSvc.findOne(model.id);
         if(!toUpdate) {
           continue;
         }
@@ -49,7 +49,7 @@ export class AppSettingsController {
         let updated = await this._updateOrDelete(toUpdate, model, false);
         returnedItem = updated;
       } else if(model.markedForDelete) {
-        const toDelete = await this.appSettingSvc.findOne(model.id);
+        const toDelete = await this.allSettingSvc.findOne(model.id);
         if(!toDelete) {
           continue;
         }
@@ -67,7 +67,7 @@ export class AppSettingsController {
     return items;
   }
 
-  private async _updateOrDelete(toUpdateOrDelete: AppSettings
+  private async _updateOrDelete(toUpdateOrDelete: AllSettings
     , model, shouldDelete?: boolean) {
     //no need to update
     // delete model.createdOn;
@@ -75,7 +75,7 @@ export class AppSettingsController {
     model.isDeleted = shouldDelete;
 
     let updated = Object.assign(toUpdateOrDelete, model);
-    await this.appSettingSvc.save(updated);
+    await this.allSettingSvc.save(updated);
 
     return updated;
   }

@@ -6,13 +6,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository, SelectQueryBuilder } from 'typeorm';
 
 import { HelperService } from '../shared/helper.service';
-import { AppSettings } from './app-settings.entity';
-import { IAppSettings } from './app-settings.model';
+import { AllSettings } from './all-settings.entity';
+import { IAllSettings } from './all-settings.model';
 
 @Injectable()
-export class AppSettingsService {
+export class AllSettingsService {
   constructor(
-    @InjectRepository(AppSettings) private appSettingsRepo: Repository<AppSettings>
+    @InjectRepository(AllSettings) private allSettingsRepo: Repository<AllSettings>
     , @Inject(REQUEST) private readonly request: Request
     , private helperSvc: HelperService
   ) {}
@@ -20,47 +20,47 @@ export class AppSettingsService {
   async findAll(args?: { 
     sync?: boolean
   }): Promise<any[]> {
-    let qb = await getRepository(AppSettings)
+    let qb = await getRepository(AllSettings)
       .createQueryBuilder('appSet'); 
 
     qb = qb.orderBy("appSet.id", 'DESC');
 
-    const appSettings = await qb.getMany();
+    const allSettings = await qb.getMany();
     
-    const data = appSettings.map(async (e) => {
+    const data = allSettings.map(async (e) => {
       const map = await this._map(e);
       return map;
     });
     return Promise.all(data);
   }
 
-  findOne(id): Promise<AppSettings> {
-    return this.appSettingsRepo.findOne(id);
+  findOne(id): Promise<AllSettings> {
+    return this.allSettingsRepo.findOne(id);
   }
 
-  findOneByFieldName(fieldName): Promise<AppSettings> {
-    return this.appSettingsRepo.findOne({ where: { fieldName: fieldName }});
+  findOneByFieldName(fieldName): Promise<AllSettings> {
+    return this.allSettingsRepo.findOne({ where: { fieldName: fieldName }});
   }
 
-  async save(appSettings: IAppSettings) {
-    let newOrUpdated: any = Object.assign({}, appSettings);
+  async save(allSettings: IAllSettings) {
+    let newOrUpdated: any = Object.assign({}, allSettings);
 
     //now save
-    let newRrd = new AppSettings();
+    let newRrd = new AllSettings();
     newRrd = Object.assign({}, newOrUpdated);
 
-    const saved = await this.appSettingsRepo.save(newRrd);
+    const saved = await this.allSettingsRepo.save(newRrd);
 
     const maped = await this._map(saved);
     return maped;
   }
 
   remove(id) {
-    return this.appSettingsRepo.delete(id);
+    return this.allSettingsRepo.delete(id);
   }
 
-  private async _map(not: AppSettings) {
-    let mNotRrd: IAppSettings;
+  private async _map(not: AllSettings) {
+    let mNotRrd: IAllSettings;
     mNotRrd = <any>Object.assign({}, not);
 
     //remove 

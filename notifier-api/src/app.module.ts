@@ -5,8 +5,8 @@ import { WinstonModule } from 'nest-winston';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AppSettings } from './modules/app-settings/app-settings.entity';
-import { AppSettingsModule } from './modules/app-settings/app-settings.module';
+import { AllSettings } from './modules/app-settings/all-settings.entity';
+import { AllSettingsModule } from './modules/app-settings/all-settings.module';
 import { AppInfo } from './modules/app-info/app-info.entity';
 import { AppInfoModule } from './modules/app-info/app-info.module';
 import { NotificationIgnoredItem } from './modules/notification-ignored/notification-ignored.entity';
@@ -25,7 +25,7 @@ const CONNECTION_NAME = "default";
       type: 'sqlite',
       database: './_db/notifier.db',
       entities: [
-        , AppSettings
+        , AllSettings
         , NotificationRecord
         , NotificationIgnoredItem
         , AppInfo
@@ -39,7 +39,7 @@ const CONNECTION_NAME = "default";
     AppInfoModule,
     NotificationModule,
     NotificationIgnoredModule,
-    AppSettingsModule
+    AllSettingsModule
   ],
   controllers: [AppController],
   providers: [AppService],

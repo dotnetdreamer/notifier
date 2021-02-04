@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'ty
 import { BaseEntity } from '../shared/entity/base.entity';
 
 @Entity()
-export class AppSettings extends BaseEntity {
+export class AllSettings extends BaseEntity {
   @Column()
   fieldName: string;
 

@@ -1,4 +1,4 @@
-export interface IAppSettings {
+export interface IAllSettings {
     id?: number;
     fieldValue: string;
     fieldName: string;

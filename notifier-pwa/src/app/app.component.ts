@@ -95,9 +95,11 @@ export class AppComponent implements OnInit {
             if(EnvService.DEBUG) {
               console.log('AppComponent: _subscribeToEvents: Starting listening');
             }
-            await this._startListening(sn);      
-            
+            await this._startListening(sn);
             this._systemNotificationListener = sn;
+
+            //request overlay permission for reboot receiver
+            await this._requestSystemAlertWindowPermission(sn);
           }
         });
       }
@@ -297,15 +299,16 @@ export class AppComponent implements OnInit {
     });
   }
 
-  // private _ignoringBatteryOptimizations() {
-  //   return new Promise<boolean>(async (resolve, reject) => {
-  //     const res1 = await (<DozeOptimizePlugin>DozeOptimize).isIgnoringBatteryOptimizations();
-  //     if(!res1.result) {
-  //       const res2 = await (<DozeOptimizePlugin>DozeOptimize).requestOptimizations();
-  //     }   
-  //     resolve(true);
-  //   });
-  // }
+  private async _requestSystemAlertWindowPermission(sn: SystemNotificationListener) {
+    return new Promise<boolean>(async (resolve, reject) => {
+      const hasPm = await sn.hasSystemAlertWindowPermission();
+      if(!hasPm) {
+        await sn.requestSystemAlertWindowPermission();
+      }
+
+      resolve();
+    });
+  }
 
   private async _startListening(sn: SystemNotificationListener) {
     // const isListening = await sn.isListening();

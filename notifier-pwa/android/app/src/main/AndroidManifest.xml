@@ -14,7 +14,7 @@
         <receiver android:directBootAware="true"
             android:name="ch.asinz.capacitornotificationlistener.StartAppOnBootReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>

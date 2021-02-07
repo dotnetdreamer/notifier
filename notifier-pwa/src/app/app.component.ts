@@ -321,13 +321,21 @@ export class AppComponent implements OnInit {
       .getBlackList();
     sn.setBlackList(bList);
 
-
-    const notificationReceivedEventThrottler = this._throttle(async (info: SystemNotification) => {
+    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
+      //ignore current app...
+      if(this._deviceInfo.appId == info.package) {
+        if(EnvService.DEBUG) {
+          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
+        }
+        return;
+      }
+     
       const result = await Promise.all([
         this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
         , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
         , this.notificationIgnoredSvc.getByTextLocal(info.package)
         , this.notificationIgnoredSvc.getByTextLocal(info.text)
+        , this.notificationSvc.getByTextLocal(info.text)
       ]);
       const ignoreEmptyMessages = result[0];
       if(ignoreEmptyMessages && !(info.text?.length || info.text?.trim().length)) {
@@ -371,6 +379,24 @@ export class AppComponent implements OnInit {
         return;
       }
 
+      //duplicate check. Do not capture same messages arrived in 5min
+      let exitingNots = <INotification[]>result[4];
+      if(exitingNots.length) {
+        //check recent one
+        exitingNots = exitingNots.sort((a, b) => b.id - a.id);
+        const exitingNotForCurrentPkg = exitingNots.filter(n => n.package == info.package)[0];
+        //if not is there for same package, then make sure there is at least 5min time difference
+        if(exitingNotForCurrentPkg) {
+          const start = moment.utc(exitingNotForCurrentPkg.createdOn).local(false);
+          const end =  moment(info.time);
+          const duration = moment.duration(end.diff(start));
+          const minsOfDifference = duration.asMinutes();
+          if(minsOfDifference < 5) {
+            return;
+          }
+        }
+      }
+
       const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
       const notification: INotification = {
         title: info.title,
@@ -398,7 +424,7 @@ export class AppComponent implements OnInit {
       } catch(e) {
         //ignore...
       }
-
+ 
       const promises = [];
       if(image && appName) {
         const appInfo: IAppInfo = {
@@ -417,22 +443,10 @@ export class AppComponent implements OnInit {
 
       //save all
       await Promise.all(promises);
-
+  
       //fire after the page navigates away...
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.APP_INFO);
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
-    }, 5000);
-
-    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
-      //ignore current app...
-      if(this._deviceInfo.appId == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
-        }
-        return;
-      }
-     
-      notificationReceivedEventThrottler(info);
     });
 
     sn.addListener('notificationRemovedEvent', async (info: SystemNotification) => {
@@ -452,19 +466,6 @@ export class AppComponent implements OnInit {
       await this.router.navigate([path], { replaceUrl: replaceUrl });
     } else {
       await this.router.navigate([path, args], { replaceUrl: replaceUrl });
-    }
-  }
-
-  private _throttle(func, limit) {
-    let lastFunc;
-    let lastRan = Date.now() - (limit + 1); //enforces a negative value on first run
-    return function(...args) {
-      const context = this;
-      clearTimeout(lastFunc);
-      lastFunc = setTimeout(() => {
-        func.apply(context, args);
-        lastRan = Date.now();
-      }, limit - (Date.now() - lastRan)); //negative values execute immediately
     }
   }
 }

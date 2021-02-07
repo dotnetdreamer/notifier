@@ -321,15 +321,8 @@ export class AppComponent implements OnInit {
       .getBlackList();
     sn.setBlackList(bList);
 
-    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
-      //ignore current app...
-      if(this._deviceInfo.appId == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
-        }
-        return;
-      }
-     
+
+    const notificationReceivedEventThrottler = this._throttle(async (info: SystemNotification) => {
       const result = await Promise.all([
         this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
         , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
@@ -337,6 +330,7 @@ export class AppComponent implements OnInit {
         , this.notificationIgnoredSvc.getByTextLocal(info.text)
         , this.notificationSvc.getByTextLocal(info.text)
       ]);
+
       const ignoreEmptyMessages = result[0];
       if(ignoreEmptyMessages && !(info.text?.length || info.text?.trim().length)) {
         return;
@@ -424,7 +418,7 @@ export class AppComponent implements OnInit {
       } catch(e) {
         //ignore...
       }
- 
+
       const promises = [];
       if(image && appName) {
         const appInfo: IAppInfo = {
@@ -443,10 +437,22 @@ export class AppComponent implements OnInit {
 
       //save all
       await Promise.all(promises);
-  
+
       //fire after the page navigates away...
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.APP_INFO);
       this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+    }, 10000);
+
+    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
+      //ignore current app...
+      if(this._deviceInfo.appId == info.package) {
+        if(EnvService.DEBUG) {
+          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
+        }
+        return;
+      }
+     
+      notificationReceivedEventThrottler(info);
     });
 
     sn.addListener('notificationRemovedEvent', async (info: SystemNotification) => {
@@ -466,6 +472,19 @@ export class AppComponent implements OnInit {
       await this.router.navigate([path], { replaceUrl: replaceUrl });
     } else {
       await this.router.navigate([path, args], { replaceUrl: replaceUrl });
+    }
+  }
+
+  private _throttle(func, limit) {
+    let lastFunc;
+    let lastRan = Date.now() - (limit + 1); //enforces a negative value on first run
+    return function(...args) {
+      const context = this;
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(() => {
+        func.apply(context, args);
+        lastRan = Date.now();
+      }, limit - (Date.now() - lastRan)); //negative values execute immediately
     }
   }
 }

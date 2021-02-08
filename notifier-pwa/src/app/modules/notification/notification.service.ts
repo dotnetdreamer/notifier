@@ -88,93 +88,22 @@ export class NotificationService extends BaseService {
             if(EnvService.DEBUG) {
                 console.log('NotificationService: push: started');
             }
+            
             //chunks
-            let pageIndex = 1, pageSize = NotificationConstant.MAX_ITEMS_LIMIT;
-            const result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
-            if(result.total == 0) {
-                resolve();
-                return;
-            }
-
-            let unSycedLocal = [];
-            unSycedLocal = result.data;
-            //do not push same records again...
-            unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
-            if(EnvService.DEBUG) {
-                console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
-            }
-
-            if(!unSycedLocal.length) {
-                resolve();
-                return;
-            }
-            
-            //add to push queue
-            this._addQueuePattern(unSycedLocal);
-
-            let items: any[];
-            //server returns array of dictionary objects, each key in dict is the localdb id
-            //we map the localids and update its serverid locally
             try {
-                items = await this.postData<any[]>({
-                    url: `${this.BASE_URL}/sync`,
-                    body: unSycedLocal
-                });
-            } catch(e) {
-                //try syncing 1 item at a time...
-                for(let i=0; i < unSycedLocal.length; i++) {
-                    const usItem = unSycedLocal[i];
+                let total = 0, totalPages = 0, pageIndex = 1, pageSize = 50;
+                do {
                     try {
-                        const returnedItems = await this.postData<any[]>({
-                            url: `${this.BASE_URL}/sync`,
-                            body: [usItem]  //server expects an array...
-                        });
-                        if(!items) {
-                            items = [];
-                        }
-                        items.push(returnedItems[0]);
+                        const unSycedLocal = await this._pushUnSyncedChunk(pageIndex, pageSize);
+                        total = unSycedLocal.total;
+                        totalPages = total / pageSize;
                     } catch(e) {
-                        //remove it from queue
-                        const index = unSycedLocal.indexOf(usItem);
-                        unSycedLocal.splice(index, 1);
-                        //reset i, as it didn't succeed
-                        i--;
                         continue;
+                    } finally {
+                        pageIndex++;
                     }
-                }
-            }
+                } while(pageIndex <= totalPages);
 
-            //something bad happend or in case of update, we don't need to update server ids
-            if(items == null) {
-                resolve();
-                return;
-            }
-            
-            try {
-                const promises = [];
-                //mark it
-                for (let item of unSycedLocal) {
-                    if (item.markedForAdd || item.markedForUpdate) {
-                        //update server id as well...
-                        const cp = items.filter(p => p[item.id])[0];
-                        if(!cp) {
-                            throw `Local item mapping not found for: ${item.id}`;
-                        }
-
-                        //removed old items whose ids are changed e.g in adding senario
-                        //we remove the item immedialty as it causes issue when we run update promise down
-                        await this.remove(item.id);
-
-                        const pItem: INotification = cp[item.id];
-                        promises.push(this.putLocal(pItem, true, true));
-                    } else if (item.markedForDelete) {
-                        const promise = this.remove(item.id);
-                        promises.push(promise);
-                    }
-                }
-
-                //now make updates
-                await Promise.all(promises);
                 if(EnvService.DEBUG) {
                     console.log('NotificationService: sync: complete');
                 }
@@ -558,31 +487,90 @@ export class NotificationService extends BaseService {
     }
 
     private _pushUnSyncedChunk(pageIndex, pageSize) {
-        return new Promise(async (resolve, reject) => {
-            //chunks
-            let unSycedLocal = [];
-            let result: { data: INotification[], total: number }; 
-            do {
-                result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
-                if(!result.data) {
-                    continue;
-                }
-
-                unSycedLocal = result.data;
-                //do not push same records again...
-                unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
-                if(EnvService.DEBUG) {
-                    console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
-                }
-            } while(!unSycedLocal.length && result.total > 0);
-
-            if(!unSycedLocal.length) {
-                resolve();
-                return;
-            }  
+        return new Promise<{ total }>(async (resolve, reject) => {
+            const result = await this.getUnSyncedLocal({ pageIndex: pageIndex, pageSize: pageSize });
+            let unSycedLocal = result.data;
+            //do not push same records again...
+            unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
+            if(EnvService.DEBUG) {
+                console.log('NotificationService: push: unSycedLocal items length', unSycedLocal.length);
+            }
 
             //add to push queue
             this._addQueuePattern(unSycedLocal);
+
+            let items: any[];
+            //server returns array of dictionary objects, each key in dict is the localdb id
+            //we map the localids and update its serverid locally
+            try {
+                items = await this.postData<any[]>({
+                    url: `${this.BASE_URL}/sync`,
+                    body: unSycedLocal
+                });
+            } catch(e) {
+                //try syncing 1 item at a time...
+                for(let i=0; i < unSycedLocal.length; i++) {
+                    const usItem = unSycedLocal[i];
+                    try {
+                        const returnedItems = await this.postData<any[]>({
+                            url: `${this.BASE_URL}/sync`,
+                            body: [usItem]  //server expects an array...
+                        });
+                        if(!items) {
+                            items = [];
+                        }
+                        items.push(returnedItems[0]);
+                    } catch(e) {
+                        //remove it from queue
+                        const index = unSycedLocal.indexOf(usItem);
+                        unSycedLocal.splice(index, 1);
+                        //reset i, as it didn't succeed
+                        i--;
+                        continue;
+                    }
+                }
+            }
+
+            //something bad happend or in case of update, we don't need to update server ids
+            if(items == null) {
+                resolve({
+                    total: result.total
+                });
+                return;
+            }
+            
+            try {
+                const promises = [];
+                //mark it
+                for (let item of unSycedLocal) {
+                    if (item.markedForAdd || item.markedForUpdate) {
+                        //update server id as well...
+                        const cp = items.filter(p => p[item.id])[0];
+                        if(!cp) {
+                            throw `Local item mapping not found for: ${item.id}`;
+                        }
+
+                        //removed old items whose ids are changed e.g in adding senario
+                        //we remove the item immedialty as it causes issue when we run update promise down
+                        await this.remove(item.id);
+
+                        const pItem: INotification = cp[item.id];
+                        promises.push(this.putLocal(pItem, true, true));
+                    } else if (item.markedForDelete) {
+                        const promise = this.remove(item.id);
+                        promises.push(promise);
+                    }
+                }
+
+                //now make updates
+                await Promise.all(promises);
+
+                resolve({
+                    total: result.total
+                });
+            } catch (e) {
+                reject(e);
+            }
         });
     }
 }

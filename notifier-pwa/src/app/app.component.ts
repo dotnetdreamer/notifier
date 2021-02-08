@@ -439,8 +439,7 @@ export class AppComponent implements OnInit {
       await Promise.all(promises);
 
       //fire after the page navigates away...
-      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.APP_INFO);
-      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION);
+      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
     }, 10000);
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {

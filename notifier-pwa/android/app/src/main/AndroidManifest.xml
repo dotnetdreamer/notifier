@@ -13,7 +13,7 @@
         <!-- https://developer.android.com/training/articles/direct-boot (LOCKED_BOOT_COMPLETED) is required if devices has lock on-->
         <receiver android:directBootAware="true"
             android:name="ch.asinz.capacitornotificationlistener.StartAppOnBootReceiver">
-            <intent-filter>
+            <intent-filter android:priority="999">
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />

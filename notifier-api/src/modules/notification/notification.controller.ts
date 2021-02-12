@@ -28,8 +28,7 @@ export class NotificationController {
     //local id and mapping server record
     let items: Array<Map<number, any>> = [];
 
-    for (let model of models)
-    {
+    for (let model of models){
       const itemMap: Map<number, INotification> = new Map();
       let returnedExpense: any;
 

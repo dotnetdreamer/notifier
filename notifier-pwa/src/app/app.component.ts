@@ -99,7 +99,10 @@ export class AppComponent implements OnInit {
             this._systemNotificationListener = sn;
 
             //request overlay permission for reboot receiver
-            await this._requestSystemAlertWindowPermission(sn);
+            //fix: wait till the notification permission screen hides
+            setTimeout(async () => {
+              await this._requestSystemAlertWindowPermission(sn); 
+            }, 1000);
           }
         });
       }

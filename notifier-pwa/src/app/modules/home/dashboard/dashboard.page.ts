@@ -395,21 +395,12 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
 
         //app came to foreground...
         if(state.isActive) {
-          //refresh only if any items are changed
-          // const total = await this.notificationSvc.countForMonth();
-          // if(total == this.totalAvailableNotifications) {
-          //   return;
-          // }
-
           //refresh UI
           if(this.virtualScroll) {
-            this.virtualScroll.checkEnd();
+            setTimeout(() => {
+              this.virtualScroll.checkEnd();
+            });
           }
-          // await this._getAllNotifications({ 
-          //   virtualScrollCheckEnd: state.isActive,
-          //   resetDefaults: true,
-          //   startupSyncCompleted: this.startupSyncCompleted
-          // });
         }
       });
     }

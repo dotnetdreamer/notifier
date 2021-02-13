@@ -7,6 +7,7 @@
 The repository consists of two projects i.e **notifier-api** and **notifier-pwa**. API project is built with [NestJS](https://nestjs.com/) and PWA is built with [Ionic](https://ionicframework.com/) and [Capacitor](https://capacitorjs.com/).
 
 ## <a name="quick-start"></a>Quick Start
+### Development
 1. Clone this repository or Download it as a zip
 2. Switch to master branch
 3. Navigate to i.e **notifier-pwa** directory and run `npm i`.
@@ -16,6 +17,20 @@ The repository consists of two projects i.e **notifier-api** and **notifier-pwa*
 8. In **notifier-pwa** project, go to **android -> app -> src -> main -> res -> xml -> network_security_config.xml** file and update your API url there. If you don't do this, you will get typical **net::ERR_CLEARTEXT_NOT_PERMITTED** error 
 9. Open another command line and navigate to **notifier-pwa** and run ionic serve
 10. By this time, you should have both projects running
+
+### Production
+#### API
+1. Navigate to **notifier-api** directory and run `npm run build`. This will generate the production build of API project inside **dist** directory
+2. Copy the **package.json** from **notifier-api** and paste it to **notifier-api -> dist**. Now you can zip the **dist** and deploy it to your hosting
+
+#### PWA
+1. Navigate to **notifier-pwa** directory and run `ionic build --prod` which will generate production build inside **www* directory
+2. Go inside the **www -> assets** directory and change the `BASE_URL` and `BASE_API_URL` to your deployed API URL
+
+#### Android
+1. Navigate to **notifier-pwa** directory and run `ionic build --prod` which will generate production build inside **www* directory
+2. Now run `npx cap copy` and then `npx cap update`. You can also follow [official capacitor](https://capacitorjs.com/docs/android) guide.
+3. Now you can generate your `apk` from Android Studio
 
 ## Author(s)
 * **Idrees Khan** (dotnetdreamer)

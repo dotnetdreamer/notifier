@@ -430,14 +430,20 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       if(EnvService.DEBUG) {
         console.log('DashboardPage:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
-      await this._refreshVisibleItems(true);
-      
       //we only need this first time...kill it!
       setTimeout(() => {
         this._syncDataPullCompleteSub.unsubscribe();
         this._syncDataPullCompleteSub = null;
         this.startupSyncCompleted = true;
       });
+
+      //wait until local data fetch is complete. Otherwise we will see same entries duplicate...
+      const intv = setInterval(async () => {
+        if(this.dataLoaded) {
+          clearInterval(intv);
+          await this._refreshVisibleItems(true);
+        }
+      }, 600);
     });
   }
 

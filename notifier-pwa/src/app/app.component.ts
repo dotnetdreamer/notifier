@@ -2,7 +2,7 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Platform } from '@ionic/angular';
-import { DeviceInfo, Plugins } from '@capacitor/core';
+import { DeviceInfo, Plugins, Network } from '@capacitor/core';
 
 const { GetAppInfo } = Plugins;
 const { SplashScreen, StatusBar, Device } = Plugins;
@@ -73,9 +73,22 @@ export class AppComponent implements OnInit {
   }
 
   private async _subscribeToEvents() {
+    Network.addListener('networkStatusChange', async (status) => {
+      if(EnvService.DEBUG) {
+        console.log("AppComponent: Event received: networkStatusChange", status);
+      }
+
+      if(status && status.connected) {
+        await this.syncHelperSvc.push();
+        setTimeout(async () => {
+          await this.syncHelperSvc.pull();
+        });
+      }
+    });
+
     this.pubsubSvc.subscribe(AppConstant.EVENT_DB_INITIALIZED, async () => {
       if(EnvService.DEBUG) {
-        console.log('Event received: EVENT_DB_INITIALIZED');
+        console.log('AppComponent: Event received: EVENT_DB_INITIALIZED');
       }
       
       await this._setDefaults();

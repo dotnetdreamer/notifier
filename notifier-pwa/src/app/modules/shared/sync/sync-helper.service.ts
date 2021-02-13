@@ -18,6 +18,9 @@ import { AppInfoService } from "../../app-info/app-info.service";
     providedIn: 'root'
 })
 export class SyncHelperService {
+    public static pushingInProgress = false;
+    public static pullingInProgress = false;
+
     constructor(private pubsubSvc: NgxPubSubService
         , private notificationSvc: NotificationService
         , private notificationIgnoredSvc: NotificationIgnoredService
@@ -26,8 +29,13 @@ export class SyncHelperService {
 
     pull(table?: SyncEntity) {
         return new Promise(async (resolve, reject) => {
-            const promises: Array<Promise<any>> = [];
+            if(SyncHelperService.pullingInProgress) {
+                resolve();
+                return;
+            }
 
+            SyncHelperService.pullingInProgress = true;
+            const promises: Array<Promise<any>> = [];
             if(table) {
                 switch(table) {
                     case SyncEntity.NOTIFICATION:
@@ -60,6 +68,7 @@ export class SyncHelperService {
                 if(EnvService.DEBUG) {
                     console.log('SyncHelperService: publishing EVENT_SYNC_DATA_PULL_COMPLETE');
                 }
+                SyncHelperService.pullingInProgress = false;
                 this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PULL_COMPLETE, table);
             }
         });
@@ -67,6 +76,12 @@ export class SyncHelperService {
     
     push(table?: SyncEntity) {
         return new Promise(async (resolve, reject) => {
+            if(SyncHelperService.pushingInProgress) {
+                resolve();
+                return;
+            }
+
+            SyncHelperService.pushingInProgress = true;
             let promises: Array<Promise<any>> = [];
             if(table) {
                 switch(table) {
@@ -102,11 +117,11 @@ export class SyncHelperService {
             } catch (e) {
                 resolve(e);
             } finally {
+                SyncHelperService.pushingInProgress = false;
                 this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH_COMPLETE, promises.length);
             }
         });
     }
-
 
     syncSampleData() {
         return new Promise(async (resolve, reject) => {

@@ -26,6 +26,7 @@ The repository consists of two projects i.e **notifier-api** and **notifier-pwa*
 #### PWA
 1. Navigate to **notifier-pwa** directory and run `ionic build --prod` which will generate production build inside **www* directory
 2. Go inside the **www -> assets** directory and change the `BASE_URL` and `BASE_API_URL` to your deployed API URL
+3. (Optional) If you want to keep your **PWA** together with **API** then simply copy the contents of **www** directory to **notifier-api -> client folder**
 
 #### Android
 1. Navigate to **notifier-pwa** directory and run `ionic build --prod` which will generate production build inside **www* directory

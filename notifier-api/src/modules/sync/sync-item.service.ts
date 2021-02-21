@@ -17,20 +17,20 @@ export class SyncItemService {
   ) {}
 
   async findAll(args?: { 
-    sync?: boolean
-  }): Promise<any[]> {
+    dateFrom?: string
+  }): Promise<{ total, data: SyncItem[]}> {
     let qb = await getRepository(SyncItem)
       .createQueryBuilder('sync'); 
 
+    if(args.dateFrom) {
+      qb = qb.andWhere("sync.updatedOn >= :dateFrom", { dateFrom: args.dateFrom });
+    }
+
     qb = qb.orderBy("sync.id", 'DESC');
 
-    const syncItem = await qb.getMany();
+    const [ data, total ] = await qb.getManyAndCount();
     
-    const data = syncItem.map(async (e) => {
-      const map = await this._map(e);
-      return map;
-    });
-    return Promise.all(data);
+    return { total: total, data: data };
   }
 
   findOne(id): Promise<SyncItem> {
@@ -53,12 +53,5 @@ export class SyncItemService {
 
   remove(id) {
     return this.syncItemRepo.delete(id);
-  }
-
-  private async _map(not: SyncItem) {
-    let mNotRrd;
-    mNotRrd = <any>Object.assign({}, not);
-   
-    return mNotRrd;
   }
 }

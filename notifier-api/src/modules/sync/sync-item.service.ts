@@ -46,9 +46,7 @@ export class SyncItemService {
     newRrd = Object.assign({}, syncItem);
 
     const saved = await this.syncItemRepo.save(newRrd);
-
-    const maped = await this._map(saved);
-    return maped;
+    return saved;
   }
 
   remove(id) {

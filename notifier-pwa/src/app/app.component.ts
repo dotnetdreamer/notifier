@@ -393,9 +393,9 @@ export class AppComponent implements OnInit {
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       //ignore current app...
       if(this._deviceInfo.appId == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
-        }
+        // if(EnvService.DEBUG) {
+        //   console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
+        // }
         return;
       }
      
@@ -466,7 +466,7 @@ export class AppComponent implements OnInit {
           }
         }
       }
-      
+
       notificationReceivedEventThrottler(info);
     });
 

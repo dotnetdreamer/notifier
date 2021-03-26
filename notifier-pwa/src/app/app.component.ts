@@ -339,6 +339,66 @@ export class AppComponent implements OnInit {
 
 
     const notificationReceivedEventThrottler = this._throttle(async (info: SystemNotification) => {
+      const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
+      const notification: INotification = {
+        title: info.title,
+        text: info.text,
+        package: info.package,
+        receivedOnUtc: utcTime
+      };
+
+      let image, appName;
+      try {
+        const iconAppNameRslt = await Promise.all([
+          (<GetAppInfoPlugin>GetAppInfo).getAppIcon({ packageName: notification.package })
+          , (<GetAppInfoPlugin>GetAppInfo).getAppLabel({ packageName: notification.package })
+        ]);
+
+        //icon
+        if(iconAppNameRslt[0].value) {
+          image = iconAppNameRslt[0].value;
+        }
+
+        //app name
+        if(iconAppNameRslt[1].value) {
+          appName = iconAppNameRslt[1].value;
+        }
+      } catch(e) {
+        //ignore...
+      }
+
+      const promises = [];
+      if(image && appName) {
+        const appInfo: IAppInfo = {
+          appName: appName,
+          image: image,
+          package: notification.package
+        };
+        //for now no need to fire event
+        promises.push(this.appInfoSvc.addOrUpdate(appInfo, true));
+      }
+
+      if(EnvService.DEBUG) {
+        console.log('AppComponent: notificationReceivedEvent: notification', notification)
+      }
+      promises.push(this.notificationSvc.putLocal(notification));
+
+      //save all
+      await Promise.all(promises);
+
+      //fire after the page navigates away...
+      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
+    }, 10000);
+
+    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
+      //ignore current app...
+      if(this._deviceInfo.appId == info.package) {
+        if(EnvService.DEBUG) {
+          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
+        }
+        return;
+      }
+     
       const result = await Promise.all([
         this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
         , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
@@ -406,67 +466,7 @@ export class AppComponent implements OnInit {
           }
         }
       }
-
-      const utcTime = moment(info.time).utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
-      const notification: INotification = {
-        title: info.title,
-        text: info.text,
-        package: info.package,
-        receivedOnUtc: utcTime
-      };
-
-      let image, appName;
-      try {
-        const iconAppNameRslt = await Promise.all([
-          (<GetAppInfoPlugin>GetAppInfo).getAppIcon({ packageName: notification.package })
-          , (<GetAppInfoPlugin>GetAppInfo).getAppLabel({ packageName: notification.package })
-        ]);
-
-        //icon
-        if(iconAppNameRslt[0].value) {
-          image = iconAppNameRslt[0].value;
-        }
-
-        //app name
-        if(iconAppNameRslt[1].value) {
-          appName = iconAppNameRslt[1].value;
-        }
-      } catch(e) {
-        //ignore...
-      }
-
-      const promises = [];
-      if(image && appName) {
-        const appInfo: IAppInfo = {
-          appName: appName,
-          image: image,
-          package: notification.package
-        };
-        //for now no need to fire event
-        promises.push(this.appInfoSvc.addOrUpdate(appInfo, true));
-      }
-
-      if(EnvService.DEBUG) {
-        console.log('AppComponent: notificationReceivedEvent: notification', notification)
-      }
-      promises.push(this.notificationSvc.putLocal(notification));
-
-      //save all
-      await Promise.all(promises);
-
-      //fire after the page navigates away...
-      this.pubsubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH);
-    }, 10000);
-
-    sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
-      //ignore current app...
-      if(this._deviceInfo.appId == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
-        }
-        return;
-      }
-     
+      
       notificationReceivedEventThrottler(info);
     });
 

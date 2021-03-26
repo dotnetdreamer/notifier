@@ -3,11 +3,19 @@
   <p><strong>An open source offline-first notification listener for Android that syncs everywhere</strong></p>
 
 <div align="center">
-  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="420" />
+  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="400" />
+  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/launch-on-startup.gif" width="400" />
 </div>
 
 ## Introducation
 The repository consists of two projects i.e **notifier-api** and **notifier-pwa**. API project is built with [NestJS](https://nestjs.com/) and PWA is built with [Ionic](https://ionicframework.com/) and [Capacitor](https://capacitorjs.com/).
+
+## Features
+1. Capture notifications as soon as arrive **(even when they are deleted by sender)**
+2. Autostart app on Device Boot/Re-Boot
+3. Ignore Duplicate notifications
+4. Define your own custom ignore list
+5. And more...
 
 ## <a name="quick-start"></a>Quick Start
 ### Development

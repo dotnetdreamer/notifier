@@ -4,7 +4,7 @@
 </div>
 
 ## Screenshots
-![Screenshots](/_docs/screenshots/notification-arrive.gif?raw=true "Notification Arrive Screenshot" =420)
+![Screenshots](/_docs/screenshots/notification-arrive.gif?raw=true =420)
 
 ## Introducation
 The repository consists of two projects i.e **notifier-api** and **notifier-pwa**. API project is built with [NestJS](https://nestjs.com/) and PWA is built with [Ionic](https://ionicframework.com/) and [Capacitor](https://capacitorjs.com/).

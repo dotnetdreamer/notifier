@@ -1,10 +1,10 @@
 <div align="center">
   <h1>Notifier</h1>
   <p><strong>An open source offline-first notification listener for Android that syncs everywhere</strong></p>
+
+<div align="center">
+  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="420" />
 </div>
-
-<img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="420" />
-
 
 ## Introducation
 The repository consists of two projects i.e **notifier-api** and **notifier-pwa**. API project is built with [NestJS](https://nestjs.com/) and PWA is built with [Ionic](https://ionicframework.com/) and [Capacitor](https://capacitorjs.com/).

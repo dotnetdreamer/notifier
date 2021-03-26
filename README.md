@@ -3,8 +3,8 @@
   <p><strong>An open source offline-first notification listener for Android that syncs everywhere</strong></p>
 
 <div align="center">
-  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="400" />
   <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/launch-on-startup.gif" width="400" />
+  <img src="https://github.com/dotnetdreamer/notifier/blob/master/_docs/screenshots/notification-arrive.gif" width="400" />
 </div>
 
 ## Introducation

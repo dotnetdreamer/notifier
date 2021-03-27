@@ -152,6 +152,7 @@ export class DbWebService implements DbService {
         return new Promise<T>((resolve, reject) => {
             let q;
             if (opts['field']) {
+                //Operator symbol. One of '<', '<=', '=', '>', '>=', '^'. The last operator is for string value having starts with.
                 q = this.db.from(storeName).where(opts['field'], opts['operator'], opts['value']);
             } else {
                 q = this.db.from(storeName);

@@ -99,6 +99,9 @@ export class SchemaService {
                 indexes: [{
                     name: 'text',
                     keyPath: 'text'
+                }, {
+                    name: 'package',
+                    keyPath: 'package',
                 }]
             }, {
                 name: this._appInfo,

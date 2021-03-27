@@ -402,8 +402,7 @@ export class AppComponent implements OnInit {
       const result = await Promise.all([
         this.notificationSettingSvc.getIgnoreEmptyMessagesEnabled()
         , this.notificationSettingSvc.getIgnoreSystemAppsNotificationEnabled()
-        , this.notificationIgnoredSvc.getByTextLocal(info.package)
-        , this.notificationIgnoredSvc.getByTextLocal(info.text)
+        , this.notificationIgnoredSvc.getByPackageLocal(info.package)
         , this.notificationSvc.getByTextLocal(info.text)
       ]);
 
@@ -435,23 +434,35 @@ export class AppComponent implements OnInit {
 
       const packageIgnored = result[2];
       if(packageIgnored) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is added to ignore list via package`);
-        }
-        return;
-      }
+        let matchedIgnoredRules = false;
 
-      //TODO: need to check for other rules i.e startsWith, etc...
-      const textIgnored = result[3];
-      if(textIgnored && textIgnored.package == info.package) {
-        if(EnvService.DEBUG) {
-          console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
+        //check for rules
+        if(packageIgnored.rule) {
+          switch(packageIgnored.rule) {
+            case 'startsWith':
+              matchedIgnoredRules = info.text.startsWith(packageIgnored.text);
+            break;
+            case 'contains':
+              matchedIgnoredRules = info.text.toLowerCase().includes(packageIgnored.text.toLowerCase());
+            break;
+            case 'exact':
+              matchedIgnoredRules = packageIgnored.text == info.text;
+            break;
+          }
+        } else {
+          matchedIgnoredRules = true;
         }
-        return;
+
+        if(matchedIgnoredRules) {
+          if(EnvService.DEBUG) {
+            console.log(`Ignoring: ${info.package} is added to ignore list via text: ${info.text}`);
+          }
+          return;
+        }
       }
 
       //duplicate check. Do not capture same messages arrived in 5min
-      let exitingNots = <INotification[]>result[4];
+      let exitingNots = <INotification[]>result[3];
       if(exitingNots.length) {
         //check recent one
         exitingNots = exitingNots.sort((a, b) => b.id - a.id);

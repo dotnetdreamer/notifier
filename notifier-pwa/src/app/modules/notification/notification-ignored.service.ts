@@ -291,6 +291,12 @@ export class NotificationIgnoredService extends BaseService {
         return <INotificationIgnored>result[0];
     }
 
+    async getByPackageLocal(term) {
+        const result = await this.dbService.getByFieldName<INotificationIgnored[]>(
+            this.schemaSvc.tables.notificationIgnored, 'package', term);
+        return <INotificationIgnored>result[0];
+    }
+
     async putLocal(item: INotificationIgnored, ignoreFiringEvent?: boolean, ignoreDefaults?: boolean) {
         //defaults
          if(!ignoreDefaults) {

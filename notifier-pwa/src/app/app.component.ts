@@ -441,6 +441,7 @@ export class AppComponent implements OnInit {
         return;
       }
 
+      //TODO: need to check for other rules i.e startsWith, etc...
       const textIgnored = result[3];
       if(textIgnored && textIgnored.package == info.package) {
         if(EnvService.DEBUG) {

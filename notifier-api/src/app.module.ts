@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WinstonModule } from 'nest-winston';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,6 +21,7 @@ const CONNECTION_NAME = "default";
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot({
       name: CONNECTION_NAME,
       type: 'sqlite',

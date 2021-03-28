@@ -1,13 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository, SelectQueryBuilder } from 'typeorm';
 import * as moment from 'moment';
 
 import { NotificationRecord } from './notification.entity';
-import { INotification } from './notification.model';
+import { INotification, NotificationRecordCreatedEvent } from './notification.model';
 import { HelperService } from '../shared/helper.service';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class NotificationService {
   constructor(
     @InjectRepository(NotificationRecord) private notificationRecordRepo: Repository<NotificationRecord>
     , @Inject(REQUEST) private readonly request: Request
+    , private eventEmitter: EventEmitter2
     , private helperSvc: HelperService
   ) {}
 
@@ -73,6 +75,11 @@ export class NotificationService {
     newNotRrd = Object.assign({}, newOrUpdated);
 
     const saved = await this.notificationRecordRepo.save(newNotRrd);
+
+    //notify
+    this.eventEmitter.emit(`${NotificationRecord.name}.created`, 
+      new NotificationRecordCreatedEvent({ payload: saved })
+    );
 
     const maped = await this._map(saved);
     return maped;

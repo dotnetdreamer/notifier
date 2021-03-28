@@ -12,3 +12,11 @@ export interface INotification {
     markedForUpdate?: boolean;
     markedForDelete?: boolean;
 }
+
+export class NotificationRecordCreatedEvent {
+    payload;
+    
+    constructor(payload) {
+        this.payload = payload;
+    }
+}

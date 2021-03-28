@@ -11,7 +11,7 @@ export class AllSettingsController {
 
     @UseInterceptors(ClassSerializerInterceptor)
     @Get('getAll')
-    async check(@Req() req: Request, @Query() filters: { date: string }) {
-        return this.syncItemSvc.findAll({ dateFrom: filters.date });
+    async check(@Req() req: Request, @Query() filters: { dateFrom: string }) {
+        return this.syncItemSvc.findAll({ dateFrom: filters.dateFrom });
     }
 }

@@ -3,6 +3,7 @@ import { Plugins } from "@capacitor/core";
 
 const { Device } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
+import * as moment from 'moment';
 
 import { SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
@@ -12,6 +13,8 @@ import { NotificationIgnoredService } from '../../notification/notification-igno
 import { INotificationIgnored } from '../../notification/notification.model';
 import { EnvService } from "../env.service";
 import { AppInfoService } from "../../app-info/app-info.service";
+import { AppInjector } from "../app-injector";
+import { BaseService } from "../base.service";
 
 
 @Injectable({
@@ -27,12 +30,34 @@ export class SyncHelperService {
         , private appInfoSvc: AppInfoService) {
     }
 
+    check(dateTime?) {
+        if(!dateTime?) {
+            dateTime = moment.utc().format(AppConstant.DEFAULT_TIME_FORMAT);
+        }
+
+        const injector = AppInjector.getInjector();
+        const baseSvc = injector.get(BaseService);
+
+        return baseSvc.getData<{ total: number, data: any }>({
+            url: `${EnvService.BASE_API_URL}getAll`,
+            body: {
+                dateFrom: dateTime
+            }
+        });
+    }
+
     pull(table?: SyncEntity) {
         return new Promise(async (resolve, reject) => {
             if(SyncHelperService.pullingInProgress) {
                 resolve();
                 return;
             }
+
+            // const { total } = await this.check();
+            // if(total == 0) {
+            //     resolve();
+            //     return;
+            // }
 
             SyncHelperService.pullingInProgress = true;
             const promises: Array<Promise<any>> = [];

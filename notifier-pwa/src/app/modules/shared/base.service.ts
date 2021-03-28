@@ -60,7 +60,7 @@ export class BaseService {
         return this.schemaSvc.tables;
     }
 
-    protected getData<T>(args: HttpParams): Promise<T> {
+    getData<T>(args: HttpParams): Promise<T> {
         return new Promise(async (resolve, reject) => {
             let headers: HttpHeaders = await this.prepareHeaders(args);
 
@@ -97,7 +97,7 @@ export class BaseService {
         });
     }
 
-    protected postData<T>(args: HttpParams): Promise<T> {
+    postData<T>(args: HttpParams): Promise<T> {
         return new Promise(async (resolve, reject) => {
             let headers: HttpHeaders = await this.prepareHeaders(args);
 
@@ -150,7 +150,7 @@ export class BaseService {
         });
     }
 
-    protected findInQueue(pattern) {
+    findInQueue(pattern) {
         return BaseService.pushQueue.findIndex(q => q == pattern);
     }
 

@@ -12,8 +12,6 @@ import { SyncItem } from './sync-item.entity';
 export class SyncItemService {
   constructor(
     @InjectRepository(SyncItem) private syncItemRepo: Repository<SyncItem>
-    , @Inject(REQUEST) private readonly request: Request
-    , private helperSvc: HelperService
   ) {}
 
   async findAll(args?: { 

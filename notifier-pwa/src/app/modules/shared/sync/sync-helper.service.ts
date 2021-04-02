@@ -5,7 +5,7 @@ const { Device } = Plugins;
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 
-import { SyncEntity } from './sync.model';
+import { ISyncItem, SyncEntity } from './sync.model';
 import { SyncConstant } from './sync-constant';
 import { AppConstant } from '../app-constant';
 import { NotificationService } from '../../notification/notification.service';
@@ -15,6 +15,8 @@ import { EnvService } from "../env.service";
 import { AppInfoService } from "../../app-info/app-info.service";
 import { AppInjector } from "../app-injector";
 import { BaseService } from "../base.service";
+import { DbService } from "../db/db-base.service";
+import { SchemaService } from "../db/schema.service";
 
 
 @Injectable({
@@ -24,22 +26,28 @@ export class SyncHelperService {
     public static pushingInProgress = false;
     public static pullingInProgress = false;
 
+    private readonly BASE_URL = "sync";
+    private readonly baseSvc: BaseService;
+
     constructor(private pubsubSvc: NgxPubSubService
         , private notificationSvc: NotificationService
         , private notificationIgnoredSvc: NotificationIgnoredService
         , private appInfoSvc: AppInfoService) {
+
+            
+        const injector = AppInjector.getInjector();
+        this.baseSvc = injector.get(BaseService);
     }
 
     check(dateTime?) {
-        if(!dateTime?) {
-            dateTime = moment.utc().format(AppConstant.DEFAULT_TIME_FORMAT);
+        if(!dateTime) {
+            dateTime = moment().local(true).utc().format(AppConstant.DEFAULT_DATETIME_FORMAT);
         }
 
-        const injector = AppInjector.getInjector();
-        const baseSvc = injector.get(BaseService);
 
-        return baseSvc.getData<{ total: number, data: any }>({
-            url: `${EnvService.BASE_API_URL}getAll`,
+        // const lastUpdated = appSettingSvc.getWorkingLanguage();
+        return this.baseSvc.getData<{ total: number, data: any }>({
+            url: `${this.BASE_URL}/getAll`,
             body: {
                 dateFrom: dateTime
             }
@@ -53,14 +61,8 @@ export class SyncHelperService {
                 return;
             }
 
-            // const { total } = await this.check();
-            // if(total == 0) {
-            //     resolve();
-            //     return;
-            // }
-
-            SyncHelperService.pullingInProgress = true;
             const promises: Array<Promise<any>> = [];
+            SyncHelperService.pullingInProgress = true;
             if(table) {
                 switch(table) {
                     case SyncEntity.NOTIFICATION:
@@ -76,6 +78,11 @@ export class SyncHelperService {
                     break;
                 }
             } else {   //sync all
+                // const tables = [
+                //     this._getByNameLocal('NotificationRecord')
+                // ];
+                // const d = await Promise.all(tables);
+                // debugger;
                 //notification
                 promises.push(this.notificationSvc.pull());
                 //notification ignored
@@ -83,7 +90,7 @@ export class SyncHelperService {
                 //app-info
                 promises.push(this.appInfoSvc.pull());
             }
-            
+
             try {
                 await Promise.all(promises);
                 resolve();
@@ -176,5 +183,10 @@ export class SyncHelperService {
             await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);
             resolve();
         });
+    }
+
+    
+    private _getByNameLocal(tableName) {
+        return this.baseSvc.dbService.get<ISyncItem>(this.baseSvc.schemaSvc.tables.syncItem, tableName);
     }
 }

@@ -23,8 +23,8 @@ import { EnvService } from './env.service';
 export class BaseService {
     protected http: HttpClient;
     protected platform: Platform;
-    protected dbService: DbService;
-    protected schemaSvc: SchemaService;
+    public dbService: DbService;
+    public schemaSvc: SchemaService;
     protected appSettingSvc: AppSettingService;
     protected userSettingSvc: UserSettingService;
     protected helperSvc: HelperService;

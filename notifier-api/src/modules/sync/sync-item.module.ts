@@ -11,6 +11,6 @@ import { SyncItemController } from './sync-item.controller';
   ],
   providers: [SyncItemService],
   controllers: [SyncItemController],
-  exports: [ SyncItemService ]
+  exports: [ SyncItemService, TypeOrmModule.forFeature([SyncItem])]
 })
 export class SyncItemModule {}

@@ -18,6 +18,7 @@ import { FrontendMiddleware } from './modules/shared/front-end.middleware';
 import { SharedModule } from './modules/shared/shared.module';
 import { SyncItem } from './modules/sync/sync-item.entity';
 import { SyncItemModule } from './modules/sync/sync-item.module';
+import { EventSubscriberModule } from './modules/shared/events/event-subscriber.module';
 
 const CONNECTION_NAME = "default";
 
@@ -45,7 +46,8 @@ const CONNECTION_NAME = "default";
     NotificationModule,
     NotificationIgnoredModule,
     AllSettingsModule,
-    SyncItemModule
+    SyncItemModule,
+    EventSubscriberModule
   ],
   controllers: [AppController],
   providers: [AppService],

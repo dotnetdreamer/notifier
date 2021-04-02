@@ -78,7 +78,7 @@ export class NotificationService {
 
     //notify
     this.eventEmitter.emit(`${NotificationRecord.name}.created`, 
-      new NotificationRecordCreatedEvent({ payload: saved })
+      new NotificationRecordCreatedEvent(saved)
     );
 
     const maped = await this._map(saved);

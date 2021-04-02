@@ -9,6 +9,7 @@ export class SchemaService {
     private _notificationIgnored = "notificationIgnored";
     private _user = "user";
     private _appInfo = "appInfo";
+    private _syncItem = "syncItem";
 
     schema = {
         stores: [
@@ -139,6 +140,16 @@ export class SchemaService {
                     keyPath: 'package'
                 }]
             }, {
+                name: this._syncItem,
+                columns: [{ 
+                    name: 'tableName', 
+                    isPrimaryKey: true, 
+                    type: 'TEXT' 
+                }, {
+                    name: 'updatedOn', 
+                    type: 'TEXT'  
+                }],              
+            }, {
                 name: this._setting,
                 columns: [{ 
                     name: 'key', 
@@ -156,7 +167,8 @@ export class SchemaService {
         notification: this._notification,
         notificationIgnored: this._notificationIgnored,
         user: this._user,
-        appInfo: this._appInfo
+        appInfo: this._appInfo,
+        syncItem: this._syncItem
     };
 
     constructor() {

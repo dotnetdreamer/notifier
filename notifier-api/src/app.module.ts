@@ -16,6 +16,8 @@ import { NotificationRecord } from './modules/notification/notification.entity';
 import { NotificationModule } from './modules/notification/notification.module';
 import { FrontendMiddleware } from './modules/shared/front-end.middleware';
 import { SharedModule } from './modules/shared/shared.module';
+import { SyncItem } from './modules/sync/sync-item.entity';
+import { SyncItemModule } from './modules/sync/sync-item.module';
 
 const CONNECTION_NAME = "default";
 
@@ -31,6 +33,7 @@ const CONNECTION_NAME = "default";
         , NotificationRecord
         , NotificationIgnoredItem
         , AppInfo
+        , SyncItem
       ],
       synchronize: true,
     }),
@@ -41,7 +44,8 @@ const CONNECTION_NAME = "default";
     AppInfoModule,
     NotificationModule,
     NotificationIgnoredModule,
-    AllSettingsModule
+    AllSettingsModule,
+    SyncItemModule
   ],
   controllers: [AppController],
   providers: [AppService],

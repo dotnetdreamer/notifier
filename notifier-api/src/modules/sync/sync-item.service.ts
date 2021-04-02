@@ -1,11 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
-
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getRepository, SelectQueryBuilder } from 'typeorm';
 
-import { HelperService } from '../shared/helper.service';
 import { SyncItem } from './sync-item.entity';
 
 @Injectable()

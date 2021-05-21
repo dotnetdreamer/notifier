@@ -10,20 +10,26 @@ export class SyncItemService {
     @InjectRepository(SyncItem) private syncItemRepo: Repository<SyncItem>
   ) {}
 
-  async findAll(args?: { 
-    dateFrom?: string
-  }): Promise<{ total, data: SyncItem[]}> {
+  async findAll(args?: { tableName?, updatedOn? })
+    : Promise<{ total, data: SyncItem[]}> {
     let qb = await getRepository(SyncItem)
       .createQueryBuilder('sync'); 
 
-    if(args.dateFrom) {
-      qb = qb.andWhere("sync.updatedOn >= :dateFrom", { dateFrom: args.dateFrom });
+    if(!args) {
+      args = <any>{};
+    }
+
+    if(args.tableName) {
+      qb = qb.andWhere("sync.tableName == :tableName", { tableName: args.tableName });
+    }
+
+    if(args.updatedOn) {
+      qb = qb.andWhere("sync.updatedOn >= :dateFrom", { dateFrom: args.updatedOn });
     }
 
     qb = qb.orderBy("sync.id", 'DESC');
 
     const [ data, total ] = await qb.getManyAndCount();
-    
     return { total: total, data: data };
   }
 
@@ -39,6 +45,9 @@ export class SyncItemService {
     let newRrd = new SyncItem();
     newRrd = Object.assign({}, syncItem);
 
+    // if(newRrd.updatedOn) {
+    //   newRrd.updatedOn = .tz(AppConstant.DEFAULT_TIME_ZONE, false);
+    // }
     const saved = await this.syncItemRepo.save(newRrd);
     return saved;
   }

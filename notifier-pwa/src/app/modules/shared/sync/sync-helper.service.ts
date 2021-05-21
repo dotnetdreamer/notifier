@@ -30,27 +30,29 @@ export class SyncHelperService {
     private readonly baseSvc: BaseService;
 
     constructor(private pubsubSvc: NgxPubSubService
-        , private notificationSvc: NotificationService
-        , private notificationIgnoredSvc: NotificationIgnoredService
-        , private appInfoSvc: AppInfoService) {
+        , private NotificationRecordSvc: NotificationService
+        , private NotificationIgnoredItemSvc: NotificationIgnoredService
+        , private AppInfoSvc: AppInfoService) {
 
             
         const injector = AppInjector.getInjector();
         this.baseSvc = injector.get(BaseService);
     }
 
-    check(dateTime?) {
-        if(!dateTime) {
-            dateTime = moment().local(true).utc().format(AppConstant.DEFAULT_DATETIME_FORMAT);
-        }
+    check(args: ISyncItem[]) {
+        // if(!args) {
+        //     args = <any>{};
+        // }
+
+        // if(!args.dateFrom) {
+        //     args.dateFrom = moment().utc(true).format(AppConstant.DEFAULT_DATETIME_FORMAT);
+        // }
 
 
         // const lastUpdated = appSettingSvc.getWorkingLanguage();
-        return this.baseSvc.getData<{ total: number, data: any }>({
+        return this.baseSvc.postData<{ total: number, data: ISyncItem[] }>({
             url: `${this.BASE_URL}/getAll`,
-            body: {
-                dateFrom: dateTime
-            }
+            body: args
         });
     }
 
@@ -61,38 +63,51 @@ export class SyncHelperService {
                 return;
             }
 
-            const promises: Array<Promise<any>> = [];
+            const fullRequest: Array<{ table: string, promise: Promise<any> }> = [];
             SyncHelperService.pullingInProgress = true;
             if(table) {
-                switch(table) {
-                    case SyncEntity.NOTIFICATION:
-                        promises.push(this.notificationSvc.pull());
-                    break;
-                    case SyncEntity.NOTIFICATION_IGNORED:
-                        promises.push(this.notificationIgnoredSvc.pull());
-                    break;
-                    case SyncEntity.APP_INFO:
-                        promises.push(this.appInfoSvc.pull());
-                    break;
-                    default:
-                    break;
-                }
+                fullRequest.push({ table: table, promise: this[`${table}Svc`].pull() });
             } else {   //sync all
-                // const tables = [
-                //     this._getByNameLocal('NotificationRecord')
-                // ];
-                // const d = await Promise.all(tables);
-                // debugger;
-                //notification
-                promises.push(this.notificationSvc.pull());
-                //notification ignored
-                promises.push(this.notificationIgnoredSvc.pull());
-                //app-info
-                promises.push(this.appInfoSvc.pull());
+                let tablesToCheck = <string[]>[];
+
+                const allLocalTables = await this._getAllLocal();
+                if(!allLocalTables.length) {    //check all
+                    tablesToCheck = [
+                        SyncEntity.NOTIFICATION_RECORD
+                        , SyncEntity.NOTIFICATION_IGNORED_ITEM
+                        , SyncEntity.APP_INFO
+                    ];
+                } else {    //check the one that has been updated
+                    const checkRes = await this.check(allLocalTables);
+                    if(checkRes.total > 0) {
+                        tablesToCheck = checkRes.data.map(t => t.tableName);
+                    }
+                }
+
+                for(let d of tablesToCheck) {
+                    // promises.push(this[`${d.tableName}_SVC`].pull());
+                    fullRequest.push({ table: d, promise: this[`${d}Svc`].pull() });
+                }
             }
 
             try {
+                const promises = fullRequest.map(r => r.promise);
                 await Promise.all(promises);
+                
+                const tables = fullRequest.map(r => r.table);
+                for(let t of tables) {
+                    let lt = await this._getByNameLocal(t);
+                    if(!lt) {
+                        lt = {
+                            tableName: t,
+                            updatedOn: null
+                        };
+                    }
+                    
+                    lt.updatedOn = moment().utc(false)
+                        .format(AppConstant.DEFAULT_DATETIME_FORMAT);
+                    await this._putLocal(lt);
+                }
                 resolve();
             } catch(e) {
                 reject(e);
@@ -117,25 +132,25 @@ export class SyncHelperService {
             let promises: Array<Promise<any>> = [];
             if(table) {
                 switch(table) {
-                    case SyncEntity.NOTIFICATION:
-                        promises.push(this.notificationSvc.push());
+                    case SyncEntity.NOTIFICATION_RECORD:
+                        promises.push(this.NotificationRecordSvc.push());
                     break;
-                    case SyncEntity.NOTIFICATION_IGNORED:
-                        promises.push(this.notificationIgnoredSvc.push());
+                    case SyncEntity.NOTIFICATION_IGNORED_ITEM:
+                        promises.push(this.NotificationIgnoredItemSvc.push());
                     break;
                     case SyncEntity.APP_INFO:
-                        promises.push(this.appInfoSvc.push());
+                        promises.push(this.AppInfoSvc.push());
                     break;
                     default:
                     break;
                 }
             } else {   //sync all
                 //notification
-                promises.push(this.notificationSvc.push());
+                promises.push(this.NotificationRecordSvc.push());
                 //notification ignored
-                promises.push(this.notificationIgnoredSvc.push());
+                promises.push(this.NotificationIgnoredItemSvc.push());
                 //app-info
-                promises.push(this.appInfoSvc.push());
+                promises.push(this.AppInfoSvc.push());
             }
             
             if(!promises.length) {
@@ -180,13 +195,21 @@ export class SyncHelperService {
             };
             newItems.push(currentAppItem);
 
-            await this.notificationIgnoredSvc.putAllLocal(newItems, true, false);
+            await this.NotificationIgnoredItemSvc.putAllLocal(newItems, true, false);
             resolve();
         });
     }
 
     
+    private _getAllLocal() {
+        return this.baseSvc.dbService.getAll<ISyncItem[]>(this.baseSvc.schemaSvc.tables.syncItem);
+    }
+
     private _getByNameLocal(tableName) {
         return this.baseSvc.dbService.get<ISyncItem>(this.baseSvc.schemaSvc.tables.syncItem, tableName);
+    }
+
+    private _putLocal(data: ISyncItem) {
+        return this.baseSvc.dbService.putLocal(this.baseSvc.schemaSvc.tables.syncItem, data);
     }
 }

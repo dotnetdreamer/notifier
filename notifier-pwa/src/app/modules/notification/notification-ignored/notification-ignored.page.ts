@@ -151,7 +151,7 @@ export class NotificationIgnoredPage implements OnInit, AfterViewInit, OnDestroy
         await this.helperSvc.presentToastGenericSuccess();
         
         setTimeout(() => {
-          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION_IGNORED);
+          this.pubSubSvc.publishEvent(SyncConstant.EVENT_SYNC_DATA_PUSH, SyncEntity.NOTIFICATION_IGNORED_ITEM);
         });
       }
     } catch(e) {

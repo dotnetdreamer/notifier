@@ -1,7 +1,7 @@
 export enum SyncEntity {
-    NOTIFICATION = "notification",
-    NOTIFICATION_IGNORED = "notificationIgnored",
-    APP_INFO = "appInfo",
+    NOTIFICATION_RECORD = "NotificationRecord",
+    NOTIFICATION_IGNORED_ITEM = "NotificationIgnoredItem",
+    APP_INFO = "AppInfo",
 }
 
 export interface ISyncItem {

@@ -1,9 +1,9 @@
 import { UserService } from './user.service';
 import { Injectable, NgZone } from '@angular/core';
 
-import { Plugins } from '@capacitor/core';
-
 import { IUser, IGoogleAuthResponse, LoginType } from './user.model';
+
+declare const GoogleAuth: any;
 
 @Injectable({
     providedIn: 'root'
@@ -20,7 +20,7 @@ export class AuthenticationGoogleService {
         
         return new Promise(async (resolve, reject) => {
             try {
-                const result: IGoogleAuthResponse = await Plugins.GoogleAuth.signIn();
+                const result: IGoogleAuthResponse = await GoogleAuth.signIn();
                 const user: IUser = {
                     uuid: result.id,
                     email: result.email,
@@ -41,6 +41,6 @@ export class AuthenticationGoogleService {
     }
 
     async logout() {
-        await Plugins.GoogleAuth.signOut();
+        await GoogleAuth.signOut();
     }
 }

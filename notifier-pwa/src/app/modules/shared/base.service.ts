@@ -1,10 +1,9 @@
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Platform } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
-const { Device } = Plugins;
 
-import { AppConstant } from './app-constant';
+import { App } from '@capacitor/app';
+
 import { DbService } from './db/db-base.service';
 import { SchemaService } from './db/schema.service';
 import { AppSettingService } from './app-setting.service';
@@ -47,7 +46,7 @@ export class BaseService {
         this.pubsubSvc = injector.get(NgxPubSubService);
 
         setTimeout(async () => {
-            const info = await Device.getInfo();
+            const info = await App.getInfo();
             // if(info.platform === "ios" || info.platform === "android") {
             //     this.dbService = injector.get(DbSqlService);
             // } else {
@@ -89,7 +88,7 @@ export class BaseService {
             }, error => {
                 this.handleError(error, args);
                 if(args.errorCallback) {
-                    resolve();
+                    resolve(null);
                 } else {
                     reject(error);
                 }
@@ -130,7 +129,7 @@ export class BaseService {
             }, error => {
                 this.handleError(error, args);
                 if(args.errorCallback) {
-                    resolve();
+                    resolve(null);
                 } else {
                     reject(error);
                 }

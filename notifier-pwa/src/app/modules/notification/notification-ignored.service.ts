@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo, Device } = Plugins;
+import { App } from '@capacitor/app';
 import * as moment from 'moment';
 
 import { AppConstant } from '../shared/app-constant';
@@ -46,14 +45,14 @@ export class NotificationIgnoredService extends BaseService {
 
                 //no items found ons server? don't proceed!
                 if(!items.length) {
-                    resolve();
+                    resolve(null);
                     return;
                 }
 
                 //now add
                 await this.putAllLocal(items, true, true);
 
-                resolve();
+                resolve(null);
             } catch(e) {
                 reject(e);
             }
@@ -71,7 +70,7 @@ export class NotificationIgnoredService extends BaseService {
             unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
 
             if(!unSycedLocal.length) {
-                resolve();
+                resolve(null);
                 return;
             }
             
@@ -112,7 +111,7 @@ export class NotificationIgnoredService extends BaseService {
 
             //something bad happend or in case of update, we don't need to update server ids
             if(items == null) {
-                resolve();
+                resolve(null);
                 return;
             }
             
@@ -145,7 +144,7 @@ export class NotificationIgnoredService extends BaseService {
                     console.log('NotificationIgnoredService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);
-                resolve();
+                resolve(null);
             } catch (e) {
                 reject(e);
             }
@@ -256,12 +255,12 @@ export class NotificationIgnoredService extends BaseService {
         return new Promise<{ blackListOfPackages: any[], blackListOfText: any[]}>(async (resolve, reject) => {
             const blackListOfPackages = [], blackListOfText = [];
             const ignoreNots = await this.getAllLocal({ silent: true });
-            const info = await Device.getInfo();
+            const info = await App.getInfo();
 
             ignoreNots.forEach(n => {
               //ignore our app... from blacklist. Otherwise we won't see running in background
               //notification when app goes to background
-              if(!n.rule && n.text != info.appId) {
+              if(!n.rule && n.text != info.id) {
                 //package
                 blackListOfPackages.push(n.text);
               } else {
@@ -351,7 +350,7 @@ export class NotificationIgnoredService extends BaseService {
             }
 
             await Promise.all(promises);
-            resolve();
+            resolve(null);
         });
     }
 

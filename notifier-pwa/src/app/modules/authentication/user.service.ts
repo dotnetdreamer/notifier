@@ -180,7 +180,7 @@ export class UserService extends BaseService {
           // ]);
 
           this.pubsubSvc.publishEvent(UserConstant.EVENT_USER_LOGGEDOUT);
-          resolve();
+          resolve(null);
       });
   }
 

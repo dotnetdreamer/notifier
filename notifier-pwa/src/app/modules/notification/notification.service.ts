@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
 import * as moment from 'moment';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
+import { GetAppInfo } from 'capacitor-plugin-get-app-info';
 
 import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
@@ -64,7 +62,7 @@ export class NotificationService extends BaseService {
 
                 //no items found on server? don't proceed!
                 if(!items.length) {
-                    resolve();
+                    resolve(null);
                     return;
                 }
 
@@ -76,7 +74,7 @@ export class NotificationService extends BaseService {
 
                 //cleanup
                 items = null, allItems = null;
-                resolve();
+                resolve(null);
             } catch(e) {
                 reject(e);
             }
@@ -108,7 +106,7 @@ export class NotificationService extends BaseService {
                     console.log('NotificationService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);
-                resolve();
+                resolve(null);
             } catch (e) {
                 reject(e);
             }
@@ -399,7 +397,7 @@ export class NotificationService extends BaseService {
             }
 
             await Promise.all(promises);
-            resolve();
+            resolve(null);
         });
     }
 
@@ -463,7 +461,7 @@ export class NotificationService extends BaseService {
         // }
 
         try {
-            await (<GetAppInfoPlugin>GetAppInfo).canLaunchApp({
+            await GetAppInfo.canLaunchApp({
                 packageName: e.package
             });
             e.canLaunchApp = true;

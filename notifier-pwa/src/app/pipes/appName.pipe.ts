@@ -1,8 +1,6 @@
 import { Pipe, PipeTransform } from "@angular/core";
-import { Plugins } from "@capacitor/core";
 
-const { GetAppInfo } = Plugins;
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
+import { GetAppInfo } from 'capacitor-plugin-get-app-info';
 
 import { AppInfoService } from "../modules/app-info/app-info.service";
 
@@ -17,7 +15,7 @@ export class AppNamePipe implements PipeTransform {
     transform(pkg: string, ...args: any[]) {
         return new Promise(async (resolve, reject) => {
             if(!pkg) {
-                resolve();
+                resolve(null);
                 return;
             }
 
@@ -30,7 +28,7 @@ export class AppNamePipe implements PipeTransform {
             if(!name) {
                 //fallback
                 try {
-                    const result = await (<GetAppInfoPlugin>GetAppInfo).getAppLabel({
+                    const result = await GetAppInfo.getAppLabel({
                         packageName: pkg
                     });
                     name = result.value;

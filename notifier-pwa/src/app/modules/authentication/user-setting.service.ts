@@ -107,7 +107,7 @@ export class UserSettingService extends AppSettingService {
             username = await this.getCurrentUser();
             }
             if(!username) {
-            resolve();
+            resolve(null);
             return;
             }
             username = username.toLowerCase();

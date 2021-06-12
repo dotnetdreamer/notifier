@@ -2,16 +2,17 @@ import { Component, Inject, OnInit, Renderer2 } from '@angular/core';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Platform } from '@ionic/angular';
-import { DeviceInfo, Plugins, Network } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
-const { SplashScreen, StatusBar, Device } = Plugins;
+import { App, AppInfo } from '@capacitor/app';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { Network } from '@capacitor/network';
+import { GetAppInfo } from 'capacitor-plugin-get-app-info';
+
 import { Observable } from 'rxjs';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 import { debounceTime } from 'rxjs/operators';
 import { SystemNotificationListener, SystemNotification } from 'capacitor-notificationlistener';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppSettingService } from './modules/shared/app-setting.service';
 import { SyncHelperService } from './modules/shared/sync/sync-helper.service';
@@ -32,6 +33,7 @@ import { NotificationConstant } from './modules/notification/notification.consta
 import { EnvService } from './modules/shared/env.service';
 import { AppInfoService } from './modules/app-info/app-info.service';
 import { IAppInfo } from './modules/app-info/app-info.model';
+import { Capacitor } from '@capacitor/core';
 
 @Component({
   selector: 'app-root',
@@ -43,7 +45,7 @@ export class AppComponent implements OnInit {
   appVersion;
   currentUser: IUserProfile;
   
-  private _deviceInfo: DeviceInfo;
+  private _appInfo: AppInfo;
   private _systemNotificationListener: SystemNotificationListener;
   
   constructor(
@@ -69,7 +71,9 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this._deviceInfo = await Device.getInfo();
+    if(Capacitor.getPlatform() !== 'web') { 
+      this._appInfo = await App.getInfo();
+    }
   }
 
   private async _subscribeToEvents() {
@@ -182,8 +186,8 @@ export class AppComponent implements OnInit {
       if(EnvService.DEBUG) {
         console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
-      const { appVersion } = await (await Device.getInfo());
-      this.appVersion = appVersion;
+      const { version } = await (await App.getInfo());
+      this.appVersion = version;
 
       try {
         SplashScreen.hide();
@@ -322,7 +326,7 @@ export class AppComponent implements OnInit {
         await sn.requestSystemAlertWindowPermission();
       }
 
-      resolve();
+      resolve(null);
     });
   }
 
@@ -356,7 +360,7 @@ export class AppComponent implements OnInit {
         //check if it can be launched
         let canLaunchApp = true;
         try {
-          await (<GetAppInfoPlugin>GetAppInfo).canLaunchApp({
+          await GetAppInfo.canLaunchApp({
             packageName: info.package
           });
         } catch(e) {
@@ -430,8 +434,8 @@ export class AppComponent implements OnInit {
       let image, appName;
       try {
         const iconAppNameRslt = await Promise.all([
-          (<GetAppInfoPlugin>GetAppInfo).getAppIcon({ packageName: notification.package })
-          , (<GetAppInfoPlugin>GetAppInfo).getAppLabel({ packageName: notification.package })
+          GetAppInfo.getAppIcon({ packageName: notification.package })
+          , GetAppInfo.getAppLabel({ packageName: notification.package })
         ]);
 
         //icon
@@ -472,7 +476,7 @@ export class AppComponent implements OnInit {
 
     sn.addListener('notificationReceivedEvent', async (info: SystemNotification) => {
       //ignore current app...
-      if(this._deviceInfo.appId == info.package) {
+      if(this._appInfo.id == info.package) {
         // if(EnvService.DEBUG) {
         //   console.log(`Ignoring: ${info.package} is same as ${this._deviceInfo.appId}`);
         // }
@@ -484,7 +488,7 @@ export class AppComponent implements OnInit {
 
     sn.addListener('notificationRemovedEvent', async (info: SystemNotification) => {
       //ignore current app...
-      if(this._deviceInfo.appId == info.package) {
+      if(this._appInfo.id == info.package) {
         return;
       }
 

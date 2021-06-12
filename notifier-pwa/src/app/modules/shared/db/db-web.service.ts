@@ -211,7 +211,7 @@ export class DbWebService implements DbService {
     delete() {
         return new Promise((resolve, reject) => {
             ydn.db.deleteDatabase(AppConstant.DB_NAME);
-            resolve();
+            resolve(null);
         });
     }
 }

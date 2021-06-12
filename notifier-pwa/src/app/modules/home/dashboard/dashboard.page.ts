@@ -1,13 +1,14 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { App, Capacitor, Plugins } from '@capacitor/core';
 import { AlertController, IonContent, IonItemSliding, IonVirtualScroll, ModalController, Platform } from '@ionic/angular';
 
-const { GetAppInfo, Clipboard } = Plugins;
+import { App } from '@capacitor/app';
+import { Clipboard } from '@capacitor/clipboard';
+
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import * as moment from 'moment';
+import { GetAppInfo } from 'capacitor-plugin-get-app-info';
 
 import { INotification, INotificationIgnored } from '../../notification/notification.model';
 import { NotificationService } from '../../notification/notification.service';
@@ -18,7 +19,6 @@ import { NotificationIgnoredService } from '../../notification/notification-igno
 import { EnvService } from '../../shared/env.service';
 import { IgnoreOptionsComponent } from '../../notification/ignore-options/ignore-options.component';
 import { LocalizationService } from '../../shared/localization.service';
-
 
 @Component({
   selector: 'page-home-dashboard',
@@ -231,7 +231,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     try {
-      await (<GetAppInfoPlugin>GetAppInfo).launchApp({
+      await GetAppInfo.launchApp({
         packageName: notification.package
       });
     } catch(e) {

@@ -1,13 +1,21 @@
 {
-  "appId": "net.dotnetdreamer.notifierdev",
-  "appName": "Notifier-Dev",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www",
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    }
-  },
-  "cordova": {}
+	"appId": "net.dotnetdreamer.notifierdev",
+	"appName": "Notifier-Dev",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "www",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		},
+		"LocalNotifications": {
+			"smallIcon": "favicon"
+		}
+	},
+	"cordova": {},
+	"server": {
+		"url": "http://192.168.1.97:8100",
+		"cleartext": true,
+		"originalUrl": "http://192.168.1.97:8100"
+	}
 }

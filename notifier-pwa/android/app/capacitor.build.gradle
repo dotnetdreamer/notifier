@@ -9,8 +9,17 @@ android {
 
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
+    implementation project(':capacitor-app')
+    implementation project(':capacitor-clipboard')
+    implementation project(':capacitor-device')
+    implementation project(':capacitor-haptics')
+    implementation project(':capacitor-keyboard')
+    implementation project(':capacitor-local-notifications')
+    implementation project(':capacitor-network')
+    implementation project(':capacitor-splash-screen')
+    implementation project(':capacitor-status-bar')
+    implementation project(':robingenz-capacitor-background-task')
     implementation project(':capacitor-notificationlistener')
-    implementation project(':capacitor-persistent-notification')
     implementation project(':capacitor-plugin-get-app-info')
 
 }

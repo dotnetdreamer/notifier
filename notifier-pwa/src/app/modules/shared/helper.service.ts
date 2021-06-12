@@ -35,7 +35,7 @@ export class HelperService {
               });     
             
             await toast.present();
-            resolve();
+            resolve(null);
         });
     }
 
@@ -246,24 +246,6 @@ export class HelperService {
         // });
     }
 
-    getUserCurrentLocation(): Promise<any>{
-        return new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition((position: Position) => {
-                let gpsAddress = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                resolve(gpsAddress);
-            },async (error: PositionError) => {
-                await this.handleLocationError(error);
-                resolve();
-            },{
-                enableHighAccuracy: true,
-                timeout: 5000
-            });
-        });
-    }
-
     getParamsObjectsFromUrl(url) {
         let obj;
         if(url) {
@@ -294,7 +276,7 @@ export class HelperService {
                 }
             }
             await this.presentToast(title);
-            resolve();
+            resolve(null);
         });
     }
 

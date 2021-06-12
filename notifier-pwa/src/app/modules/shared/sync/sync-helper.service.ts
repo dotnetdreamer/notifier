@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Plugins } from "@capacitor/core";
 
-const { Device } = Plugins;
+import { App } from "@capacitor/app";
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import * as moment from 'moment';
 
@@ -15,9 +14,6 @@ import { EnvService } from "../env.service";
 import { AppInfoService } from "../../app-info/app-info.service";
 import { AppInjector } from "../app-injector";
 import { BaseService } from "../base.service";
-import { DbService } from "../db/db-base.service";
-import { SchemaService } from "../db/schema.service";
-
 
 @Injectable({
     providedIn: 'root'
@@ -59,7 +55,7 @@ export class SyncHelperService {
     pull(table?: SyncEntity) {
         return new Promise(async (resolve, reject) => {
             if(SyncHelperService.pullingInProgress) {
-                resolve();
+                resolve(null);
                 return;
             }
 
@@ -108,7 +104,7 @@ export class SyncHelperService {
                         .format(AppConstant.DEFAULT_DATETIME_FORMAT);
                     await this._putLocal(lt);
                 }
-                resolve();
+                resolve(null);
             } catch(e) {
                 reject(e);
             } finally {
@@ -124,7 +120,7 @@ export class SyncHelperService {
     push(table?: SyncEntity) {
         return new Promise(async (resolve, reject) => {
             if(SyncHelperService.pushingInProgress) {
-                resolve();
+                resolve(null);
                 return;
             }
 
@@ -154,13 +150,13 @@ export class SyncHelperService {
             }
             
             if(!promises.length) {
-                resolve();
+                resolve(null);
                 return;
             }
 
             try {
                 await Promise.all(promises);
-                resolve();
+                resolve(null);
             } catch (e) {
                 resolve(e);
             } finally {
@@ -186,17 +182,17 @@ export class SyncHelperService {
             }
 
             //current app
-            const deviceInfo = await Device.getInfo();
+            const deviceInfo = await App.getInfo();
             const currentAppItem: INotificationIgnored = {
-                text: deviceInfo.appId,
-                package: deviceInfo.appId,
+                text: deviceInfo.id,
+                package: deviceInfo.id,
                 silent: false,  //display notifications popup in statusbar when app goes to background
                 markedForAdd: true
             };
             newItems.push(currentAppItem);
 
             await this.NotificationIgnoredItemSvc.putAllLocal(newItems, true, false);
-            resolve();
+            resolve(null);
         });
     }
 

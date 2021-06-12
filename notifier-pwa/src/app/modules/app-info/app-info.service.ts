@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
 import * as moment from 'moment';
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
 
 import { AppConstant } from '../shared/app-constant';
 import { BaseService } from '../shared/base.service';
@@ -50,7 +47,7 @@ export class AppInfoService extends BaseService {
 
                 //no items found on server? don't proceed!
                 if(!items.length) {
-                    resolve();
+                    resolve(null);
                     return;
                 }
 
@@ -60,7 +57,7 @@ export class AppInfoService extends BaseService {
                 //now add
                 await this.putAllLocal(items, true, true);
 
-                resolve();
+                resolve(null);
             } catch(e) {
                 reject(e);
             }
@@ -86,7 +83,7 @@ export class AppInfoService extends BaseService {
             unSycedLocal = unSycedLocal.filter(ul => this._findInQueue(ul) == -1);
 
             if(!unSycedLocal.length) {
-                resolve();
+                resolve(null);
                 return;
             }
             
@@ -127,7 +124,7 @@ export class AppInfoService extends BaseService {
 
             //something bad happend or in case of update, we don't need to update server ids
             if(items == null) {
-                resolve();
+                resolve(null);
                 return;
             }
             
@@ -160,7 +157,7 @@ export class AppInfoService extends BaseService {
                     console.log('AppInfoService: sync: complete');
                 }
                 // this.pubsubSvc.publishEvent(AppConstant.EVENT_EXPENSE_CREATED_OR_UPDATED);
-                resolve();
+                resolve(null);
             } catch (e) {
                 reject(e);
             }
@@ -347,7 +344,7 @@ export class AppInfoService extends BaseService {
         return new Promise(async (resolve, reject) => {
             const toAdd = await this.getByPackageLocal(item.package);
             if(toAdd) {
-                resolve();
+                resolve(null);
                 return;
             }
 
@@ -414,7 +411,7 @@ export class AppInfoService extends BaseService {
             }
 
             await Promise.all(promises);
-            resolve();
+            resolve(null);
         });
     }
 

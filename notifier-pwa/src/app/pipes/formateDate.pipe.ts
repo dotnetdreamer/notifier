@@ -15,7 +15,7 @@ export class FormateDatePipe {
     transform(date: string, format?: string, workingLanguage?: string) {
         return new Promise((resolve, reject) => {
             if(!date) {
-                resolve();
+                resolve(null);
             } else {
                 if(!format) {
                     format = AppConstant.DEFAULT_DATE_FORMAT;

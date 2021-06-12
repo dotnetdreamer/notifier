@@ -7,7 +7,14 @@
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0
+    },
+    "LocalNotifications": {
+      "smallIcon": "favicon"
     }
   },
-  "cordova": {}
+  "cordova": {},
+  "server": {
+    "url": "http://192.168.1.97:8100",
+    "cleartext": true
+  }
 }

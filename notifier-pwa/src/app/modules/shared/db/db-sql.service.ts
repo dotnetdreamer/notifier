@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 
 import { Platform } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
 // import * as CapacitorSQLPlugin from 'capacitor-sqlite';
-const { CapacitorSQLite } = Plugins;
 
 import { SchemaService, ITableOptions } from './schema.service';
 import { AppConstant } from "../app-constant";
 import { DbService } from './db-base.service';
 import { NgxPubSubService } from '@pscoped/ngx-pub-sub';
 import { EnvService } from '../env.service';
+
+//TODO: need to import proper plugin
+declare const CapacitorSQLite: any;
 
 @Injectable({
     providedIn: 'root'
@@ -228,7 +229,7 @@ export class DbSqlService implements DbService {
 
             try {
                 await Promise.all(promises);
-                resolve();
+                resolve(null);
             } catch (e) {
                 reject(e);
             }

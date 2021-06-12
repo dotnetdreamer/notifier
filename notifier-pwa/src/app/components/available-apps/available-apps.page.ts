@@ -1,9 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { Plugins } from '@capacitor/core';
 
-const { GetAppInfo } = Plugins;
-import { GetAppInfoPlugin } from 'capacitor-plugin-get-app-info';
+import { GetAppInfo } from 'capacitor-plugin-get-app-info';
 import { HelperService } from 'src/app/modules/shared/helper.service';
 
 @Component({
@@ -46,7 +44,7 @@ export class AvailableAppsPage implements OnInit, OnDestroy {
     await loader.present();
 
     try {
-      const result = await (<GetAppInfoPlugin>GetAppInfo).getAvailableApps();
+      const result = await GetAppInfo.getAvailableApps();
       let apps = <any[]>JSON.parse(result.applications);
       apps = apps.sort((a, b ) => {
         if (a.name < b.name ) {

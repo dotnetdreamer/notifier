@@ -46,7 +46,14 @@
             ],
             "scripts": [
               "node_modules/ydn.db/jsc/ydn.db-dev.js"
-            ]
+            ],
+            "aot": false,
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {

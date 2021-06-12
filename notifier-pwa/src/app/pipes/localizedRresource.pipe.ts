@@ -13,7 +13,7 @@ export class LocalizedResourcePipe {
     transform(resourceKey: string, workingLanguage?: string) {
         return new Promise((resolve, reject) => {
             if(!resourceKey) {
-                resolve();
+                resolve(null);
             } else {
                 this.localizationService.getResource(resourceKey, workingLanguage)
                 .then((value) => {

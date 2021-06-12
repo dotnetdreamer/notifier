@@ -186,8 +186,10 @@ export class AppComponent implements OnInit {
       if(EnvService.DEBUG) {
         console.log('AppComponent:Event received: EVENT_SYNC_DATA_PULL_COMPLETE: table', table);
       }
-      const { version } = await (await App.getInfo());
-      this.appVersion = version;
+      
+      if(this._appInfo) {
+        this.appVersion = this._appInfo.version;
+      }
 
       try {
         SplashScreen.hide();

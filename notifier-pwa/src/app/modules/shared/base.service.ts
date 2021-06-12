@@ -46,7 +46,7 @@ export class BaseService {
         this.pubsubSvc = injector.get(NgxPubSubService);
 
         setTimeout(async () => {
-            const info = await App.getInfo();
+            // const info = await App.getInfo();
             // if(info.platform === "ios" || info.platform === "android") {
             //     this.dbService = injector.get(DbSqlService);
             // } else {
